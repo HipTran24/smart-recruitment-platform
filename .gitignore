@@ -1,0 +1,20 @@
+# Build output
+/target/
+**/target/
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+src/main/resources/application-local.yml
+
+# IDE and operating-system files
+.idea/
+*.iml
+.DS_Store
+
+# Local runtime data and logs
+/data/
+/logs/
+/uploads/
+*.log
