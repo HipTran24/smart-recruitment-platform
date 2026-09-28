@@ -27,6 +27,22 @@ require_project_java() {
   [[ "$actual" == "$expected" ]] || fail "Project requires Java $expected, but the current java command reports Java ${actual:-unknown}."
 }
 
+project_java_home() {
+  local expected
+  expected="$(sed -n -E 's#.*<java.version>([0-9]+)</java.version>.*#\1#p' "$REPO_ROOT/pom.xml" | head -n 1)"
+
+  if [[ -x /usr/libexec/java_home ]]; then
+    /usr/libexec/java_home -v "$expected" 2>/dev/null && return
+  fi
+
+  if [[ -n "${JAVA_HOME:-}" && -x "${JAVA_HOME}/bin/java" ]]; then
+    printf '%s\n' "$JAVA_HOME"
+    return
+  fi
+
+  return 1
+}
+
 ensure_env_file() {
   [[ -f "$ENV_FILE" ]] || fail "Missing .env. Copy .env.example to .env and replace all placeholder values."
 }
@@ -54,13 +70,16 @@ validate_local_env() {
 }
 
 run_maven() {
+  local java_home
+  java_home="$(project_java_home)" || fail "Could not resolve a JDK matching java.version from pom.xml."
+
   if [[ -x "$REPO_ROOT/mvnw" && -f "$REPO_ROOT/.mvn/wrapper/maven-wrapper.properties" ]]; then
-    "$REPO_ROOT/mvnw" "$@"
+    JAVA_HOME="$java_home" "$REPO_ROOT/mvnw" "$@"
     return
   fi
 
   require_command mvn
-  mvn "$@"
+  JAVA_HOME="$java_home" mvn "$@"
 }
 
 compose() {

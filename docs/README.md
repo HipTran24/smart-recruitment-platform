@@ -8,9 +8,9 @@
 | --- | --- |
 | [architecture/](architecture/overview.md) | Kiến trúc tổng thể, cấu trúc backend và quy ước mã nguồn |
 | [api/](api/README.md) | Chuẩn API và hợp đồng API khi các endpoint được xây dựng |
-| [database/](database/README.md) | Quy ước MySQL, migration và mô hình dữ liệu |
+| [database/](database/README.md) | Quy ước MySQL, migration và [mô hình dữ liệu hiện có](database/schema.md) |
 | [adr/](adr/README.md) | Các quyết định kiến trúc có ảnh hưởng lâu dài |
-| [runbooks/](runbooks/local-development.md) | Cách chạy local và xử lý sự cố phổ biến |
+| [runbooks/](runbooks/local-development.md) | Cách chạy local, troubleshooting và [production readiness](runbooks/production-readiness.md) |
 | [contribution.md](contribution.md) | Quy trình làm việc, branch, commit và Pull Request |
 
 ## Trạng thái tài liệu

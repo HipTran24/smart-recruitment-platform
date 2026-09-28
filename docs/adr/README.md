@@ -28,3 +28,4 @@ ADR ghi lại quyết định kỹ thuật có ảnh hưởng lâu dài: bối c
 ## Danh sách
 
 - [ADR 0001: Modular monolith](0001-modular-monolith.md)
+- [ADR 0002: Cross-module persistence references use scalar IDs](0002-cross-module-persistence-references.md)

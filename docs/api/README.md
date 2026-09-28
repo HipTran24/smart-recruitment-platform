@@ -2,6 +2,12 @@
 
 > Trạng thái: **Target**. Backend hiện chưa công bố controller hoặc endpoint nghiệp vụ; tài liệu này là chuẩn để áp dụng ngay khi API đầu tiên được tạo.
 
+## Hiện có
+
+- `GET /actuator/health`, `GET /actuator/health/liveness` và `GET /actuator/health/readiness` phục vụ health check, không trả chi tiết nội bộ.
+- `GET /actuator/info` được phép truy cập.
+- Mọi đường dẫn khác bị Spring Security từ chối mặc định. Không thêm `permitAll` trước khi có contract, authentication và authorization rõ ràng.
+
 ## URL và version
 
 API nghiệp vụ dùng tiền tố:

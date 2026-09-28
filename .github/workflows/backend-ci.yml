@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: backend-ci- ${{ github.workflow }}-${{ github.ref }}
+  group: backend-ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -18,27 +18,6 @@ jobs:
     name: Build and Test
     runs-on: ubuntu-latest
     timeout-minutes: 15
-
-    services:
-      mysql:
-        image: mysql:8.4.11
-        env:
-            MYSQL_DATABASE: smartrecruit_ci
-            MYSQL_USER: smartrecruit_ci
-            MYSQL_PASSWORD: ci-test-password
-            MYSQL_ROOT_PASSWORD: ci-root-password
-        ports:
-            - 3306:3306
-        options: >-
-            --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -pci-root-password --silent"
-            --health-interval=10s
-            --health-timeout=5s
-            --health-retries=10
-    env:
-      SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/smartrecruit_ci?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Ho_Chi_Minh
-      SPRING_DATASOURCE_USERNAME: smartrecruit_ci
-      SPRING_DATASOURCE_PASSWORD: ci-test-password
-      SPRING_JPA_HIBERNATE_DDL_AUTO: validate
 
     steps:
       - name: Checkout source code
@@ -54,7 +33,6 @@ jobs:
 
       - name: Build and test
         run: mvn --batch-mode --no-transfer-progress verify
-
 
 
 

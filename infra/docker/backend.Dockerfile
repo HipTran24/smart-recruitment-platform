@@ -16,7 +16,9 @@ RUN --mount=type=cache,target=/root/.m2 \
 
 FROM eclipse-temurin:26.0.2_10-jre-alpine AS runtime
 
-RUN addgroup -S app && adduser -S app -G app
+RUN apk add --no-cache wget \
+    && addgroup -S app \
+    && adduser -S app -G app
 WORKDIR /app
 
 COPY --from=build /workspace/target/*.jar /app/application.jar

@@ -10,7 +10,7 @@ All commands are run from the repository root. Before using a command, copy `.en
 | `./scripts/docker-down.sh --remove-data` | Stops containers and permanently deletes the local Docker database volume. |
 | `./scripts/docker-logs.sh [app\|mysql]` | Follows the latest logs for the selected service. |
 | `./scripts/run-local.sh` | Runs Spring Boot on the host against MySQL exposed by Docker. |
-| `./scripts/verify.sh` | Runs Maven verification against the configured local MySQL instance. |
+| `./scripts/verify.sh` | Runs Maven verification against an isolated MySQL Testcontainer. |
 
 `docker-down.sh` preserves data by default. The `--remove-data` option is intentionally explicit because it deletes the local MySQL volume.
 

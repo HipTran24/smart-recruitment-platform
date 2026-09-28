@@ -15,7 +15,7 @@ database="$(env_value MYSQL_DATABASE)"
 username="$(env_value MYSQL_USER)"
 password="$(env_value MYSQL_PASSWORD)"
 
-export SPRING_DATASOURCE_URL="jdbc:mysql://localhost:${mysql_port}/${database}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Ho_Chi_Minh"
+export SPRING_DATASOURCE_URL="jdbc:mysql://localhost:${mysql_port}/${database}?useSSL=false&allowPublicKeyRetrieval=true&connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true"
 export SPRING_DATASOURCE_USERNAME="$username"
 export SPRING_DATASOURCE_PASSWORD="$password"
 export SPRING_JPA_HIBERNATE_DDL_AUTO="validate"

@@ -1,0 +1,10 @@
+# Copy only the non-secret settings you need into application-local.yml, which is ignored by Git.
+# Keep datasource credentials in environment variables or the repository-root .env file consumed by scripts.
+spring:
+  config:
+    activate:
+      on-profile: local
+
+logging:
+  level:
+    org.hibernate.SQL: warn

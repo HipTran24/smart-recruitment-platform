@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: smart-recruitment-test
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  flyway:
+    clean-disabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

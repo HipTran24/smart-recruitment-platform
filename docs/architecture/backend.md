@@ -1,6 +1,6 @@
 # Kiến trúc Backend
 
-> Trạng thái: **Current baseline + Target structure**. Backend hiện là một Spring Boot application tại repository root; cấu trúc module dưới đây được áp dụng khi bắt đầu có nghiệp vụ.
+> Trạng thái: **Current baseline + Target structure**. Backend là một Spring Boot application tại repository root. Persistence model đã được chia theo module; API và application use case chỉ được thêm cùng contract nghiệp vụ.
 
 ## Công nghệ hiện có
 
@@ -11,6 +11,9 @@
 | Web | Spring Web MVC |
 | Persistence | Spring Data JPA / Hibernate |
 | Database | MySQL Connector/J |
+| Migration | Flyway |
+| HTTP baseline | Spring Security, Validation, Actuator |
+| Integration test | Testcontainers MySQL |
 | Boilerplate | Lombok |
 
 Entry point hiện tại là `com.recruitment.app.Application`. Package gốc của backend là `com.recruitment.app`.
@@ -23,18 +26,14 @@ Backend tổ chức theo **feature/module trước, technical layer sau**. Ví d
 com/recruitment/app/
 ├── Application.java
 ├── common/
-│   ├── config/
-│   ├── security/
-│   ├── exception/
-│   ├── web/
-│   ├── validation/
-│   └── audit/
+│   ├── infrastructure/persistence/
+│   └── security/
 └── modules/
-    └── jobs/
-        ├── api/
-        ├── application/
-        ├── domain/
-        └── infrastructure/
+    ├── identity/infrastructure/persistence/entity/
+    ├── candidates/infrastructure/persistence/entity/
+    ├── companies/infrastructure/persistence/entity/
+    ├── jobs/infrastructure/persistence/entity/
+    └── applications/infrastructure/persistence/entity/
 ```
 
 `common/` chỉ được dùng cho mã thật sự dùng chung giữa nhiều module. Không tạo `utils/` làm nơi chứa các hàm không có chủ sở hữu rõ ràng.
@@ -82,7 +81,7 @@ flowchart LR
     INFRA --> COMMON
 ```
 
-`infrastructure` hiện thực các interface mà `domain`/`application` cần. Module không truy cập trực tiếp entity hoặc repository nội bộ của module khác; giao tiếp qua use case công khai hoặc event đã thống nhất.
+`infrastructure` hiện thực các interface mà `domain`/`application` cần. Module không truy cập trực tiếp entity hoặc repository nội bộ của module khác; giao tiếp qua use case công khai hoặc event đã thống nhất. Trong JPA persistence model, reference sang module khác là scalar ID; foreign key được khai báo trong Flyway thay vì quan hệ object JPA xuyên module.
 
 ## Quy tắc triển khai
 
@@ -92,3 +91,5 @@ flowchart LR
 - Ngoại lệ được chuẩn hóa tại global exception handler trong `common/exception`.
 - Khi tích hợp email, object storage hoặc dịch vụ ngoài, tạo adapter trong `infrastructure/integration`.
 - Chỉ tạo package khi có class thực tế. Git không theo dõi thư mục trống.
+- Không đặt Jackson annotation trên JPA entity. API chỉ serialize request/response DTO.
+- Bất kỳ endpoint mới nào phải được mở tường minh trong `SecurityConfiguration`; mặc định hiện tại là deny-all, ngoại trừ health/info.

@@ -1,16 +1,16 @@
 # Runbook: Troubleshooting Backend và MySQL
 
-## 1. `Unknown time-zone ID: HoChiMinh`
+## 1. Lỗi timezone MySQL/JDBC
 
-**Nguyên nhân:** Java/MySQL Connector không nhận `HoChiMinh` là timezone hợp lệ.
+**Nguyên nhân:** session MySQL hoặc JDBC connection dùng timezone không nhất quán.
 
-**Khắc phục:** thay parameter JDBC bằng timezone IANA hợp lệ:
+**Khắc phục:** dùng UTC xuyên suốt cho dữ liệu lưu trữ:
 
 ```text
-serverTimezone=Asia/Ho_Chi_Minh
+connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true
 ```
 
-Đây là nguyên nhân trực tiếp của lỗi kết nối database đã xuất hiện trong log local trước đó.
+MySQL container local cũng phải có `--default-time-zone=+00:00`. Client tự chuyển sang timezone hiển thị.
 
 ## 2. `Could not create connection to database server`
 
@@ -49,4 +49,4 @@ serverTimezone=Asia/Ho_Chi_Minh
 
 ## 7. Lỗi chỉ xuất hiện khi chạy test
 
-`@SpringBootTest` có thể khởi tạo datasource giống khi chạy app. Dùng `application-test.yml` và database/test container riêng; không để unit test phụ thuộc local database hoặc credential production.
+`@SpringBootTest` dùng `application-test.yml` và MySQL Testcontainers riêng; không để test phụ thuộc database local hoặc credential production. Nếu Docker daemon không chạy, khởi động Docker Desktop trước khi chạy `mvn verify`.

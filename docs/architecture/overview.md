@@ -1,6 +1,6 @@
 # Kiến trúc Smart Recruitment
 
-> Trạng thái: bản định hướng ban đầu. Tài liệu này mô tả kiến trúc đích và phân biệt rõ những phần đã có với những phần sẽ được bổ sung.
+> Trạng thái: **Current baseline**. Tài liệu mô tả phần đang có và các ranh giới bắt buộc cho mã mới.
 
 ## 1. Mục tiêu
 
@@ -21,9 +21,9 @@ Repository hiện là một ứng dụng Spring Boot/Maven tại thư mục gố
 - Maven artifact: `com.recruitment:application`.
 - Công nghệ đã có: Spring Web MVC, Spring Data JPA, MySQL Connector/J và Lombok.
 - Cấu hình ứng dụng nằm tại `src/main/resources/application.yml`.
-- Chưa có module nghiệp vụ, controller, entity, repository hoặc migration database trong source hiện tại.
-
-Vì vậy, những phần được mô tả dưới đây là cấu trúc đích; chỉ tạo package hoặc module khi bắt đầu có mã nguồn thực tế cho phần đó.
+- Có persistence entity và Flyway migration cho identity, candidate, company, job và application.
+- Chưa có API nghiệp vụ công khai. HTTP hiện chỉ mở health/info; mọi endpoint mới mặc định bị từ chối cho đến khi có authentication, authorization và API contract.
+- CI tạo MySQL tạm thời bằng Testcontainers để chạy migration và Hibernate schema validation.
 
 ## 3. Bức tranh tổng thể
 
@@ -69,21 +69,16 @@ Không tạo thư mục `backend/` ở giai đoạn này: repository hiện tạ
 
 ## 5. Cấu trúc package backend
 
-Package gốc giữ là `com.recruitment.app`. Khi có chức năng nghiệp vụ, tổ chức theo mẫu sau:
+Package gốc giữ là `com.recruitment.app`. Persistence model hiện có được tổ chức theo module như sau:
 
 ```text
 src/main/java/com/recruitment/app/
 ├── Application.java
 ├── common/
-│   ├── config/                      # CORS, OpenAPI, Jackson, cấu hình chung
-│   ├── security/                    # Authentication, authorization, JWT
-│   ├── exception/                   # Exception chuẩn và GlobalExceptionHandler
-│   ├── web/                         # API response, pagination, request metadata
-│   ├── validation/                  # Validator/annotation dùng chung
-│   └── audit/                       # createdAt, updatedAt, createdBy
+│   ├── infrastructure/persistence/  # BaseEntity dùng chung cho JPA
+│   └── security/                    # HTTP security baseline và password encoder
 └── modules/
-    ├── auth/
-    ├── users/
+    ├── identity/
     ├── candidates/
     ├── companies/
     ├── jobs/
@@ -93,14 +88,15 @@ src/main/java/com/recruitment/app/
     └── files/
 ```
 
-Mỗi module có cùng ranh giới:
+Khi một module có API/use case, nó dùng thêm các ranh giới sau:
 
 ```text
 modules/jobs/
 ├── api/                             # Controller, request và response DTO
 ├── application/                     # Use case, service, command/query, mapper
 ├── domain/                          # Model, rule nghiệp vụ, repository interface
-└── infrastructure/                  # JPA, adapter dịch vụ ngoài, scheduler
+└── infrastructure/
+    └── persistence/entity/           # JPA entity, không import entity module khác
 ```
 
 Quy tắc phụ thuộc:
@@ -109,7 +105,7 @@ Quy tắc phụ thuộc:
 - `application` điều phối use case và phụ thuộc vào abstraction ở `domain`.
 - `infrastructure` hiện thực persistence hoặc tích hợp bên ngoài.
 - `common` chỉ chứa phần dùng thật sự chung; không dùng nó như một thư mục `utils` để chứa mọi thứ.
-- Một module không truy cập entity/repository nội bộ của module khác. Giao tiếp qua use case công khai, event hoặc interface đã thống nhất.
+- Một module không truy cập entity/repository nội bộ của module khác. Các liên kết persistence xuyên module dùng scalar ID; database FK bảo toàn referential integrity. Test kiến trúc kiểm tra quy tắc này trong CI.
 
 ## 6. Dòng chảy một request
 
@@ -140,15 +136,12 @@ Controller không được trả JPA entity trực tiếp ra API. Request/respon
 
 ```text
 src/main/resources/
-├── application.yml                  # Giá trị mặc định không nhạy cảm
+├── application.yml                  # Không có credential; đọc datasource từ environment
 ├── application-local.yml.example    # Mẫu cấu hình local
-├── application-dev.yml              # Cấu hình dev không có secret
 ├── application-test.yml             # Cấu hình test
-├── application-prod.yml             # Cấu hình production không có secret
 └── db/migration/                    # Flyway migration
-    ├── V001__create_users.sql
-    ├── V002__create_companies.sql
-    └── V003__create_jobs.sql
+    ├── V001__initial_schema.sql
+    └── V002__create_recruitment_domain_schema.sql
 ```
 
 Nguyên tắc:
@@ -157,6 +150,7 @@ Nguyên tắc:
 - Không sửa migration đã chạy ở môi trường chung.
 - Production và shared environment không dùng `ddl-auto: create` hoặc `ddl-auto: update`.
 - Password database, JWT secret và API key đến từ biến môi trường hoặc secret manager; không commit vào YAML.
+- Instant được ghi theo UTC: MySQL session và Hibernate JDBC timezone đều đặt UTC.
 - File build trong `target/` không phải nguồn cấu hình và không được commit.
 
 ## 8. Kiểm thử
@@ -171,7 +165,7 @@ src/test/
     └── application-test.yml
 ```
 
-Unit test chạy nhanh và không phụ thuộc hạ tầng. Integration test dùng cấu hình test riêng, ưu tiên MySQL Testcontainers khi bộ test bắt đầu cần xác minh JPA migration.
+Unit test chạy nhanh và không phụ thuộc hạ tầng. Integration test dùng MySQL Testcontainers, kiểm tra Flyway và Hibernate `validate` trên database trống; không chạm vào MySQL local của developer.
 
 ## 9. Quy ước làm việc
 
