@@ -1,0 +1,10 @@
+{
+  "description": "Streamline recruitment processes with an intuitive admin dashboard that manages job applications, candidates, and user roles efficiently.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
