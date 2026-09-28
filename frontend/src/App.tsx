@@ -1,15 +1,18 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AdminLayout } from './components/layout/AdminLayout';
-import RecruiterDashboard from './pages/RecruiterDashboard';
-import JobManagement from './pages/JobManagement';
-import ApplicationManagement from './pages/ApplicationManagement';
-import CandidateDirectory from './pages/CandidateDirectory';
-import UserDirectory from './pages/UserDirectory';
-import UserRoleManagement from './pages/UserRoleManagement';
-import SkillTaxonomy from './pages/SkillTaxonomy';
-import AuditEventExplorer from './pages/AuditEventExplorer';
-import SettingsConfiguration from './pages/SettingsConfiguration';
-import AdminConsole from './pages/AdminConsole';
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AdminLayout } from "./components/layout/AdminLayout";
+import RecruiterDashboard from "./pages/RecruiterDashboard";
+import JobManagement from "./pages/JobManagement";
+import ApplicationManagement from "./pages/ApplicationManagement";
+import CandidateDirectory from "./pages/CandidateDirectory";
+import UserDirectory from "./pages/UserDirectory";
+import UserRoleManagement from "./pages/UserRoleManagement";
+import SkillTaxonomy from "./pages/SkillTaxonomy";
+import AuditEventExplorer from "./pages/AuditEventExplorer";
+import SettingsConfiguration from "./pages/SettingsConfiguration";
+import AdminConsole from "./pages/AdminConsole";
+
+import CandidateLayout from "./components/layout/CandidateLayout";
+import ExploreJobs from "./pages/candidate/MyApplication";
 
 export default function App() {
   return (
@@ -27,6 +30,8 @@ export default function App() {
           <Route path="/audit" element={<AuditEventExplorer />} />
           <Route path="/settings" element={<SettingsConfiguration />} />
           <Route path="*" element={<Navigate to="/" replace />} />
+
+          <Route path="/candidate" element={<ExploreJobs />} />
         </Route>
       </Routes>
     </BrowserRouter>
