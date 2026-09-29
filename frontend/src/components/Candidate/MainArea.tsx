@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 export const MainArea = () => {
   return (
     <div className="main-area flex-1 flex flex-col bg-slate-50 min-h-screen">
@@ -227,9 +229,12 @@ export const MainArea = () => {
                     </div>
                   </div>
                   <div className="action-cell text-right">
-                    <div className="div-wrapper-2 inline-block px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded-lg cursor-pointer hover:bg-blue-700">
-                      <div className="text-wrapper-28">Review Offer</div>
-                    </div>
+                    <Link
+                      to="/offers/senior-product-designer/review"
+                      className="div-wrapper-2 inline-block px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded-lg cursor-pointer hover:bg-blue-700"
+                    >
+                      <span className="text-wrapper-28">Review Offer</span>
+                    </Link>
                   </div>
                 </div>
 
@@ -291,9 +296,12 @@ export const MainArea = () => {
                   </div>
                 </div>
                 <div className="div-wrapper-2 text-right">
-                  <div className="text-wrapper-32 inline-block px-3 py-1 text-xs font-medium text-white bg-blue-600 rounded-lg cursor-pointer hover:bg-blue-700">
+                  <Link
+                    to="/offers/senior-product-designer/review"
+                    className="text-wrapper-32 inline-block px-3 py-1 text-xs font-medium text-white bg-blue-600 rounded-lg cursor-pointer hover:bg-blue-700"
+                  >
                     Review Offer
-                  </div>
+                  </Link>
                 </div>
               </div>
 
