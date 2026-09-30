@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 export const MainArea = () => {
   return (
     <div className="main-area flex-1 flex flex-col bg-slate-50 min-h-screen">
-      <header className="header flex items-center justify-between px-8 py-4 bg-white border-b border-slate-200">
+      <header className="candidate-header header">
         <div className="navbar flex items-center gap-2 text-sm text-slate-500">
           <span className="text-wrapper-3">Workspace</span>
           <span className="text-wrapper-3">/</span>

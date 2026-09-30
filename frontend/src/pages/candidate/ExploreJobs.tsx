@@ -4,7 +4,7 @@ export default function ExploreJobs() {
       {/* ================= MAIN AREA ================= */}
       <main className="flex min-w-0 flex-1 flex-col">
         {/* ================= TOP BAR ================= */}
-        <header className="flex h-20 shrink-0 items-center justify-between border-b border-slate-200 bg-white px-8">
+        <header className="candidate-header">
           {/* Breadcrumb */}
           <div className="flex items-center gap-2 text-sm">
             <span className="text-slate-500">Workspace</span>

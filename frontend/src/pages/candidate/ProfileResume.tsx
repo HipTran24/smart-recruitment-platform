@@ -92,7 +92,7 @@ export default function ProfileResume() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800">
       {/* Top Header / Navbar */}
-      <header className="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 bg-white px-8 py-4 shadow-sm">
+      <header className="candidate-header">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm font-medium text-slate-500">
           <span>Workspace</span>

@@ -1,5 +1,32 @@
-@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap');
-@import 'tailwindcss';
+@import url("https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap");
+@import "tailwindcss";
+
+.candidate-header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  height: 72px;
+  min-height: 72px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+  background-color: #fff;
+  padding-inline: 2rem;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.06);
+}
+
+@media (max-width: 767px) {
+  .candidate-header {
+    height: auto;
+    min-height: 72px;
+    flex-wrap: wrap;
+    padding-block: 0.75rem;
+    padding-inline: 1rem;
+  }
+}
 
 @theme {
   --color-bg-base: #0a0a0a;
@@ -26,11 +53,13 @@
   --color-live-sync: #22c55e;
 }
 
-html, body, #root {
+html,
+body,
+#root {
   height: 100%;
   background-color: #0a0a0a;
   color: #ffffff;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
