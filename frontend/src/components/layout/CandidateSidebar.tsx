@@ -1,8 +1,16 @@
 import { NavLink } from "react-router-dom";
 
-export const CandidateSidebar = () => {
+type CandidateSidebarProps = {
+  isSettingsOpen: boolean;
+  onSettingsClick: () => void;
+};
+
+export const CandidateSidebar = ({
+  isSettingsOpen,
+  onSettingsClick,
+}: CandidateSidebarProps) => {
   return (
-    <div className="flex w-60 shrink-0 flex-col items-start justify-between self-stretch bg-white px-4 pb-6 pt-8 border-r border-slate-200">
+    <div className="relative flex w-60 shrink-0 flex-col items-start justify-between self-stretch border-r border-slate-200 bg-white px-4 pb-6 pt-8">
       <div className="flex flex-col items-start gap-8 relative self-stretch w-full flex-[0_0_auto]">
         <div className="flex items-center gap-2.5 pl-2 pr-0 py-0 relative self-stretch w-full flex-[0_0_auto]">
           <img
@@ -52,6 +60,31 @@ export const CandidateSidebar = () => {
           </div>
         </div>
       </div>
+      <button
+        type="button"
+        onClick={onSettingsClick}
+        aria-pressed={isSettingsOpen}
+        className={`absolute bottom-0 left-4 flex h-6 w-[calc(100%-2rem)] items-center gap-3 rounded-lg px-4 text-sm transition-colors ${
+          isSettingsOpen
+            ? "bg-blue-50 font-semibold text-blue-600"
+            : "font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-700"
+        }`}
+      >
+        <svg
+          aria-hidden="true"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.75"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="h-[18px] w-[18px] shrink-0"
+        >
+          <circle cx="12" cy="12" r="3" />
+          <path d="m19.4 15 .1.1 1.4 1.1-1.4 2.4-1.7-.7a7.8 7.8 0 0 1-1.4.8l-.3 1.8h-2.8l-.3-1.8a7.8 7.8 0 0 1-1.4-.8l-1.7.7-1.4-2.4 1.4-1.1a7.1 7.1 0 0 1 0-1.7l-1.4-1.1 1.4-2.4 1.7.7a7.8 7.8 0 0 1 1.4-.8l.3-1.8h2.8l.3 1.8a7.8 7.8 0 0 1 1.4.8l1.7-.7 1.4 2.4-1.4 1.1a7.1 7.1 0 0 1 0 1.7Z" />
+        </svg>
+        <span>Settings</span>
+      </button>
     </div>
   );
 };

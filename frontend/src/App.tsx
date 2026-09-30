@@ -1,6 +1,13 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 import { AdminLayout } from "./components/layout/AdminLayout";
-import { CandidateLayout } from "./components/layout/CandidateLayout";
+import { CandidateLayout } from "@/components/layout/CandidateLayout";
 import RecruiterDashboard from "./pages/RecruiterDashboard";
 import JobManagement from "./pages/JobManagement";
 import ApplicationManagement from "./pages/ApplicationManagement";
@@ -17,6 +24,7 @@ import InterviewsOffer from "./pages/candidate/InterviewsOffer";
 import ProfileResume from "./pages/candidate/ProfileResume";
 import ReviewOffer from "./pages/candidate/ReviewOffer";
 import ViewDetails from "./pages/candidate/ViewDetails";
+import { CandidateSettings } from "./pages/candidate/CandidateSettings";
 
 export default function App() {
   return (
@@ -42,6 +50,10 @@ export default function App() {
           <Route path="/profile-resume" element={<ProfileResume />} />
           <Route path="/interviews-offers" element={<InterviewsOffer />} />
           <Route
+            path="/settings_candidate"
+            element={<CandidateSettingsRoute />}
+          />
+          <Route
             path="/applications/:applicationId"
             element={<ViewDetails />}
           />
@@ -51,5 +63,21 @@ export default function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
+  );
+}
+
+function CandidateSettingsRoute() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const from = (location.state as { from?: string } | null)?.from;
+  const returnTo =
+    from?.startsWith("/") &&
+    !from.startsWith("//") &&
+    from !== "/settings_candidate"
+      ? from
+      : "/my-applications";
+
+  return (
+    <CandidateSettings onClose={() => navigate(returnTo, { replace: true })} />
   );
 }
