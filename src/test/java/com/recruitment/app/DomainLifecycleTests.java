@@ -96,13 +96,14 @@ class DomainLifecycleTests {
                 () -> screening.complete(70, ApplicationScreening.Recommendation.REVIEW, null, null, null, Instant.now())
         );
 
-        screening.markProcessing();
+        Instant now = Instant.parse("2026-09-29T12:00:00Z");
+        screening.markProcessing("manual-screening-lease-token", now.plusSeconds(60));
         assertThrows(
                 IllegalStateException.class,
                 () -> screening.complete(101, ApplicationScreening.Recommendation.REVIEW, null, null, null, Instant.now())
         );
 
-        screening.complete(70, ApplicationScreening.Recommendation.REVIEW, null, null, null, Instant.now());
+        screening.complete(70, ApplicationScreening.Recommendation.REVIEW, null, null, null, now);
         assertEquals(ApplicationScreening.ScreeningStatus.COMPLETED, screening.getStatus());
     }
 }

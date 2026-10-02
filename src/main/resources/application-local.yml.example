@@ -1,5 +1,7 @@
 # Copy only the non-secret settings you need into application-local.yml, which is ignored by Git.
 # Keep datasource credentials in environment variables or the repository-root .env file consumed by scripts.
+# JWT keys are local secret files referenced by JWT_PRIVATE_KEY_FILE and
+# JWT_PUBLIC_KEY_FILE in .env. Do not copy PEM material into this file.
 spring:
   config:
     activate:

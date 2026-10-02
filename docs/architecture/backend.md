@@ -1,6 +1,6 @@
 # Kiến trúc Backend
 
-> Trạng thái: **Current baseline + Target structure**. Backend là một Spring Boot application tại repository root. Persistence model đã được chia theo module; API và application use case chỉ được thêm cùng contract nghiệp vụ.
+> Trạng thái: **Current baseline + target structure**. Backend là một Spring Boot application tại repository root. Identity có API/application/security riêng; Gemini là adapter của module applications.
 
 ## Công nghệ hiện có
 
@@ -26,14 +26,20 @@ Backend tổ chức theo **feature/module trước, technical layer sau**. Ví d
 com/recruitment/app/
 ├── Application.java
 ├── common/
+│   ├── api/error/
 │   ├── infrastructure/persistence/
-│   └── security/
+│   └── security/                 # CORS và primitive dùng chung
 └── modules/
-    ├── identity/infrastructure/persistence/entity/
+    ├── identity/
+    │   ├── api/
+    │   ├── application/
+    │   └── infrastructure/{persistence,security}/
     ├── candidates/infrastructure/persistence/entity/
     ├── companies/infrastructure/persistence/entity/
     ├── jobs/infrastructure/persistence/entity/
-    └── applications/infrastructure/persistence/entity/
+    └── applications/
+        ├── application/screening/
+        └── infrastructure/{persistence,integration}/
 ```
 
 `common/` chỉ được dùng cho mã thật sự dùng chung giữa nhiều module. Không tạo `utils/` làm nơi chứa các hàm không có chủ sở hữu rõ ràng.
@@ -88,8 +94,10 @@ flowchart LR
 - Controller nhận request DTO và trả response DTO; không trả JPA entity trực tiếp.
 - Validation đầu vào đặt ở request DTO; rule nghiệp vụ đặt ở domain/application.
 - Transaction mở tại application service, không mở trong controller.
-- Ngoại lệ được chuẩn hóa tại global exception handler trong `common/exception`.
+- Ngoại lệ HTTP dùng response chung ở `common/api`, nhưng mapping lỗi nghiệp vụ nằm trong API module sở hữu nó.
 - Khi tích hợp email, object storage hoặc dịch vụ ngoài, tạo adapter trong `infrastructure/integration`.
 - Chỉ tạo package khi có class thực tế. Git không theo dõi thư mục trống.
 - Không đặt Jackson annotation trên JPA entity. API chỉ serialize request/response DTO.
-- Bất kỳ endpoint mới nào phải được mở tường minh trong `SecurityConfiguration`; mặc định hiện tại là deny-all, ngoại trừ health/info.
+- Bất kỳ endpoint mới nào phải được mở tường minh trong `IdentitySecurityConfiguration`; mặc định hiện tại là deny-all, ngoại trừ health/info và identity routes được contract hóa.
+- JWT infrastructure dùng key RSA ở runtime secret store; refresh token chỉ lưu SHA-256 digest trong database. Google provider token không được lưu bởi ứng dụng.
+- `CvScreeningGateway` là application port; Gemini adapter có thể thay thế/disable mà không làm application layer phụ thuộc provider.
