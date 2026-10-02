@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 type JobStatus = "Published" | "Closing Soon";
 
@@ -68,12 +69,12 @@ const jobs: Job[] = [
 ];
 
 // Phần nội dung chính quản lý danh sách công việc (Jobs Dashboard)
-const JobRequisitionsDashboardSection = () => {
+export const JobRequisitionsDashboardSection = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("All");
   const [search, setSearch] = useState("");
   const [department, setDepartment] = useState("Department: Engineering, Design, Product");
   const [sort, setSort] = useState("Sort: Newest");
-  const [page, setPage] = useState(1);
 
   const filteredJobs = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
@@ -126,12 +127,12 @@ const JobRequisitionsDashboardSection = () => {
         {/* Title & Action */}
         <div className="flex items-center justify-between w-full">
           <div>
-            <h1 className="text-slate-900 text-2xl font-bold">Job Requisitions & Postings</h1>
+            <h1 className="text-slate-900 text-2xl font-bold">Job Requisitions &amp; Postings</h1>
             <p className="text-slate-500 text-sm">Configure skill matching criteria, manage listing lifecycles, and monitor pipelines</p>
           </div>
           <button
-            onClick={() => window.alert("New job requisition started")}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-semibold"
+            onClick={() => navigate("/recruiter/jobs/create")}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-semibold transition"
           >
             <span>+</span> Post New Job
           </button>
@@ -232,7 +233,7 @@ const JobRequisitionsDashboardSection = () => {
               </div>
               <div className="text-right">
                 <button
-                  onClick={() => window.alert(`${job.action}: ${job.title}`)}
+                  onClick={() => navigate("/recruiter/candidates")}
                   className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-900 hover:bg-slate-50"
                 >
                   {job.action}
@@ -247,6 +248,6 @@ const JobRequisitionsDashboardSection = () => {
 };
 
 // Component chính cho trang Job Management
-export default function JobManagement() {
+export default function JobRequisitionsDashboard() {
   return <JobRequisitionsDashboardSection />;
 }

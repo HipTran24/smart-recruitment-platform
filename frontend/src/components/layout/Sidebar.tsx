@@ -158,6 +158,17 @@ export function Sidebar() {
           );
         })}
 
+        {/* Switch to Recruiter Portal */}
+        <NavLink
+          to="/recruiter"
+          className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-blue-400 hover:text-blue-300 hover:bg-blue-950/30 transition-colors mt-1 border border-blue-900/40"
+        >
+          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.75" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+          </svg>
+          Recruiter Workspace ➔
+        </NavLink>
+
         {/* User */}
         <div className="mt-2 px-3 py-2 flex items-center gap-2.5">
           <div className="w-7 h-7 rounded-full bg-indigo-500 flex items-center justify-center text-xs font-semibold text-white shrink-0">
