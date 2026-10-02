@@ -53,10 +53,7 @@ export default function App() {
             path="/settings_candidate"
             element={<CandidateSettingsRoute />}
           />
-          <Route
-            path="/applications/:applicationId"
-            element={<ViewDetails />}
-          />
+          <Route path="/views_details" element={<ViewDetails />} />
           <Route path="/offers/:offerId/review" element={<ReviewOffer />} />
         </Route>
 

@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 export default function ExploreJobs() {
   return (
     <div className="flex min-h-screen w-full bg-slate-50 text-slate-900">
@@ -311,16 +313,21 @@ function JobCard({
       <div className="flex items-center justify-between px-6 py-4">
         <span className="text-sm text-slate-500">{deadline}</span>
 
-        <button
-          type="button"
-          className={`rounded-lg px-4 py-2.5 text-sm font-semibold transition ${
-            button === "Apply Now"
-              ? "bg-blue-600 text-white hover:bg-blue-700"
-              : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
-          }`}
-        >
-          {button}
-        </button>
+        {button === "View Details" ? (
+          <Link
+            to="/views_details"
+            className="rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+          >
+            {button}
+          </Link>
+        ) : (
+          <button
+            type="button"
+            className="rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
+          >
+            {button}
+          </button>
+        )}
       </div>
     </div>
   );

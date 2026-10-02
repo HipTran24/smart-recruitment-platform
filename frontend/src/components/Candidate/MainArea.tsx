@@ -210,9 +210,12 @@ export const MainArea = () => {
                     </div>
                   </div>
                   <div className="action-cell text-right">
-                    <div className="frame-2 inline-block px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 rounded-lg cursor-pointer hover:bg-blue-100">
-                      <div className="text-wrapper-26">View Details</div>
-                    </div>
+                    <Link
+                      to="/views_details"
+                      className="frame-2 inline-block px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100"
+                    >
+                      View Details
+                    </Link>
                   </div>
                 </div>
 
@@ -253,9 +256,12 @@ export const MainArea = () => {
                     </div>
                   </div>
                   <div className="action-cell text-right">
-                    <div className="frame-2 inline-block px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 rounded-lg cursor-pointer hover:bg-blue-100">
-                      <div className="text-wrapper-26">View Details</div>
-                    </div>
+                    <Link
+                      to="/views_details"
+                      className="frame-2 inline-block px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100"
+                    >
+                      View Details
+                    </Link>
                   </div>
                 </div>
               </div>
