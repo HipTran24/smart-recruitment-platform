@@ -1,4 +1,5 @@
 import type { SVGProps } from "react";
+import { CandidateSearchInput } from "@/components/Candidate/CandidateSearchInput";
 
 type IconProps = SVGProps<SVGSVGElement>;
 
@@ -18,13 +19,6 @@ function Icon({ children, ...props }: IconProps) {
     </svg>
   );
 }
-
-const Search = (props: IconProps) => (
-  <Icon {...props}>
-    <circle cx="11" cy="11" r="7" />
-    <path d="m20 20-3.5-3.5" />
-  </Icon>
-);
 
 const Bell = (props: IconProps) => (
   <Icon {...props}>
@@ -133,17 +127,7 @@ export default function ReviewOffer() {
         {/* Right Utilities */}
         <div className="flex items-center gap-4">
           {/* Search Bar */}
-          <div className="relative flex items-center">
-            <Search className="absolute left-3 h-4 w-4 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Search open jobs..."
-              className="w-60 rounded-lg border border-slate-200 bg-slate-50 py-1.5 pl-9 pr-12 text-xs text-slate-700 outline-none transition focus:border-indigo-500 focus:bg-white focus:ring-1 focus:ring-indigo-500"
-            />
-            <kbd className="absolute right-2.5 rounded border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-slate-400">
-              ⌘K
-            </kbd>
-          </div>
+          <CandidateSearchInput />
 
           <div className="h-4 w-px bg-slate-200" />
 

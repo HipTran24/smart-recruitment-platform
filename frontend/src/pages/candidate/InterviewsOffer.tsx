@@ -1,4 +1,5 @@
 import type { SVGProps } from "react";
+import { CandidateSearchInput } from "@/components/Candidate/CandidateSearchInput";
 
 type IconProps = SVGProps<SVGSVGElement>;
 
@@ -18,13 +19,6 @@ function Icon({ children, ...props }: IconProps) {
     </svg>
   );
 }
-
-const Search = (props: IconProps) => (
-  <Icon {...props}>
-    <circle cx="11" cy="11" r="7" />
-    <path d="m20 20-3.5-3.5" />
-  </Icon>
-);
 
 const Calendar = (props: IconProps) => (
   <Icon {...props}>
@@ -86,14 +80,7 @@ export default function InterviewsOffer() {
         {/* Header Actions */}
         <div className="flex items-center gap-4">
           {/* Search Box */}
-          <div className="relative flex items-center">
-            <Search className="absolute left-3 h-4 w-4 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Search candidate workspace..."
-              className="w-64 rounded-lg border border-slate-200 bg-slate-50 py-2 pl-9 pr-4 text-sm text-slate-700 outline-none transition focus:border-indigo-500 focus:bg-white focus:ring-1 focus:ring-indigo-500"
-            />
-          </div>
+          <CandidateSearchInput />
 
           {/* Live Sync Status */}
           <div className="flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700">

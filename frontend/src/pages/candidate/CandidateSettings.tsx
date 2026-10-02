@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
+import { CandidateSearchInput } from "@/components/Candidate/CandidateSearchInput";
 
 type SettingId =
   | "personal"
@@ -259,10 +260,7 @@ export function CandidateSettings({ onClose }: CandidateSettingsProps) {
         </nav>
 
         <div className="flex shrink-0 items-center gap-3 sm:gap-4">
-          <div className="hidden h-9 w-56 items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-400 md:flex">
-            <SearchIcon />
-            <span>Search settings...</span>
-          </div>
+          <CandidateSearchInput className="hidden md:flex" />
           <div className="flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-xs font-semibold text-emerald-700 sm:px-3">
             <span className="h-2 w-2 rounded-full bg-emerald-500" />
             <span className="hidden sm:inline">Live Sync</span>
@@ -1108,23 +1106,6 @@ function PasswordVisibilityIcon({ visible }: { visible: boolean }) {
           <path d="m3 3 18 18" />
         </>
       )}
-    </svg>
-  );
-}
-
-function SearchIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      className="h-4 w-4 shrink-0"
-    >
-      <circle cx="11" cy="11" r="7" />
-      <path d="m20 20-3.5-3.5" />
     </svg>
   );
 }

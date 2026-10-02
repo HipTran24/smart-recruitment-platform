@@ -1,6 +1,44 @@
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
+import { CandidateSearchInput } from "@/components/Candidate/CandidateSearchInput";
+
+const jobs = [
+  {
+    title: "Lead UX Researcher",
+    subtitle: "Product Design • Full-time / Remote",
+    match: "92% MATCH",
+    deadline: "Deadline: Oct 15",
+    skills: ["Figma", "User Testing"],
+    button: "Apply Now",
+  },
+  {
+    title: "Senior Product Designer",
+    subtitle: "Design • Hybrid",
+    match: "86% MATCH",
+    deadline: "Deadline: Oct 20",
+    skills: ["Figma", "Design Systems"],
+    button: "Apply Now",
+  },
+  {
+    title: "UX Strategist",
+    subtitle: "Strategy • Remote",
+    match: "78% MATCH",
+    deadline: "Deadline: Oct 28",
+    skills: ["UX Strategy", "Analytics"],
+    button: "View Details",
+    mutedMatch: true,
+  },
+];
 
 export default function ExploreJobs() {
+  const [searchParams] = useSearchParams();
+  const searchQuery = searchParams.get("search")?.trim().toLowerCase() ?? "";
+  const filteredJobs = jobs.filter((job) =>
+    [job.title, job.subtitle, ...job.skills]
+      .join(" ")
+      .toLowerCase()
+      .includes(searchQuery),
+  );
+
   return (
     <div className="flex min-h-screen w-full bg-slate-50 text-slate-900">
       {/* ================= MAIN AREA ================= */}
@@ -20,25 +58,7 @@ export default function ExploreJobs() {
 
           {/* Header Actions */}
           <div className="flex items-center gap-5">
-            {/* Search */}
-            <div className="flex h-10 w-80 items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4">
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                className="text-slate-400"
-              >
-                <circle cx="11" cy="11" r="7" />
-                <path d="m20 20-3.5-3.5" />
-              </svg>
-
-              <span className="text-sm text-slate-400">
-                Search job titles, skills...
-              </span>
-            </div>
+            <CandidateSearchInput />
 
             {/* Live Sync */}
             <div className="flex items-center gap-2 rounded-full border border-emerald-100 bg-emerald-50 px-3 py-2">
@@ -145,36 +165,13 @@ export default function ExploreJobs() {
 
             {/* ================= JOB LIST ================= */}
             <div className="space-y-4">
-              {/* JOB 1 */}
-              <JobCard
-                title="Lead UX Researcher"
-                subtitle="Product Design • Full-time / Remote"
-                match="92% MATCH"
-                deadline="Deadline: Oct 15"
-                skills={["Figma", "User Testing"]}
-                button="Apply Now"
-              />
-
-              {/* JOB 2 */}
-              <JobCard
-                title="Senior Product Designer"
-                subtitle="Design • Hybrid"
-                match="86% MATCH"
-                deadline="Deadline: Oct 20"
-                skills={["Figma", "Design Systems"]}
-                button="Apply Now"
-              />
-
-              {/* JOB 3 */}
-              <JobCard
-                title="UX Strategist"
-                subtitle="Strategy • Remote"
-                match="78% MATCH"
-                deadline="Deadline: Oct 28"
-                skills={["UX Strategy", "Analytics"]}
-                button="View Details"
-                mutedMatch
-              />
+              {filteredJobs.length > 0 ? (
+                filteredJobs.map((job) => <JobCard key={job.title} {...job} />)
+              ) : (
+                <p className="rounded-lg border border-slate-200 bg-white p-6 text-sm text-slate-500">
+                  No jobs match “{searchParams.get("search")}”.
+                </p>
+              )}
             </div>
           </div>
         </section>

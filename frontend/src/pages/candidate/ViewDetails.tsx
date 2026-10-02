@@ -1,10 +1,10 @@
-import React from "react";
+import { CandidateSearchInput } from "@/components/Candidate/CandidateSearchInput";
 
 export default function ViewDetails() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
       {/* 1. Header phía trên */}
-      <header className="flex h-[72px] items-center justify-between border-b border-slate-200 bg-white px-8">
+      <header className="candidate-header">
         <nav className="flex min-w-0 items-center gap-2 text-sm font-medium text-slate-500">
           <span className="cursor-pointer hover:text-slate-800">Workspace</span>
           <span>/</span>
@@ -21,16 +21,7 @@ export default function ViewDetails() {
 
         <div className="flex items-center gap-4">
           {/* Ô tìm kiếm */}
-          <div className="relative hidden md:flex items-center w-64">
-            <input
-              type="text"
-              placeholder="Search job titles, skills..."
-              className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:outline-none"
-            />
-            <span className="absolute right-3 rounded bg-slate-200 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600">
-              ⌘K
-            </span>
-          </div>
+          <CandidateSearchInput className="hidden md:flex" />
 
           {/* Live Sync Badge */}
           <div className="flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700">

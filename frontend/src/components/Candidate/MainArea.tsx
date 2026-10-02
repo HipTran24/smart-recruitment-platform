@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { CandidateSearchInput } from "@/components/Candidate/CandidateSearchInput";
 
 export const MainArea = () => {
   return (
@@ -14,9 +15,7 @@ export const MainArea = () => {
           </span>
         </div>
         <div className="header-actions flex items-center gap-4">
-          <div className="search-container flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-lg text-slate-400 text-sm w-64">
-            <span className="text-wrapper-5">Search open jobs...</span>
-          </div>
+          <CandidateSearchInput />
           <div className="live-sync flex items-center gap-2 px-3 py-1.5 bg-emerald-50 text-emerald-600 rounded-full text-xs font-medium">
             <div className="div-3 w-2 h-2 rounded-full bg-emerald-500"></div>
             <span className="text-wrapper-6">Live Sync</span>
