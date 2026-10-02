@@ -1,4 +1,5 @@
-import type { SVGProps } from "react";
+import { useState, type SVGProps } from "react";
+import { Link } from "react-router-dom";
 import { CandidateSearchInput } from "@/components/Candidate/CandidateSearchInput";
 
 type IconProps = SVGProps<SVGSVGElement>;
@@ -109,19 +110,27 @@ const Lock = (props: IconProps) => (
 );
 
 export default function ReviewOffer() {
+  const [offerDecision, setOfferDecision] = useState<"pending" | "accepted" | "negotiation" | "declined">("pending");
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3500);
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800">
       {/* Top Bar / Header */}
       <header className="candidate-header">
         {/* Breadcrumb Navigation */}
-        <div className="flex items-center gap-2 text-sm font-medium text-slate-500">
-          <span>Workspace</span>
-          <span>/</span>
-          <span>Candidate</span>
-          <span>/</span>
-          <span>My Applications</span>
-          <span>/</span>
-          <span className="font-semibold text-slate-900">Review Offer</span>
+        <div className="flex items-center gap-2 text-xs md:text-sm font-medium text-slate-500">
+          <Link to="/" className="hover:text-slate-800 transition">Workspace</Link>
+          <span className="text-slate-300">/</span>
+          <Link to="/my-applications" className="hover:text-slate-800 transition">Candidate</Link>
+          <span className="text-slate-300">/</span>
+          <Link to="/my-applications" className="hover:text-slate-800 transition">My Applications</Link>
+          <span className="text-slate-300">/</span>
+          <span className="font-semibold text-slate-900">Review Offer (Senior Product Designer)</span>
         </div>
 
         {/* Right Utilities */}
@@ -479,7 +488,11 @@ export default function ReviewOffer() {
               </div>
 
               {/* Download Button */}
-              <button className="w-full flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white py-2 px-4 text-xs font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 active:scale-[0.98]">
+              <button
+                type="button"
+                onClick={() => showToast("Downloading PulseStream_Offer_2026.pdf (3.4 MB)...")}
+                className="w-full flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white py-2 px-4 text-xs font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 active:scale-[0.98]"
+              >
                 <Download className="h-4 w-4 text-slate-500" />
                 Download Signed Offer Letter (PDF)
               </button>
@@ -488,42 +501,112 @@ export default function ReviewOffer() {
             {/* Candidate Decision & Sign-off Card */}
             <div className="rounded-xl border border-indigo-200 bg-gradient-to-b from-indigo-50/30 to-white p-6 shadow-sm space-y-5">
               <div className="flex items-center gap-2">
-                <div className="h-3 w-3 rounded-full bg-indigo-600" />
+                <div className={`h-3 w-3 rounded-full ${offerDecision === "accepted" ? "bg-emerald-600" : "bg-indigo-600"}`} />
                 <h3 className="text-sm font-bold text-slate-900">
-                  Candidate Decision & Sign-off
+                  Candidate Decision &amp; Sign-off
                 </h3>
               </div>
 
-              {/* Advisory Callout */}
-              <div className="flex items-start gap-2.5 rounded-lg bg-blue-50 border border-blue-100 p-3 text-xs text-blue-800">
-                <ShieldCheck className="h-4 w-4 text-blue-600 shrink-0 mt-0.5" />
-                <p className="text-[11px] leading-relaxed">
-                  Your acceptance is legally binding upon digital signature.
-                  Need adjustments before signing?
-                </p>
-              </div>
-
-              {/* Action Buttons Stack */}
-              <div className="space-y-2.5">
-                {/* Primary Accept */}
-                <button className="w-full flex items-center justify-center gap-2 rounded-lg bg-indigo-600 py-2.5 px-4 text-xs font-bold text-white shadow-md transition hover:bg-indigo-700 active:scale-[0.98]">
-                  <CheckCircle2 className="h-4 w-4" />
-                  Accept & Sign Offer
-                </button>
-
-                {/* Dual Secondary Buttons */}
-                <div className="grid grid-cols-2 gap-2.5">
-                  <button className="flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white py-2 px-3 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 active:scale-[0.98]">
-                    <Edit3 className="h-3.5 w-3.5 text-slate-500" />
-                    Request Changes
-                  </button>
-
-                  <button className="flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white py-2 px-3 text-xs font-semibold text-red-600 hover:bg-red-50 hover:border-red-200 transition active:scale-[0.98]">
-                    <XCircle className="h-3.5 w-3.5 text-red-500" />
-                    Decline Offer
+              {offerDecision === "accepted" ? (
+                <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-center space-y-2">
+                  <div className="w-10 h-10 mx-auto rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-lg">
+                    ✓
+                  </div>
+                  <h4 className="font-bold text-emerald-950 text-sm">Offer Accepted &amp; Digitally Signed!</h4>
+                  <p className="text-xs text-emerald-800 leading-relaxed">
+                    Signed by <strong>Harriet Lawrence</strong> on October 03, 2026. A countersigned copy has been delivered to your email.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setOfferDecision("pending")}
+                    className="text-[11px] text-emerald-700 underline font-semibold mt-1"
+                  >
+                    Reset signature test
                   </button>
                 </div>
-              </div>
+              ) : offerDecision === "negotiation" ? (
+                <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-center space-y-2">
+                  <h4 className="font-bold text-amber-950 text-sm">Adjustment Request Sent</h4>
+                  <p className="text-xs text-amber-800 leading-relaxed">
+                    Your hiring team has been notified. Sarah Jenkins (VP) will review and reach out within 24 hours.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setOfferDecision("pending")}
+                    className="text-[11px] text-amber-700 underline font-semibold mt-1"
+                  >
+                    Back to decision options
+                  </button>
+                </div>
+              ) : offerDecision === "declined" ? (
+                <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-center space-y-2">
+                  <h4 className="font-bold text-red-950 text-sm">Offer Formally Declined</h4>
+                  <p className="text-xs text-red-800 leading-relaxed">
+                    Thank you for letting us know. Your application dossier has been archived.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setOfferDecision("pending")}
+                    className="text-[11px] text-red-700 underline font-semibold mt-1"
+                  >
+                    Undo decline
+                  </button>
+                </div>
+              ) : (
+                <>
+                  {/* Advisory Callout */}
+                  <div className="flex items-start gap-2.5 rounded-lg bg-blue-50 border border-blue-100 p-3 text-xs text-blue-800">
+                    <ShieldCheck className="h-4 w-4 text-blue-600 shrink-0 mt-0.5" />
+                    <p className="text-[11px] leading-relaxed">
+                      Your acceptance is legally binding upon digital signature.
+                      Need adjustments before signing?
+                    </p>
+                  </div>
+
+                  {/* Action Buttons Stack */}
+                  <div className="space-y-2.5">
+                    {/* Primary Accept */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setOfferDecision("accepted");
+                        showToast("Offer accepted! Electronically signed with verified key.");
+                      }}
+                      className="w-full flex items-center justify-center gap-2 rounded-lg bg-indigo-600 py-2.5 px-4 text-xs font-bold text-white shadow-md transition hover:bg-indigo-700 active:scale-[0.98]"
+                    >
+                      <CheckCircle2 className="h-4 w-4" />
+                      Accept &amp; Sign Offer
+                    </button>
+
+                    {/* Dual Secondary Buttons */}
+                    <div className="grid grid-cols-2 gap-2.5">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setOfferDecision("negotiation");
+                          showToast("Adjustment request submitted to hiring team.");
+                        }}
+                        className="flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white py-2 px-3 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 active:scale-[0.98]"
+                      >
+                        <Edit3 className="h-3.5 w-3.5 text-slate-500" />
+                        Request Changes
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setOfferDecision("declined");
+                          showToast("Offer declined notification sent.");
+                        }}
+                        className="flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white py-2 px-3 text-xs font-semibold text-red-600 hover:bg-red-50 hover:border-red-200 transition active:scale-[0.98]"
+                      >
+                        <XCircle className="h-3.5 w-3.5 text-red-500" />
+                        Decline Offer
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
 
               {/* Security Footer */}
               <div className="flex items-center justify-center gap-1.5 pt-2 text-[10px] text-slate-400">
@@ -536,6 +619,14 @@ export default function ReviewOffer() {
           </div>
         </div>
       </main>
+
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl text-xs font-semibold flex items-center gap-2 animate-bounce">
+          <span>✓</span>
+          <span>{toastMessage}</span>
+        </div>
+      )}
     </div>
   );
 }

@@ -6,22 +6,23 @@
   top: 0;
   z-index: 30;
   display: flex;
-  height: 72px;
-  min-height: 72px;
+  height: 64px;
+  min-height: 64px;
   flex-shrink: 0;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
   border-bottom: 1px solid #e2e8f0;
-  background-color: #fff;
-  padding-inline: 2rem;
-  box-shadow: 0 1px 2px rgb(15 23 42 / 0.06);
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  padding-inline: 1.5rem;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
 }
 
 @media (max-width: 767px) {
   .candidate-header {
     height: auto;
-    min-height: 72px;
+    min-height: 64px;
     flex-wrap: wrap;
     padding-block: 0.75rem;
     padding-inline: 1rem;
@@ -57,9 +58,9 @@ html,
 body,
 #root {
   height: 100%;
-  background-color: #0a0a0a;
-  color: #ffffff;
-  font-family: "Inter", sans-serif;
+  margin: 0;
+  padding: 0;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -76,9 +77,19 @@ body,
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #2a2a2a;
+  background: #cbd5e1;
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Dark theme scrollbar for Admin */
+.dark ::-webkit-scrollbar-thumb,
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: #2a2a2a;
+}
+.dark ::-webkit-scrollbar-thumb:hover,
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
   background: #3a3a3a;
 }

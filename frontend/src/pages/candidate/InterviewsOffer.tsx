@@ -1,4 +1,5 @@
-import type { SVGProps } from "react";
+import { useState, type SVGProps } from "react";
+import { Link } from "react-router-dom";
 import { CandidateSearchInput } from "@/components/Candidate/CandidateSearchInput";
 
 type IconProps = SVGProps<SVGSVGElement>;
@@ -62,18 +63,26 @@ const FileCheck = (props: IconProps) => (
 );
 
 export default function InterviewsOffer() {
+  const [isConfirmed, setIsConfirmed] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3000);
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800">
       {/* Header / Top Navigation Bar */}
       <header className="candidate-header">
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm font-medium text-slate-500">
-          <span>Workspace</span>
-          <span>/</span>
-          <span>Candidate</span>
-          <span>/</span>
+        <div className="flex items-center gap-2 text-xs md:text-sm font-medium text-slate-500">
+          <Link to="/" className="hover:text-slate-800 transition">Workspace</Link>
+          <span className="text-slate-300">/</span>
+          <Link to="/my-applications" className="hover:text-slate-800 transition">Candidate</Link>
+          <span className="text-slate-300">/</span>
           <span className="font-semibold text-slate-900">
-            Interviews & Offers
+            Interviews &amp; Offers
           </span>
         </div>
 
@@ -94,15 +103,14 @@ export default function InterviewsOffer() {
       </header>
 
       {/* Main Content Area */}
-      <main className="p-8 space-y-8">
+      <main className="p-6 md:p-8 space-y-8 max-w-7xl mx-auto">
         {/* Page Title & Description */}
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">
-            Interviews & Offers
+          <h1 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">
+            Interviews &amp; Official Offers
           </h1>
           <p className="mt-1 text-sm text-slate-500">
-            Track upcoming conversations, complete required actions, and review
-            your active offers.
+            Track upcoming conversations, confirm your schedule availability, and review formal offer packages.
           </p>
         </div>
 
@@ -117,28 +125,53 @@ export default function InterviewsOffer() {
                 2 scheduled · Next interview in 2 days
               </p>
             </div>
-            <button className="flex items-center gap-1.5 text-xs font-semibold text-indigo-600 transition hover:text-indigo-700">
+            <button
+              type="button"
+              onClick={() => showToast("Calendar sync active with Google Calendar / Outlook")}
+              className="flex items-center gap-1.5 text-xs font-semibold text-indigo-600 transition hover:text-indigo-700"
+            >
               <Calendar className="h-4 w-4" />
-              View calendar
+              Sync calendar
             </button>
           </div>
 
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             {/* Featured Interview Card (Action Required) */}
-            <div className="flex flex-col justify-between rounded-xl border border-amber-200 bg-white p-6 shadow-sm ring-1 ring-amber-100">
+            <div className={`flex flex-col justify-between rounded-2xl border p-6 shadow-sm transition ${
+              isConfirmed
+                ? "border-emerald-200 bg-white ring-1 ring-emerald-100"
+                : "border-amber-200 bg-white ring-1 ring-amber-100"
+            }`}>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="flex h-6 w-6 items-center justify-center rounded bg-amber-100 text-xs font-bold text-amber-800">
+                    <span className={`flex h-6 w-6 items-center justify-center rounded text-xs font-bold ${
+                      isConfirmed ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"
+                    }`}>
                       03
                     </span>
-                    <span className="text-xs font-bold tracking-wider text-amber-700 uppercase">
+                    <span className={`text-xs font-bold tracking-wider uppercase ${
+                      isConfirmed ? "text-emerald-700" : "text-amber-700"
+                    }`}>
                       Technical Interview
                     </span>
                   </div>
-                  <span className="rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-700 border border-amber-200/60">
-                    Action Required: Confirm Availability
-                  </span>
+                  {isConfirmed ? (
+                    <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 border border-emerald-200">
+                      ✓ Availability Confirmed
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsConfirmed(true);
+                        showToast("Availability confirmed! Notification sent to Marcus Chen.");
+                      }}
+                      className="rounded-full bg-amber-50 hover:bg-amber-100 px-2.5 py-1 text-[11px] font-bold text-amber-800 border border-amber-300 transition"
+                    >
+                      Confirm Availability Now
+                    </button>
+                  )}
                 </div>
 
                 <div>
@@ -181,7 +214,11 @@ export default function InterviewsOffer() {
                   </div>
                 </div>
 
-                <button className="flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-xs font-medium text-white shadow-sm transition hover:bg-indigo-700 active:scale-95">
+                <button
+                  type="button"
+                  onClick={() => showToast("Connecting to Google Meet room (meet.google.com/ux-lead-interview)...")}
+                  className="flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-xs font-medium text-white shadow-sm transition hover:bg-indigo-700 active:scale-95"
+                >
                   <Video className="h-3.5 w-3.5" />
                   Join Video Call
                 </button>
@@ -296,10 +333,13 @@ export default function InterviewsOffer() {
                           <span className="h-1.5 w-1.5 rounded-full bg-indigo-600"></span>
                           Offer Extended
                         </span>
-                        <button className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3.5 py-1.5 text-xs font-medium text-white shadow-sm transition hover:bg-indigo-700 active:scale-95">
+                        <Link
+                          to="/offers/senior-product-designer/review"
+                          className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-indigo-700 active:scale-95"
+                        >
                           <FileCheck className="h-3.5 w-3.5" />
-                          Review & Sign
-                        </button>
+                          Review &amp; Sign
+                        </Link>
                       </div>
                     </td>
                   </tr>
@@ -318,6 +358,14 @@ export default function InterviewsOffer() {
           </div>
         </section>
       </main>
+
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl text-xs font-semibold flex items-center gap-2 animate-bounce">
+          <span>✓</span>
+          <span>{toastMessage}</span>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,330 +1,456 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { CandidateSearchInput } from "@/components/Candidate/CandidateSearchInput";
 
 export const MyApplication = () => {
+  const [activeCallModal, setActiveCallModal] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3000);
+  };
+
+  const steps = [
+    { label: "Submitted", status: "completed", date: "Sep 18" },
+    { label: "AI-Screened", status: "completed", date: "Sep 19 (92% Match)" },
+    { label: "In Review", status: "completed", date: "Sep 22" },
+    { label: "Interview", status: "active", date: "Thu, 10:00 AM" },
+    { label: "Decision", status: "pending", date: "Pending" },
+  ];
+
   return (
-    <div className="main-area flex-1 flex flex-col bg-slate-50 min-h-screen">
-      <header className="candidate-header header">
-        <div className="navbar flex items-center gap-2 text-sm text-slate-500">
-          <span className="text-wrapper-3">Workspace</span>
-          <span className="text-wrapper-3">/</span>
-          <span className="text-wrapper-3">Candidate</span>
-          <span className="text-wrapper-3">/</span>
-          <span className="text-wrapper-4 font-semibold text-slate-900">
-            My Applications
-          </span>
+    <div className="flex-1 flex flex-col bg-slate-50 min-h-screen text-slate-900">
+      {/* Header */}
+      <header className="candidate-header">
+        <div className="flex items-center gap-2 text-xs md:text-sm text-slate-500 font-medium">
+          <Link to="/" className="hover:text-slate-800 transition">Workspace</Link>
+          <span className="text-slate-300">/</span>
+          <span>Candidate</span>
+          <span className="text-slate-300">/</span>
+          <span className="font-semibold text-slate-900">My Applications</span>
         </div>
-        <div className="header-actions flex items-center gap-4">
-          <CandidateSearchInput />
-          <div className="live-sync flex items-center gap-2 px-3 py-1.5 bg-emerald-50 text-emerald-600 rounded-full text-xs font-medium">
-            <div className="div-3 w-2 h-2 rounded-full bg-emerald-500"></div>
-            <span className="text-wrapper-6">Live Sync</span>
+        <div className="flex items-center gap-4">
+          <CandidateSearchInput className="hidden sm:flex" />
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200/80 rounded-full text-xs font-semibold">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            <span>Live Sync</span>
           </div>
         </div>
       </header>
 
-      <div className="dashboard-content p-8 flex flex-col gap-8">
-        <div className="div-4 flex justify-between items-center">
-          <div className="title-area">
-            <h1 className="text-wrapper-7 text-2xl font-bold text-slate-900">
+      {/* Main Container */}
+      <div className="p-6 md:p-8 max-w-7xl w-full mx-auto flex flex-col gap-8">
+        {/* Welcome & CTA */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">
               Welcome back, Harriet
             </h1>
-            <p className="p text-sm text-slate-500 mt-1">
-              Track applications, upcoming interviews, and explore open jobs
+            <p className="text-sm text-slate-500 mt-1">
+              Track your application milestones, panel interviews, and verified skill matches in real-time.
             </p>
           </div>
-          <div className="primary-CTA flex items-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-xl font-medium text-sm cursor-pointer hover:bg-blue-700">
-            <div className="plus-wrapper">
-              <div className="plus"></div>
-            </div>
-            <span className="text-wrapper-8">Explore Jobs</span>
-          </div>
+          <Link
+            to="/explore-jobs"
+            className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-semibold text-sm transition-all shadow-sm hover:shadow active:scale-95"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
+            </svg>
+            <span>Explore Open Jobs</span>
+          </Link>
         </div>
 
         {/* KPI Row */}
-        <div className="kpi-row grid grid-cols-4 gap-6">
-          <div className="kpi-card bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
-            <div className="div-4 flex justify-between items-center text-xs font-semibold text-slate-400 tracking-wider">
-              <span className="text-wrapper-9">ACTIVE APPLICATIONS</span>
-              <div className="state-indicator w-2 h-2 rounded-full bg-blue-600"></div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+          <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between hover:border-slate-300 transition">
+            <div className="flex justify-between items-center text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+              <span>ACTIVE APPLICATIONS</span>
+              <span className="w-2 h-2 rounded-full bg-blue-600"></span>
             </div>
-            <div className="div mt-4">
-              <div className="text-wrapper-10 text-3xl font-bold text-slate-900">
-                4
-              </div>
-              <div className="text-wrapper-11 text-xs text-slate-500 mt-1">
-                in progress
-              </div>
+            <div className="mt-4">
+              <div className="text-3xl font-extrabold text-slate-900">4</div>
+              <div className="text-xs text-blue-600 font-medium mt-1">● In progress across squads</div>
             </div>
           </div>
-          <div className="kpi-card bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
-            <div className="div-4 flex justify-between items-center text-xs font-semibold text-slate-400 tracking-wider">
-              <span className="text-wrapper-9">INTERVIEWS</span>
-              <div className="state-indicator-2 w-2 h-2 rounded-full bg-amber-500"></div>
+
+          <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between hover:border-slate-300 transition">
+            <div className="flex justify-between items-center text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+              <span>INTERVIEWS SCHEDULED</span>
+              <span className="w-2 h-2 rounded-full bg-amber-500"></span>
             </div>
-            <div className="div mt-4">
-              <div className="text-wrapper-10 text-3xl font-bold text-slate-900">
-                1
-              </div>
-              <div className="text-wrapper-11 text-xs text-slate-500 mt-1">
-                this week
-              </div>
+            <div className="mt-4">
+              <div className="text-3xl font-extrabold text-slate-900">1</div>
+              <div className="text-xs text-amber-600 font-medium mt-1">● Thu, 10:00 AM (Lead UX)</div>
             </div>
           </div>
-          <div className="kpi-card bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
-            <div className="div-4 flex justify-between items-center text-xs font-semibold text-slate-400 tracking-wider">
-              <span className="text-wrapper-9">OFFERS RECEIVED</span>
-              <div className="state-indicator-3 w-2 h-2 rounded-full bg-emerald-500"></div>
+
+          <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between hover:border-slate-300 transition">
+            <div className="flex justify-between items-center text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+              <span>OFFERS EXTENDED</span>
+              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
             </div>
-            <div className="div mt-4">
-              <div className="text-wrapper-10 text-3xl font-bold text-slate-900">
-                1
-              </div>
-              <div className="text-wrapper-11 text-xs text-slate-500 mt-1">
-                action required
-              </div>
+            <div className="mt-4">
+              <div className="text-3xl font-extrabold text-slate-900">1</div>
+              <div className="text-xs text-emerald-600 font-medium mt-1">● Senior Product Designer</div>
             </div>
           </div>
-          <div className="kpi-card bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
-            <div className="div-4 flex justify-between items-center text-xs font-semibold text-slate-400 tracking-wider">
-              <span className="text-wrapper-9">RESUME READINESS</span>
-              <div className="state-indicator-3 w-2 h-2 rounded-full bg-emerald-500"></div>
+
+          <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between hover:border-slate-300 transition">
+            <div className="flex justify-between items-center text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+              <span>PROFILE READINESS</span>
+              <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
             </div>
-            <div className="div mt-4">
-              <div className="text-wrapper-10 text-3xl font-bold text-slate-900">
-                100%
-              </div>
-              <div className="text-wrapper-11 text-xs text-slate-500 mt-1">
-                AI-verified
-              </div>
+            <div className="mt-4">
+              <div className="text-3xl font-extrabold text-slate-900">100%</div>
+              <div className="text-xs text-indigo-600 font-medium mt-1">● Verified by Gemini 2.5</div>
             </div>
           </div>
         </div>
 
         {/* Main Grid Split */}
-        <div className="main-grid-split grid grid-cols-3 gap-6">
-          <div className="left-grid-column col-span-2 flex flex-col gap-6">
-            {/* Progress Tracker */}
-            <div className="progress-tracker bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-              <div className="div">
-                <div className="text-wrapper-12 font-bold text-slate-900 text-base">
-                  Application Progress Tracker
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left 2 Cols: Progress Tracker & Applications Table */}
+          <div className="lg:col-span-2 flex flex-col gap-6">
+            {/* Progress Tracker Card */}
+            <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-4 border-b border-slate-100">
+                <div>
+                  <h2 className="font-bold text-slate-900 text-base">
+                    Active Application Pipeline Tracker
+                  </h2>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Target Role: <span className="font-semibold text-blue-600">Lead UX Researcher</span> • Design Squad
+                  </p>
                 </div>
-                <p className="role-lead-UX text-sm text-slate-500 mt-1">
-                  <span className="span font-medium text-slate-700">
-                    Role:{" "}
-                  </span>
-                  <span className="text-wrapper-13 text-blue-600 font-semibold">
-                    Lead UX Researcher
-                  </span>
-                  <span className="span"> • Design Department</span>
-                </p>
+                <span className="text-xs bg-blue-50 text-blue-700 font-semibold px-2.5 py-1 rounded-full border border-blue-200/60">
+                  Stage 4 of 5
+                </span>
               </div>
-              <div className="timeline-stepper flex items-center justify-between mt-6 px-4">
-                <div className="step flex items-center gap-2">
-                  <div className="step-indicator-group flex items-center gap-2">
-                    <div className="check-indicator">
-                      <div className="check-wrapper">
-                        <div className="check"></div>
+
+              {/* Stepper Steps */}
+              <div className="mt-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-2">
+                {steps.map((step, idx) => {
+                  const isCompleted = step.status === "completed";
+                  const isActive = step.status === "active";
+
+                  return (
+                    <div key={step.label} className="flex sm:flex-col items-center gap-3 sm:gap-1.5 flex-1 w-full">
+                      <div className="flex items-center w-full">
+                        {/* Circle Indicator */}
+                        <div
+                          className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 font-bold text-xs transition-all ${
+                            isCompleted
+                              ? "bg-emerald-600 text-white shadow-sm shadow-emerald-200"
+                              : isActive
+                              ? "bg-blue-600 text-white ring-4 ring-blue-100 shadow-sm"
+                              : "bg-slate-100 text-slate-400 border border-slate-200"
+                          }`}
+                        >
+                          {isCompleted ? (
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+                            </svg>
+                          ) : (
+                            idx + 1
+                          )}
+                        </div>
+
+                        {/* Connector line */}
+                        {idx < steps.length - 1 && (
+                          <div
+                            className={`hidden sm:block flex-1 h-0.5 mx-2 rounded ${
+                              isCompleted ? "bg-emerald-500" : "bg-slate-200"
+                            }`}
+                          />
+                        )}
+                      </div>
+
+                      <div className="flex flex-col sm:items-center text-left sm:text-center mt-1">
+                        <span
+                          className={`text-xs font-semibold ${
+                            isActive
+                              ? "text-blue-700"
+                              : isCompleted
+                              ? "text-slate-800"
+                              : "text-slate-400"
+                          }`}
+                        >
+                          {step.label}
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-medium">
+                          {step.date}
+                        </span>
                       </div>
                     </div>
-                    <div className="text-wrapper-14 text-xs font-medium">
-                      Submitted
-                    </div>
-                  </div>
-                  <div className="line"></div>
-                </div>
-                <div className="step flex items-center gap-2">
-                  <div className="step-indicator-group flex items-center gap-2">
-                    <div className="check-indicator">
-                      <div className="check-wrapper">
-                        <div className="check"></div>
-                      </div>
-                    </div>
-                    <div className="text-wrapper-14 text-xs font-medium">
-                      AI-Screened
-                    </div>
-                  </div>
-                  <div className="line"></div>
-                </div>
-                <div className="step flex items-center gap-2">
-                  <div className="step-indicator-group flex items-center gap-2">
-                    <div className="check-indicator">
-                      <div className="check-wrapper">
-                        <div className="check"></div>
-                      </div>
-                    </div>
-                    <div className="text-wrapper-14 text-xs font-medium">
-                      In Review
-                    </div>
-                  </div>
-                  <div className="line"></div>
-                </div>
-                <div className="step flex items-center gap-2">
-                  <div className="step-indicator-group flex items-center gap-2">
-                    <div className="active-dot-indicator">
-                      <div className="ellipse"></div>
-                    </div>
-                    <div className="text-wrapper-15 text-xs font-semibold text-blue-600">
-                      Interview
-                    </div>
-                  </div>
-                  <div className="line-2"></div>
-                </div>
-                <div className="step-indicator-group-wrapper">
-                  <div className="step-indicator-group flex items-center gap-2">
-                    <div className="pending-indicator"></div>
-                    <div className="text-wrapper-14 text-xs text-slate-400">
-                      Decision
-                    </div>
-                  </div>
-                </div>
+                  );
+                })}
               </div>
             </div>
 
             {/* Applications Table */}
-            <div className="applications-table bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-              <div className="text-wrapper-16 font-bold text-slate-900 text-base mb-4">
-                My Submitted Applications
+            <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-bold text-slate-900 text-base">
+                  My Submitted Applications
+                </h2>
+                <span className="text-xs text-slate-500 font-medium">3 active roles</span>
               </div>
-              <div className="table w-full text-left text-sm">
-                <div className="table-header grid grid-cols-5 text-xs font-semibold text-slate-400 uppercase pb-3 border-b border-slate-100">
-                  <div className="text-wrapper-17">Role / Position</div>
-                  <div className="text-wrapper-18">Department</div>
-                  <div className="text-wrapper-19">Applied Date</div>
-                  <div className="text-wrapper-20">Status</div>
-                  <div className="text-wrapper-21 text-right">Action</div>
-                </div>
 
-                <div className="table-row grid grid-cols-5 items-center py-4 border-b border-slate-50 text-slate-700">
-                  <div className="text-wrapper-22 font-medium text-slate-900">
-                    Lead UX Researcher
-                  </div>
-                  <div className="text-wrapper-23 text-slate-500">Design</div>
-                  <div className="text-wrapper-24 text-slate-500">Sep 18</div>
-                  <div className="badge-cell">
-                    <div className="frame inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700">
-                      <div className="ellipse-2 w-1.5 h-1.5 rounded-full bg-amber-500"></div>
-                      <div className="text-wrapper-25">Interview Scheduled</div>
-                    </div>
-                  </div>
-                  <div className="action-cell text-right">
-                    <Link
-                      to="/views_details"
-                      className="frame-2 inline-block px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100"
-                    >
-                      View Details
-                    </Link>
-                  </div>
-                </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-100 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                      <th className="pb-3 font-semibold">Role / Position</th>
+                      <th className="pb-3 font-semibold">Department</th>
+                      <th className="pb-3 font-semibold">Applied</th>
+                      <th className="pb-3 font-semibold">Status</th>
+                      <th className="pb-3 font-semibold text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    <tr className="hover:bg-slate-50/70 transition">
+                      <td className="py-3.5 pr-2">
+                        <div className="font-semibold text-slate-900">Lead UX Researcher</div>
+                        <div className="text-xs text-blue-600 font-medium">92% AI Match</div>
+                      </td>
+                      <td className="py-3.5 text-xs text-slate-600">Product Design</td>
+                      <td className="py-3.5 text-xs text-slate-500">Sep 18, 2026</td>
+                      <td className="py-3.5">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                          Interview Scheduled
+                        </span>
+                      </td>
+                      <td className="py-3.5 text-right">
+                        <Link
+                          to="/views_details"
+                          className="inline-block px-3 py-1.5 text-xs font-semibold text-blue-600 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition"
+                        >
+                          View Details
+                        </Link>
+                      </td>
+                    </tr>
 
-                <div className="table-row grid grid-cols-5 items-center py-4 border-b border-slate-50 text-slate-700">
-                  <div className="text-wrapper-22 font-medium text-slate-900">
-                    Senior Product Designer
-                  </div>
-                  <div className="text-wrapper-23 text-slate-500">Design</div>
-                  <div className="text-wrapper-24 text-slate-500">Sep 10</div>
-                  <div className="badge-cell">
-                    <div className="frame-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700">
-                      <div className="div-3 w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
-                      <div className="text-wrapper-27">Offer Extended</div>
-                    </div>
-                  </div>
-                  <div className="action-cell text-right">
-                    <Link
-                      to="/offers/senior-product-designer/review"
-                      className="div-wrapper-2 inline-block px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded-lg cursor-pointer hover:bg-blue-700"
-                    >
-                      <span className="text-wrapper-28">Review Offer</span>
-                    </Link>
-                  </div>
-                </div>
+                    <tr className="hover:bg-slate-50/70 transition">
+                      <td className="py-3.5 pr-2">
+                        <div className="font-semibold text-slate-900">Senior Product Designer</div>
+                        <div className="text-xs text-emerald-600 font-medium">86% AI Match</div>
+                      </td>
+                      <td className="py-3.5 text-xs text-slate-600">Design Systems</td>
+                      <td className="py-3.5 text-xs text-slate-500">Sep 10, 2026</td>
+                      <td className="py-3.5">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                          Offer Extended
+                        </span>
+                      </td>
+                      <td className="py-3.5 text-right">
+                        <Link
+                          to="/offers/senior-product-designer/review"
+                          className="inline-block px-3 py-1.5 text-xs font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition shadow-sm"
+                        >
+                          Review Offer
+                        </Link>
+                      </td>
+                    </tr>
 
-                <div className="table-row-2 grid grid-cols-5 items-center py-4 text-slate-700">
-                  <div className="text-wrapper-22 font-medium text-slate-900">
-                    UX Strategist
-                  </div>
-                  <div className="text-wrapper-23 text-slate-500">
-                    Core Team
-                  </div>
-                  <div className="text-wrapper-24 text-slate-500">Sep 15</div>
-                  <div className="badge-cell">
-                    <div className="frame-4 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
-                      <div className="ellipse-3 w-1.5 h-1.5 rounded-full bg-blue-600"></div>
-                      <div className="text-wrapper-29">In Review</div>
-                    </div>
-                  </div>
-                  <div className="action-cell text-right">
-                    <Link
-                      to="/views_details"
-                      className="frame-2 inline-block px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100"
-                    >
-                      View Details
-                    </Link>
-                  </div>
-                </div>
+                    <tr className="hover:bg-slate-50/70 transition">
+                      <td className="py-3.5 pr-2">
+                        <div className="font-semibold text-slate-900">UX Strategist</div>
+                        <div className="text-xs text-slate-500 font-medium">78% AI Match</div>
+                      </td>
+                      <td className="py-3.5 text-xs text-slate-600">Core Experience</td>
+                      <td className="py-3.5 text-xs text-slate-500">Sep 15, 2026</td>
+                      <td className="py-3.5">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                          <span className="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
+                          In Review
+                        </span>
+                      </td>
+                      <td className="py-3.5 text-right">
+                        <Link
+                          to="/views_details"
+                          className="inline-block px-3 py-1.5 text-xs font-semibold text-blue-600 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition"
+                        >
+                          View Details
+                        </Link>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
 
-          {/* Communications Panel */}
-          <div className="communications-panel bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-4">
-            <div className="text-wrapper-16 font-bold text-slate-900 text-base">
-              Communications &amp; Action Items
+          {/* Right Col: Communications & Action Items */}
+          <div className="flex flex-col gap-4">
+            <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <h2 className="font-bold text-slate-900 text-base">
+                  Action Items & Alerts
+                </h2>
+                <span className="text-xs bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full">
+                  2 Pending
+                </span>
+              </div>
+
+              <div className="flex flex-col gap-3">
+                {/* Item 1 */}
+                <div className="p-4 rounded-xl border border-slate-200/80 bg-slate-50/60 border-l-4 border-l-amber-500 flex flex-col gap-2.5">
+                  <div className="flex justify-between items-start">
+                    <p className="text-xs font-bold text-slate-900 leading-snug">
+                      Technical Interview: Lead UX Researcher
+                    </p>
+                    <span className="text-[10px] font-bold text-amber-700 bg-amber-100/80 px-2 py-0.5 rounded uppercase">
+                      Action Required
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-500">
+                    Thu, 10:00 AM • Google Meet with Alex Johnson (Lead)
+                  </p>
+                  <div className="flex gap-2 mt-1">
+                    <button
+                      type="button"
+                      onClick={() => setActiveCallModal(true)}
+                      className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition"
+                    >
+                      Join Meeting
+                    </button>
+                    <Link
+                      to="/interviews-offers"
+                      className="px-3 py-1.5 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-semibold rounded-lg transition"
+                    >
+                      Reschedule
+                    </Link>
+                  </div>
+                </div>
+
+                {/* Item 2 */}
+                <div className="p-4 rounded-xl border border-slate-200/80 bg-slate-50/60 border-l-4 border-l-emerald-500 flex flex-col gap-2.5">
+                  <div className="flex justify-between items-start">
+                    <p className="text-xs font-bold text-slate-900 leading-snug">
+                      Official Offer Letter Ready for Review
+                    </p>
+                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100/80 px-2 py-0.5 rounded uppercase">
+                      Sign-off Pending
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-500">
+                    Senior Product Designer • $155,000 + 12k RSUs
+                  </p>
+                  <div>
+                    <Link
+                      to="/offers/senior-product-designer/review"
+                      className="inline-block px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg transition"
+                    >
+                      Review &amp; Sign Offer →
+                    </Link>
+                  </div>
+                </div>
+
+                {/* Item 3 */}
+                <div className="p-4 rounded-xl border border-slate-200/80 bg-slate-50/60 border-l-4 border-l-blue-500 flex flex-col gap-2">
+                  <div className="flex justify-between items-start">
+                    <p className="text-xs font-bold text-slate-900 leading-snug">
+                      Resume Vault Synchronized
+                    </p>
+                    <span className="text-[10px] font-bold text-blue-700 bg-blue-100/80 px-2 py-0.5 rounded uppercase">
+                      Active
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-500">
+                    14 core competencies verified across your latest PDF CV.
+                  </p>
+                  <div>
+                    <Link
+                      to="/profile-resume"
+                      className="text-xs text-blue-600 hover:underline font-semibold"
+                    >
+                      Inspect Profile &amp; Skills ›
+                    </Link>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="action-items-list flex flex-col gap-3">
-              <div className="action-item p-4 rounded-xl border border-slate-100 bg-slate-50 flex flex-col gap-3">
-                <div className="border-tag"></div>
-                <div className="text-content">
-                  <p className="text-wrapper-30 text-sm font-medium text-slate-900">
-                    Interview Invitation: Lead UX (Thu, 10:00 AM)
-                  </p>
-                  <div className="text-wrapper-31 text-xs text-amber-600 font-semibold bg-amber-50 px-2 py-0.5 rounded w-fit mt-1">
-                    Action Required
-                  </div>
-                </div>
-                <div className="div-wrapper-2 text-right">
-                  <div className="text-wrapper-32 inline-block px-3 py-1 text-xs font-medium text-white bg-blue-600 rounded-lg cursor-pointer hover:bg-blue-700">
-                    Join Call
-                  </div>
-                </div>
-              </div>
 
-              <div className="action-item p-4 rounded-xl border border-slate-100 bg-slate-50 flex flex-col gap-3">
-                <div className="border-tag-2"></div>
-                <div className="text-content">
-                  <div className="text-wrapper-30 text-sm font-medium text-slate-900">
-                    Official Offer Letter Received
-                  </div>
-                  <div className="text-wrapper-31 text-xs text-emerald-600 font-semibold bg-emerald-50 px-2 py-0.5 rounded w-fit mt-1">
-                    Action Required
-                  </div>
-                </div>
-                <div className="div-wrapper-2 text-right">
-                  <Link
-                    to="/offers/senior-product-designer/review"
-                    className="text-wrapper-32 inline-block px-3 py-1 text-xs font-medium text-white bg-blue-600 rounded-lg cursor-pointer hover:bg-blue-700"
-                  >
-                    Review Offer
-                  </Link>
-                </div>
+            {/* Quick Contact Box */}
+            <div className="bg-gradient-to-br from-slate-900 to-slate-800 text-white p-5 rounded-2xl shadow-sm">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-300">Recruiter Contact</span>
               </div>
-
-              <div className="action-item-2 p-4 rounded-xl border border-slate-100 bg-slate-50 flex flex-col gap-3">
-                <div className="border-tag-3"></div>
-                <div className="text-content-2">
-                  <p className="text-wrapper-30 text-sm font-medium text-slate-900">
-                    Resume Vault: 14 skills synced
-                  </p>
-                  <div className="text-wrapper-33 text-xs text-blue-600 font-semibold bg-blue-50 px-2 py-0.5 rounded w-fit mt-1">
-                    Action Required
-                  </div>
-                </div>
-              </div>
+              <p className="text-sm font-semibold">Alex Johnson</p>
+              <p className="text-xs text-slate-400 mt-0.5">Senior Talent Partner • SmartRecruit</p>
+              <button
+                type="button"
+                onClick={() => showToast("Message window opened: alex.johnson@smartrecruit.io")}
+                className="mt-3 w-full py-2 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold rounded-lg border border-white/10 transition"
+              >
+                Send Direct Message
+              </button>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Video Call Modal */}
+      {activeCallModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-emerald-500 animate-ping"></div>
+                <h3 className="font-bold text-slate-900 text-base">Interview Room Active</h3>
+              </div>
+              <button
+                onClick={() => setActiveCallModal(false)}
+                className="text-slate-400 hover:text-slate-600 text-sm font-bold"
+              >
+                ✕
+              </button>
+            </div>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              You are joining the panel session for <strong className="text-slate-900">Lead UX Researcher</strong>.
+              Camera and microphone checks are enabled.
+            </p>
+            <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-600 space-y-1">
+              <div><strong>Host:</strong> Alex Johnson (Lead Recruiter)</div>
+              <div><strong>Panelists:</strong> Marcus Broadus (Dev Lead), Sarah Jenkins (VP)</div>
+              <div><strong>Format:</strong> System Design &amp; Portfolio Walkthrough (45 mins)</div>
+            </div>
+            <div className="flex gap-2 pt-2">
+              <button
+                onClick={() => {
+                  setActiveCallModal(false);
+                  showToast("Connecting to secure WebRTC video room...");
+                }}
+                className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-xs transition"
+              >
+                Enter Video Room
+              </button>
+              <button
+                onClick={() => setActiveCallModal(false)}
+                className="py-2.5 px-4 border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-lg font-semibold text-xs transition"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl text-xs font-semibold flex items-center gap-2 animate-bounce">
+          <span>✓</span>
+          <span>{toastMessage}</span>
+        </div>
+      )}
     </div>
   );
 };

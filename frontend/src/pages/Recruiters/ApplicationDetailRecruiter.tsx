@@ -1,8 +1,16 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function ApplicationDetailDossier() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("Extracted Dossier & Skill Matrix");
   const [verifiedInference, setVerifiedInference] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3000);
+  };
 
   return (
     <div className="flex-1 flex flex-col min-w-0 font-sans antialiased text-xs">
@@ -11,7 +19,7 @@ export default function ApplicationDetailDossier() {
           <div className="flex items-center gap-2 text-slate-500 font-medium">
             <span>Workspace</span>
             <span>/</span>
-            <span>Candidates</span>
+            <button onClick={() => navigate("/recruiter/candidates")} className="hover:text-blue-600 transition">Candidates</button>
             <span>/</span>
             <span className="font-semibold text-slate-900">Harriet Lawrence</span>
             <span className="flex items-center gap-1 ml-2 px-2 py-0.5 rounded-full border border-emerald-200 bg-emerald-50 text-emerald-700 text-[10px] font-semibold">
@@ -48,7 +56,11 @@ export default function ApplicationDetailDossier() {
           {/* Sub Header Navigation & Quick Meta */}
           <div className="flex items-center justify-between text-[11px] text-slate-500">
             <div className="flex items-center gap-2">
-              <button className="flex items-center gap-1 text-slate-600 hover:text-blue-600 font-semibold">
+              <button
+                type="button"
+                onClick={() => navigate("/recruiter/candidates")}
+                className="flex items-center gap-1 text-slate-600 hover:text-blue-600 font-semibold transition"
+              >
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>
@@ -61,7 +73,11 @@ export default function ApplicationDetailDossier() {
               </span>
             </div>
             <div className="flex items-center gap-3">
-              <button className="px-2.5 py-1 bg-blue-600 text-white font-semibold rounded hover:bg-blue-700 flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => navigate("/recruiter/jobs/create")}
+                className="px-2.5 py-1 bg-blue-600 text-white font-semibold rounded hover:bg-blue-700 flex items-center gap-1 transition shadow-sm"
+              >
                 <span>+</span> Post New Job
               </button>
               <span>Applicant ID: <strong className="text-slate-700">#APP-884920</strong></span>
