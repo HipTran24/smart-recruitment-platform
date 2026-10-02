@@ -61,12 +61,29 @@ require_env_value() {
   [[ "$value" != replace-with-* ]] || fail "Replace the placeholder value for $key in .env."
 }
 
+require_existing_file_from_env() {
+  local key="$1"
+  local value
+  value="$(env_value "$key")"
+
+  require_env_value "$key"
+  [[ -f "$value" ]] || fail "The file configured by $key does not exist or is not a regular file."
+}
+
 validate_local_env() {
   ensure_env_file
   require_env_value MYSQL_DATABASE
   require_env_value MYSQL_USER
   require_env_value MYSQL_PASSWORD
   require_env_value MYSQL_ROOT_PASSWORD
+  require_existing_file_from_env JWT_PRIVATE_KEY_FILE
+  require_existing_file_from_env JWT_PUBLIC_KEY_FILE
+  require_env_value APP_SECURITY_JWT_ISSUER
+  require_env_value APP_SECURITY_JWT_AUDIENCE
+  require_env_value APP_SECURITY_JWT_KEY_ID
+  require_env_value APP_SECURITY_JWT_ACCESS_TOKEN_TTL
+  require_env_value APP_SECURITY_JWT_REFRESH_TOKEN_TTL
+  require_env_value APP_SECURITY_JWT_CLOCK_SKEW
 }
 
 run_maven() {

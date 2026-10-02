@@ -41,11 +41,11 @@ class ApplicationTests {
 	}
 
     @Test
-    void exposesHealthButDeniesUnconfiguredApplicationRoutes() throws Exception {
+    void exposesHealthButRequiresAuthenticationForApplicationRoutes() throws Exception {
         mockMvc.perform(get("/actuator/health/readiness"))
                 .andExpect(status().isOk());
         mockMvc.perform(get("/api/v1/unconfigured"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 
 }

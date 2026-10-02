@@ -1,0 +1,380 @@
+{
+  "info": {
+    "_postman_id": "a90df23e-63ef-4475-802c-15a968600123",
+    "name": "Smart Recruitment Platform API",
+    "description": "Postman Collection để kiểm thử toàn bộ các API hiện có trong dự án Smart Recruitment Platform bao gồm Actuator, Authentication/Identity, và Security Deny-All Verification.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Actuator (Health & Info)",
+      "item": [
+        {
+          "name": "Check Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/actuator/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["actuator", "health"]
+            },
+            "description": "Kiểm tra trạng thái sức khỏe tổng thể của ứng dụng (Public)."
+          },
+          "response": []
+        },
+        {
+          "name": "Check Liveness Probe",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/actuator/health/liveness",
+              "host": ["{{baseUrl}}"],
+              "path": ["actuator", "health", "liveness"]
+            },
+            "description": "Kubernetes/Docker liveness probe (Public)."
+          },
+          "response": []
+        },
+        {
+          "name": "Check Readiness Probe",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/actuator/health/readiness",
+              "host": ["{{baseUrl}}"],
+              "path": ["actuator", "health", "readiness"]
+            },
+            "description": "Kubernetes/Docker readiness probe (Public)."
+          },
+          "response": []
+        },
+        {
+          "name": "App Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/actuator/info",
+              "host": ["{{baseUrl}}"],
+              "path": ["actuator", "info"]
+            },
+            "description": "Thông tin ứng dụng (Public)."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2. Identity & Authentication (/api/v1/auth)",
+      "item": [
+        {
+          "name": "1. Đăng ký tài khoản (Register)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var json = pm.response.json();",
+                  "    if (json.accessToken) {",
+                  "        pm.environment.set('accessToken', json.accessToken);",
+                  "        console.log('Saved accessToken to environment');",
+                  "    }",
+                  "    if (json.refreshToken) {",
+                  "        pm.environment.set('refreshToken', json.refreshToken);",
+                  "        console.log('Saved refreshToken to environment');",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Nguyen Van A\",\n  \"email\": \"candidate.test@example.com\",\n  \"password\": \"StrongPassword123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "register"]
+            },
+            "description": "Đăng ký tài khoản ứng viên mới. Lưu ý: Mật khẩu bắt buộc tối thiểu 12 ký tự. Khi thành công trả về 201 cùng cặp Token (tự động lưu vào biến môi trường)."
+          },
+          "response": []
+        },
+        {
+          "name": "1.1 Đăng ký - Test Validation Error (Mật khẩu < 12 ký tự)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Nguyen Van A\",\n  \"email\": \"invalid-candidate@example.com\",\n  \"password\": \"short123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "register"]
+            },
+            "description": "Test case kiểm tra validation: Mật khẩu dưới 12 ký tự phải trả HTTP 400 VALIDATION_ERROR."
+          },
+          "response": []
+        },
+        {
+          "name": "1.2 Đăng ký - Test Trùng Email (Expect 409 CONFLICT)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Nguyen Van A Duplicate\",\n  \"email\": \"candidate.test@example.com\",\n  \"password\": \"StrongPassword123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "register"]
+            },
+            "description": "Test case kiểm tra đăng ký email đã tồn tại: Hệ thống phải trả HTTP 409 CONFLICT."
+          },
+          "response": []
+        },
+        {
+          "name": "2. Đăng nhập (Login)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var json = pm.response.json();",
+                  "    if (json.accessToken) {",
+                  "        pm.environment.set('accessToken', json.accessToken);",
+                  "        console.log('Updated accessToken in environment');",
+                  "    }",
+                  "    if (json.refreshToken) {",
+                  "        pm.environment.set('refreshToken', json.refreshToken);",
+                  "        console.log('Updated refreshToken in environment');",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"candidate.test@example.com\",\n  \"password\": \"StrongPassword123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "login"]
+            },
+            "description": "Đăng nhập bằng Email và Password. Khi thành công trả về HTTP 200 và tự động lưu accessToken, refreshToken."
+          },
+          "response": []
+        },
+        {
+          "name": "2.1 Đăng nhập - Test Sai Mật Khẩu (Expect 401)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"candidate.test@example.com\",\n  \"password\": \"WrongPassword123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "login"]
+            },
+            "description": "Kiểm tra đăng nhập sai mật khẩu: Hệ thống phải trả HTTP 401 AUTHENTICATION_FAILED."
+          },
+          "response": []
+        },
+        {
+          "name": "3. Lấy thông tin tài khoản hiện tại (Get Me)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "me"]
+            },
+            "description": "Lấy thông tin profile và roles của người dùng hiện hành dựa vào Bearer Access Token."
+          },
+          "response": []
+        },
+        {
+          "name": "3.1 Get Me - Không có Token (Expect 401)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "me"]
+            },
+            "description": "Gọi /me mà không đính kèm Bearer token: Phải trả HTTP 401 AUTHENTICATION_REQUIRED."
+          },
+          "response": []
+        },
+        {
+          "name": "4. Làm mới Token (Refresh Token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var json = pm.response.json();",
+                  "    if (json.accessToken) {",
+                  "        pm.environment.set('accessToken', json.accessToken);",
+                  "        console.log('Refreshed accessToken in environment');",
+                  "    }",
+                  "    if (json.refreshToken) {",
+                  "        pm.environment.set('refreshToken', json.refreshToken);",
+                  "        console.log('Refreshed refreshToken in environment');",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/refresh",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "refresh"]
+            },
+            "description": "Cấp lại cặp token mới khi access token hết hạn. Refresh token cũ sẽ bị thu hồi (revoke) ngay lập tức."
+          },
+          "response": []
+        },
+        {
+          "name": "5. Đăng xuất (Logout)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "logout"]
+            },
+            "description": "Thu hồi refresh token hiện hành. Endpoint trả HTTP 204 No Content và có tính idempotent."
+          },
+          "response": []
+        },
+        {
+          "name": "6. Google OAuth Code Exchange (PKCE)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"E4B9448F097A48E3A9C86F721A0F9514DE82A312B45\",\n  \"codeVerifier\": \"dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk\",\n  \"transactionId\": \"F1A9348F097A48E3A9C86F721A0F9514DE82A312B46\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/oauth/exchange",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "oauth", "exchange"]
+            },
+            "description": "Đổi mã ủy quyền Google kèm PKCE verifier lấy token pair. Nếu GOOGLE_OAUTH_ENABLED=false (mặc định), API sẽ trả HTTP 404 OAUTH_NOT_CONFIGURED."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "3. Security Policy (Deny All Check)",
+      "item": [
+        {
+          "name": "Truy cập endpoint chưa khai báo (Expect 401 hoặc 403)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/jobs",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "jobs"]
+            },
+            "description": "Theo quy ước bảo mật của dự án, các route nghiệp vụ chưa công bố sẽ bị deny mặc định (401 khi chưa xác thực, 403 khi đã xác thực)."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

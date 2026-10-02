@@ -10,7 +10,7 @@
 | [api/](api/README.md) | Chuẩn API và hợp đồng API khi các endpoint được xây dựng |
 | [database/](database/README.md) | Quy ước MySQL, migration và [mô hình dữ liệu hiện có](database/schema.md) |
 | [adr/](adr/README.md) | Các quyết định kiến trúc có ảnh hưởng lâu dài |
-| [runbooks/](runbooks/local-development.md) | Cách chạy local, troubleshooting và [production readiness](runbooks/production-readiness.md) |
+| [runbooks/](runbooks/local-development.md) | Cách chạy local, [xác thực & AI](runbooks/authentication-and-ai.md), troubleshooting và [production readiness](runbooks/production-readiness.md) |
 | [contribution.md](contribution.md) | Quy trình làm việc, branch, commit và Pull Request |
 
 ## Trạng thái tài liệu

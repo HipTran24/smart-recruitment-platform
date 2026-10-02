@@ -17,6 +17,7 @@ src/main/resources/application-local.yml
 /data/
 /logs/
 /uploads/
+/.local/
 *.log
 
 # Frontend build output and local caches
@@ -29,3 +30,4 @@ src/main/resources/application-local.yml
 /frontend/pnpm-debug.log*
 /frontend/yarn-debug.log*
 /frontend/yarn-error.log*
+.aider*

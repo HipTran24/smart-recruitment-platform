@@ -17,6 +17,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.Instant;
+import java.util.Objects;
 
 @Getter
 @Entity
@@ -54,11 +55,14 @@ public class ApplicationScreening extends BaseEntity {
     private String summary;
 
     // JSON text keeps the entity independent of a specific AI provider's response schema.
-    @Column(name = "matched_criteria", columnDefinition = "TEXT")
+    @Column(name = "matched_criteria", columnDefinition = "MEDIUMTEXT")
     private String matchedCriteria;
 
-    @Column(name = "missing_criteria", columnDefinition = "TEXT")
+    @Column(name = "missing_criteria", columnDefinition = "MEDIUMTEXT")
     private String missingCriteria;
+
+    @Column(columnDefinition = "MEDIUMTEXT")
+    private String limitations;
 
     @Column(nullable = false, length = 100)
     private String provider;
@@ -80,6 +84,22 @@ public class ApplicationScreening extends BaseEntity {
 
     @Column(name = "error_message", columnDefinition = "TEXT")
     private String errorMessage;
+
+    @Column(name = "failure_code", length = 64)
+    private String failureCode;
+
+    @Column(name = "retryable")
+    private Boolean retryable;
+
+    /**
+     * An opaque, short-lived lease. It prevents a worker that timed out or was superseded from
+     * applying a stale provider response after another worker has reclaimed the screening.
+     */
+    @Column(name = "processing_lease_token", length = 64)
+    private String processingLeaseToken;
+
+    @Column(name = "processing_lease_expires_at")
+    private Instant processingLeaseExpiresAt;
 
     public ApplicationScreening(
             JobApplication jobApplication,
@@ -103,12 +123,34 @@ public class ApplicationScreening extends BaseEntity {
         this.attempt = attempt;
     }
 
-    public void markProcessing() {
+    public void markProcessing(String leaseToken, Instant leaseExpiresAt) {
         if (status != ScreeningStatus.PENDING) {
             throw new IllegalStateException("only pending screenings can start");
         }
+        assignLease(leaseToken, leaseExpiresAt);
         status = ScreeningStatus.PROCESSING;
         errorMessage = null;
+        failureCode = null;
+        retryable = null;
+    }
+
+    public void reclaimExpiredProcessing(String leaseToken, Instant leaseExpiresAt, Instant now) {
+        if (!isLeaseExpired(now)) {
+            throw new IllegalStateException("only an expired screening lease can be reclaimed");
+        }
+        assignLease(leaseToken, leaseExpiresAt);
+    }
+
+    public boolean hasActiveLease(String leaseToken, Instant now) {
+        return status == ScreeningStatus.PROCESSING
+                && Objects.equals(processingLeaseToken, leaseToken)
+                && processingLeaseExpiresAt != null
+                && processingLeaseExpiresAt.isAfter(requireTime(now));
+    }
+
+    public boolean isLeaseExpired(Instant now) {
+        return status == ScreeningStatus.PROCESSING
+                && (processingLeaseExpiresAt == null || !processingLeaseExpiresAt.isAfter(requireTime(now)));
     }
 
     public void complete(
@@ -117,6 +159,37 @@ public class ApplicationScreening extends BaseEntity {
             String summary,
             String matchedCriteria,
             String missingCriteria,
+            Instant evaluatedAt
+    ) {
+        complete(
+                score,
+                recommendation,
+                summary,
+                matchedCriteria,
+                missingCriteria,
+                null,
+                provider,
+                modelVersion,
+                promptVersion,
+                evaluatedAt
+        );
+    }
+
+    /**
+     * Applies the normalized provider output after the worker has re-acquired a pessimistic lock.
+     * The provider metadata records the model actually used, rather than only the model requested
+     * when the screening was queued.
+     */
+    public void complete(
+            Integer score,
+            Recommendation recommendation,
+            String summary,
+            String matchedCriteria,
+            String missingCriteria,
+            String limitations,
+            String provider,
+            String modelVersion,
+            String promptVersion,
             Instant evaluatedAt
     ) {
         if (status != ScreeningStatus.PROCESSING || score == null || score < 0 || score > 100
@@ -129,16 +202,44 @@ public class ApplicationScreening extends BaseEntity {
         this.summary = summary;
         this.matchedCriteria = matchedCriteria;
         this.missingCriteria = missingCriteria;
+        this.limitations = limitations;
+        this.provider = requireText(provider, "screening provider");
+        this.modelVersion = requireText(modelVersion, "model version");
+        this.promptVersion = requireText(promptVersion, "prompt version");
         this.evaluatedAt = evaluatedAt;
         this.errorMessage = null;
+        this.failureCode = null;
+        this.retryable = null;
+        clearLease();
     }
 
-    public void fail(String errorMessage) {
-        if (status != ScreeningStatus.PROCESSING || errorMessage == null || errorMessage.isBlank()) {
+    public void fail(String failureCode, boolean retryable, String errorMessage, Instant evaluatedAt) {
+        if (status != ScreeningStatus.PROCESSING || errorMessage == null || errorMessage.isBlank()
+                || evaluatedAt == null) {
             throw new IllegalStateException("screening failure is invalid");
         }
         status = ScreeningStatus.FAILED;
-        this.errorMessage = errorMessage;
+        this.failureCode = requireFailureCode(failureCode);
+        this.retryable = retryable;
+        this.errorMessage = requireBoundedText(errorMessage, "screening failure", 1_000);
+        this.evaluatedAt = evaluatedAt;
+        clearLease();
+    }
+
+    /**
+     * Rejects a pending record before any resume content can leave the service. This is used when
+     * the request fingerprint does not match the audit fingerprint stored at enqueue time.
+     */
+    public void rejectPendingInput(String failureCode, String errorMessage, Instant evaluatedAt) {
+        if (status != ScreeningStatus.PENDING || evaluatedAt == null) {
+            throw new IllegalStateException("only a pending screening can be rejected");
+        }
+        status = ScreeningStatus.FAILED;
+        this.failureCode = requireFailureCode(failureCode);
+        this.retryable = false;
+        this.errorMessage = requireBoundedText(errorMessage, "screening failure", 1_000);
+        this.evaluatedAt = evaluatedAt;
+        clearLease();
     }
 
     private static String requireText(String value, String field) {
@@ -146,6 +247,53 @@ public class ApplicationScreening extends BaseEntity {
             throw new IllegalArgumentException(field + " must not be blank");
         }
         return value.strip();
+    }
+
+    private static String requireBoundedText(String value, String field, int maximumLength) {
+        String normalized = requireText(value, field);
+        if (normalized.length() > maximumLength) {
+            throw new IllegalArgumentException(field + " exceeds the allowed length");
+        }
+        return normalized;
+    }
+
+    private static String requireFailureCode(String value) {
+        if (value == null || !value.matches("[A-Z][A-Z0-9_]{1,63}")) {
+            throw new IllegalArgumentException("screening failure code is invalid");
+        }
+        return value;
+    }
+
+    private static String requireLeaseToken(String value) {
+        if (value == null || !value.matches("[A-Za-z0-9_-]{22,64}")) {
+            throw new IllegalArgumentException("screening processing lease token is invalid");
+        }
+        return value;
+    }
+
+    private static Instant requireFutureTime(Instant value) {
+        Instant time = requireTime(value);
+        if (!time.isAfter(Instant.EPOCH)) {
+            throw new IllegalArgumentException("screening processing lease expiry is invalid");
+        }
+        return time;
+    }
+
+    private static Instant requireTime(Instant value) {
+        if (value == null) {
+            throw new IllegalArgumentException("time must not be null");
+        }
+        return value;
+    }
+
+    private void clearLease() {
+        processingLeaseToken = null;
+        processingLeaseExpiresAt = null;
+    }
+
+    private void assignLease(String leaseToken, Instant leaseExpiresAt) {
+        processingLeaseToken = requireLeaseToken(leaseToken);
+        processingLeaseExpiresAt = requireFutureTime(leaseExpiresAt);
     }
 
     public enum ScreeningStatus {
