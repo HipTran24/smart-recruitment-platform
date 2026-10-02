@@ -18,7 +18,7 @@ import SkillTaxonomy from "./pages/SkillTaxonomy";
 import AuditEventExplorer from "./pages/AuditEventExplorer";
 import SettingsConfiguration from "./pages/SettingsConfiguration";
 import AdminConsole from "./pages/AdminConsole";
-import MyApplication from "./pages/candidate/MyApplication";
+import { MyApplication } from "./pages/candidate/MyApplication";
 import ExploreJobs from "./pages/candidate/ExploreJobs";
 import InterviewsOffer from "./pages/candidate/InterviewsOffer";
 import ProfileResume from "./pages/candidate/ProfileResume";
