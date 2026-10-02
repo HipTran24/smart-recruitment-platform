@@ -17,3 +17,15 @@ management:
     web:
       exposure:
         include: health,info
+
+app:
+  security:
+    jwt:
+      issuer: https://smart-recruitment.test
+      audience: smart-recruitment-api
+      key-id: test-key-2026
+      private-key-location: classpath:keys/test-jwt-private.pem
+      public-key-location: classpath:keys/test-jwt-public.pem
+      access-token-ttl: PT15M
+      refresh-token-ttl: P30D
+      clock-skew: PT30S

@@ -23,6 +23,15 @@ spring:
 
 server:
   shutdown: graceful
+  # Keep this at `none` unless the deployment terminates TLS behind a trusted
+  # proxy that strips client-supplied Forwarded/X-Forwarded-* headers.
+  forward-headers-strategy: ${SERVER_FORWARD_HEADERS_STRATEGY:none}
+  servlet:
+    session:
+      cookie:
+        http-only: true
+        secure: ${SERVER_SESSION_COOKIE_SECURE:true}
+        same-site: lax
 
 management:
   endpoint:
@@ -37,3 +46,35 @@ management:
   observations:
     key-values:
       application: ${spring.application.name}
+
+# Optional external integrations are off until explicitly enabled. JWT signing
+# configuration deliberately has no source-controlled fallback: all JWT key
+# locations and issuer settings must be provided by the deployment.
+app:
+  web:
+    cors:
+      # Comma-separated exact browser origins. Empty denies browser CORS.
+      allowed-origins: ${APP_WEB_CORS_ALLOWED_ORIGINS:}
+  security:
+    oauth2:
+      google:
+        enabled: ${GOOGLE_OAUTH_ENABLED:false}
+        client-id: ${GOOGLE_OAUTH_CLIENT_ID:}
+        client-secret: ${GOOGLE_OAUTH_CLIENT_SECRET:}
+        success-redirect-uri: ${GOOGLE_OAUTH_SUCCESS_REDIRECT_URI:}
+        authorization-code-ttl: ${GOOGLE_OAUTH_AUTHORIZATION_CODE_TTL:PT1M}
+  ai:
+    gemini:
+      enabled: ${GEMINI_ENABLED:false}
+      api-key: ${GEMINI_API_KEY:}
+      model: ${GEMINI_MODEL:}
+      api-base-url: ${GEMINI_API_BASE_URL:https://generativelanguage.googleapis.com}
+      api-version: ${GEMINI_API_VERSION:v1beta}
+      connect-timeout: ${GEMINI_CONNECT_TIMEOUT:PT3S}
+      read-timeout: ${GEMINI_READ_TIMEOUT:PT30S}
+      max-resume-characters: ${GEMINI_MAX_RESUME_CHARACTERS:60000}
+      max-job-description-characters: ${GEMINI_MAX_JOB_DESCRIPTION_CHARACTERS:24000}
+      max-required-criteria: ${GEMINI_MAX_REQUIRED_CRITERIA:40}
+      max-output-tokens: ${GEMINI_MAX_OUTPUT_TOKENS:1024}
+      # Reserved for isolated local provider stubs; production must stay HTTPS.
+      allow-insecure-endpoint: ${GEMINI_ALLOW_INSECURE_ENDPOINT:false}

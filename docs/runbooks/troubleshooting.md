@@ -50,3 +50,15 @@ MySQL container local cũng phải có `--default-time-zone=+00:00`. Client tự
 ## 7. Lỗi chỉ xuất hiện khi chạy test
 
 `@SpringBootTest` dùng `application-test.yml` và MySQL Testcontainers riêng; không để test phụ thuộc database local hoặc credential production. Nếu Docker daemon không chạy, khởi động Docker Desktop trước khi chạy `mvn verify`.
+
+## 8. Startup báo lỗi JWT key hoặc JWT configuration
+
+JWT không có fallback key. Kiểm tra mọi biến `APP_SECURITY_JWT_*`, đặc biệt `PRIVATE_KEY_LOCATION` và `PUBLIC_KEY_LOCATION`; private PEM phải là PKCS#8, public PEM là X.509, hai key phải cùng pair và RSA tối thiểu 2048 bit. Local dùng `./scripts/generate-local-jwt-keys.sh` để tránh tự tạo key thủ công.
+
+## 9. Google OAuth callback thất bại
+
+Kiểm tra `GOOGLE_OAUTH_ENABLED=true`, client id/secret, và redirect URI Google Cloud khớp tuyệt đối với URL public dạng `https://<api-host>/login/oauth2/code/google`. Luồng bắt đầu phải gửi PKCE S256 từ frontend; OAuth state/session chỉ là tạm thời. Không thử exchange cùng handoff code nhiều lần vì code dùng một lần.
+
+## 10. Gemini không chạy hoặc trả lỗi provider
+
+Gemini bị tắt mặc định. Khi bật, cần có `GEMINI_API_KEY`, `GEMINI_MODEL` và endpoint HTTPS hợp lệ. Lỗi 429/5xx/network được đánh dấu retryable bởi adapter; lỗi request/schema không retry. Không log CV gốc, API key hoặc provider response chứa dữ liệu ứng viên khi chẩn đoán.
