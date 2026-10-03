@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.7
 
 # Build with the same Java major version declared by pom.xml.
-FROM maven:3.9.16-eclipse-temurin-26 AS build
+FROM maven:3.9.16-eclipse-temurin-25 AS build
 
 WORKDIR /workspace
 
@@ -14,7 +14,7 @@ COPY src ./src
 RUN --mount=type=cache,target=/root/.m2 \
     mvn -B -ntp -DskipTests package
 
-FROM eclipse-temurin:26.0.2_10-jre-alpine AS runtime
+FROM eclipse-temurin:25-jre-alpine AS runtime
 
 RUN apk add --no-cache wget \
     && addgroup -S app \

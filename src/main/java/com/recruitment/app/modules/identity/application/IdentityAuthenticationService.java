@@ -6,12 +6,6 @@ import com.recruitment.app.modules.identity.application.command.RegisterAccountC
 import com.recruitment.app.modules.identity.application.exception.EmailAlreadyRegisteredException;
 import com.recruitment.app.modules.identity.application.exception.IdentityAuthenticationException;
 import com.recruitment.app.modules.identity.application.exception.OAuthIdentityException;
-import com.recruitment.app.modules.identity.infrastructure.persistence.entity.Role;
-import com.recruitment.app.modules.identity.infrastructure.persistence.entity.User;
-import com.recruitment.app.modules.identity.infrastructure.persistence.entity.UserOAuthIdentity;
-import com.recruitment.app.modules.identity.infrastructure.persistence.repository.RoleRepository;
-import com.recruitment.app.modules.identity.infrastructure.persistence.repository.UserOAuthIdentityRepository;
-import com.recruitment.app.modules.identity.infrastructure.persistence.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,7 +14,8 @@ import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.Locale;
 import java.util.Set;
-import java.util.stream.Collectors;
+import com.recruitment.app.modules.identity.application.port.out.IdentityAccountStore;
+import com.recruitment.app.modules.identity.domain.model.AccountSnapshot;
 
 /**
  * Application use cases for locally authenticated identities and Google
@@ -30,28 +25,27 @@ import java.util.stream.Collectors;
 @Service
 public class IdentityAuthenticationService {
 
-    private static final String CANDIDATE_ROLE = "ROLE_CANDIDATE";
     private static final int UNUSABLE_PASSWORD_BYTES = 48;
 
-    private final UserRepository users;
-    private final RoleRepository roles;
-    private final UserOAuthIdentityRepository oauthIdentities;
+    private final IdentityAccountStore accounts;
     private final PasswordEncoder passwordEncoder;
     private final TokenSessionService tokenSessions;
+    private final AuthenticationThrottlingService throttling;
     private final SecureRandom secureRandom = new SecureRandom();
 
-    public IdentityAuthenticationService(
-            UserRepository users,
-            RoleRepository roles,
-            UserOAuthIdentityRepository oauthIdentities,
-            PasswordEncoder passwordEncoder,
-            TokenSessionService tokenSessions
-    ) {
-        this.users = users;
-        this.roles = roles;
-        this.oauthIdentities = oauthIdentities;
+    public IdentityAuthenticationService(IdentityAccountStore accounts,
+            PasswordEncoder passwordEncoder, TokenSessionService tokenSessions) {
+        this(accounts, passwordEncoder, tokenSessions, new AuthenticationThrottlingService());
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public IdentityAuthenticationService(IdentityAccountStore accounts,
+            PasswordEncoder passwordEncoder, TokenSessionService tokenSessions,
+            AuthenticationThrottlingService throttling) {
+        this.accounts = accounts;
         this.passwordEncoder = passwordEncoder;
         this.tokenSessions = tokenSessions;
+        this.throttling = throttling != null ? throttling : new AuthenticationThrottlingService();
     }
 
     @Transactional
@@ -60,14 +54,12 @@ public class IdentityAuthenticationService {
         String fullName = requireFullName(command == null ? null : command.fullName());
         String password = requirePassword(command == null ? null : command.password());
 
-        if (users.findByEmail(email).isPresent()) {
+        if (accounts.findByEmail(email).isPresent()) {
             throw new EmailAlreadyRegisteredException();
         }
 
-        User user = new User(email, passwordEncoder.encode(password), fullName);
-        user.addRole(candidateRole());
-        users.saveAndFlush(user);
-        return tokenSessions.issueFor(user.getId());
+        AccountSnapshot account = accounts.createCandidate(email, passwordEncoder.encode(password), fullName);
+        return tokenSessions.issueFor(account.id());
     }
 
     @Transactional
@@ -75,11 +67,21 @@ public class IdentityAuthenticationService {
         String email = normalizeEmail(command == null ? null : command.email());
         String password = command == null ? null : command.password();
 
-        User user = users.findByEmail(email).orElseThrow(IdentityAuthenticationException::new);
-        if (!user.isActive() || password == null || !passwordEncoder.matches(password, user.getPasswordHash())) {
+        throttling.checkThrottled(email);
+
+        AccountSnapshot user = accounts.findByEmail(email).orElse(null);
+        if (user == null || !user.active() || password == null || !passwordEncoder.matches(password, user.passwordHash())) {
+            throttling.recordFailure(email);
             throw new IdentityAuthenticationException();
         }
-        return tokenSessions.issueFor(user.getId());
+
+        throttling.recordSuccess(email);
+
+        if (passwordEncoder.upgradeEncoding(user.passwordHash())) {
+            accounts.updatePassword(user.id(), passwordEncoder.encode(password));
+        }
+
+        return tokenSessions.issueFor(user.id());
     }
 
     public IssuedTokenPair refresh(String rawRefreshToken) {
@@ -104,57 +106,53 @@ public class IdentityAuthenticationService {
         boolean emailVerified = profile != null && profile.emailVerified();
         String displayName = normalizedGoogleDisplayName(profile == null ? null : profile.displayName(), email);
 
-        UserOAuthIdentity linkedIdentity = oauthIdentities
-                .findForUpdate(UserOAuthIdentity.Provider.GOOGLE, subject)
-                .orElse(null);
-        if (linkedIdentity != null) {
-            if (!linkedIdentity.getUser().isActive()) {
+        AccountSnapshot linkedAccount = accounts.lockGoogleAccount(subject).orElse(null);
+        if (linkedAccount != null) {
+            if (!linkedAccount.active()) {
                 throw new IdentityAuthenticationException();
             }
-            linkedIdentity.refreshProfile(email, emailVerified);
-            return linkedIdentity.getUser().getId();
+            accounts.refreshGoogleProfile(subject, email, emailVerified);
+            return linkedAccount.id();
         }
 
         if (!emailVerified) {
             throw new OAuthIdentityException("Google did not verify the account email address");
         }
 
-        if (users.findByEmail(email).isPresent()) {
+        if (accounts.findByEmail(email).isPresent()) {
             throw new OAuthIdentityException("Google identity must be linked from an authenticated account");
         }
 
-        User user = createGoogleOnlyAccount(email, displayName);
+        AccountSnapshot account = accounts.createCandidate(email,
+                passwordEncoder.encode(generateUnusablePassword()), displayName);
+        accounts.bindGoogleIdentity(account.id(), subject, email);
+        return account.id();
+    }
 
-        oauthIdentities.saveAndFlush(new UserOAuthIdentity(
-                user,
-                UserOAuthIdentity.Provider.GOOGLE,
-                subject,
-                email,
-                true
-        ));
-        return user.getId();
+    @Transactional
+    public void linkGoogleAccount(Long userId, GoogleIdentityProfile profile) {
+        String subject = requireText(profile == null ? null : profile.subject(), "Google subject");
+        String email = normalizeEmail(profile == null ? null : profile.email());
+        boolean emailVerified = profile != null && profile.emailVerified();
+
+        java.util.Optional<AccountSnapshot> linkedAccount = accounts.lockGoogleAccount(subject);
+        if (linkedAccount.isPresent()) {
+            if (!linkedAccount.get().id().equals(userId)) {
+                throw new com.recruitment.app.modules.identity.application.exception.OAuthIdentityConflictException("Google account is already linked to another user");
+            }
+            accounts.refreshGoogleProfile(subject, email, emailVerified);
+            return;
+        }
+
+        accounts.bindGoogleIdentity(userId, subject, email);
     }
 
     @Transactional(readOnly = true)
     public AuthenticatedAccount currentAccount(Long userId) {
-        User user = users.findByIdWithRoles(userId)
-                .filter(User::isActive)
+        AccountSnapshot account = accounts.findById(userId)
+                .filter(AccountSnapshot::active)
                 .orElseThrow(IdentityAuthenticationException::new);
-        Set<String> roleCodes = user.getRoles().stream()
-                .map(Role::getCode)
-                .collect(Collectors.toUnmodifiableSet());
-        return new AuthenticatedAccount(user.getId(), user.getEmail(), user.getFullName(), roleCodes);
-    }
-
-    private User createGoogleOnlyAccount(String email, String displayName) {
-        User user = new User(email, passwordEncoder.encode(generateUnusablePassword()), displayName);
-        user.addRole(candidateRole());
-        return users.saveAndFlush(user);
-    }
-
-    private Role candidateRole() {
-        return roles.findByCode(CANDIDATE_ROLE)
-                .orElseThrow(() -> new IllegalStateException("Required candidate role is missing from the database"));
+        return new AuthenticatedAccount(account.id(), account.email(), account.fullName(), account.roles());
     }
 
     private String generateUnusablePassword() {

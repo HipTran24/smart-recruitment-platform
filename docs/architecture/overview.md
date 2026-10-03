@@ -1,5 +1,7 @@
 # Kiến trúc Smart Recruitment
 
+> Target decisions: [ADR 0003](../adr/0003-backend-mvp-baseline.md). Historical company persistence remains until G1 migration; it is not the target authorization boundary. See [implementation status](../architecture/implementation-backlog.md).
+
 > Trạng thái: **Current baseline**. Tài liệu mô tả phần đang có và các ranh giới bắt buộc cho mã mới.
 
 ## 1. Mục tiêu
@@ -22,7 +24,7 @@ Repository hiện là một ứng dụng Spring Boot/Maven tại thư mục gố
 - Công nghệ đã có: Spring Web MVC, Spring Data JPA, MySQL Connector/J và Lombok.
 - Cấu hình ứng dụng nằm tại `src/main/resources/application.yml`.
 - Có persistence entity và Flyway migration cho identity, candidate, company, job và application.
-- Chưa có API nghiệp vụ công khai. HTTP hiện chỉ mở health/info; mọi endpoint mới mặc định bị từ chối cho đến khi có authentication, authorization và API contract.
+- Đã có API identity; chưa có API nghiệp vụ tuyển dụng công khai. HTTP mở health/info và auth routes; mọi endpoint mới mặc định bị từ chối cho đến khi có authentication, authorization và API contract.
 - CI tạo MySQL tạm thời bằng Testcontainers để chạy migration và Hibernate schema validation.
 
 ## 3. Bức tranh tổng thể

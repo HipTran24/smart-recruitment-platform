@@ -219,7 +219,11 @@ class CvScreeningWorkflowTests {
             ApplicationScreeningRepository repository,
             Clock clock
     ) {
-        return new CvScreeningStateService(repository, new JsonMapper(), clock, new SecureRandom());
+        return new CvScreeningStateService(
+                new com.recruitment.app.modules.applications.infrastructure.persistence.repository.JpaApplicationScreeningStore(
+                        repository, new JsonMapper(), clock, new SecureRandom()
+                )
+        );
     }
 
     @SuppressWarnings("unchecked")

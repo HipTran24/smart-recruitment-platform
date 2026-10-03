@@ -1,7 +1,11 @@
 package com.recruitment.app;
 
+import com.tngtech.archunit.core.domain.JavaClasses;
+import com.tngtech.archunit.core.importer.ClassFileImporter;
+import com.tngtech.archunit.core.importer.ImportOption;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -15,9 +19,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
+import static com.tngtech.archunit.library.dependencies.SlicesRuleDefinition.slices;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ModuleArchitectureTests {
+
+    private static final JavaClasses PRODUCTION_CLASSES = new ClassFileImporter()
+            .withImportOption(ImportOption.Predefined.DO_NOT_INCLUDE_TESTS)
+            .importPackages("com.recruitment.app");
 
     @Test
     void persistenceEntitiesDoNotReferenceEntitiesFromAnotherModule() throws Exception {
@@ -41,6 +51,86 @@ class ModuleArchitectureTests {
         }
 
         assertTrue(violations.isEmpty(), () -> "Cross-module persistence dependencies: " + violations);
+    }
+
+    @Test
+    void domainHasNoDependenciesOnInfrastructureApplicationOrFrameworks() {
+        noClasses().that().resideInAPackage("..domain..")
+                .should().dependOnClassesThat().resideInAnyPackage(
+                        "..infrastructure..",
+                        "..application..",
+                        "org.springframework..",
+                        "jakarta.persistence.."
+                )
+                .because("Domain models must remain pure and free from framework/infrastructure bindings")
+                .check(PRODUCTION_CLASSES);
+    }
+
+    @Test
+    void applicationDoesNotDependOnInfrastructure() {
+        noClasses().that().resideInAPackage("..application..")
+                .should().dependOnClassesThat().resideInAPackage("..infrastructure..")
+                .because("Application services must depend only on domain and ports, not infrastructure")
+                .check(PRODUCTION_CLASSES);
+    }
+
+    @Test
+    void apiDoesNotDependDirectlyOnPersistenceEntities() {
+        noClasses().that().resideInAPackage("..api..")
+                .should().dependOnClassesThat().resideInAPackage("..infrastructure.persistence.entity..")
+                .because("API layer must exchange DTOs, never exposing persistence entities")
+                .check(PRODUCTION_CLASSES);
+    }
+
+    @Test
+    void modulesAreFreeOfCyclicDependencies() {
+        slices().matching("com.recruitment.app.modules.(*)..")
+                .should().beFreeOfCycles()
+                .because("Modular monolith slices must never have circular dependencies")
+                .check(PRODUCTION_CLASSES);
+    }
+
+    @Test
+    void sourceAndTestFilesRespectSizeBudgets() throws IOException {
+        List<String> violations = new ArrayList<>();
+
+        Path mainRoot = Path.of("src/main/java");
+        if (Files.exists(mainRoot)) {
+            try (Stream<Path> stream = Files.walk(mainRoot)) {
+                stream.filter(p -> p.toString().endsWith(".java")).forEach(file -> {
+                    try {
+                        List<String> lines = Files.readAllLines(file);
+                        int lineCount = lines.size();
+                        if (lineCount > 400) {
+                            violations.add(file + " exceeds 400 lines: " + lineCount);
+                        }
+                        if (file.getFileName().toString().endsWith("Controller.java") && lineCount > 200) {
+                            violations.add("Controller " + file + " exceeds 200 lines: " + lineCount);
+                        }
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+            }
+        }
+
+        Path testRoot = Path.of("src/test/java");
+        if (Files.exists(testRoot)) {
+            try (Stream<Path> stream = Files.walk(testRoot)) {
+                stream.filter(p -> p.toString().endsWith(".java")).forEach(file -> {
+                    try {
+                        int lineCount = Files.readAllLines(file).size();
+                        if (lineCount > 600) {
+                            violations.add("Test file " + file + " exceeds 600 lines: " + lineCount);
+                        }
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+            }
+        }
+
+        assertTrue(violations.isEmpty(), () -> "Size budget violations:\n" + String.join("\n", violations));
     }
 
     private static List<Class<?>> persistenceEntities() throws URISyntaxException, java.io.IOException, ClassNotFoundException {

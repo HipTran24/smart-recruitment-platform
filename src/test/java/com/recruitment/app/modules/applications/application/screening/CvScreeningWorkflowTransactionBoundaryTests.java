@@ -100,16 +100,23 @@ class CvScreeningWorkflowTransactionBoundaryTests {
         }
 
         @Bean
-        CvScreeningStateService cvScreeningStateService(
+        com.recruitment.app.modules.applications.application.screening.port.out.ApplicationScreeningStore applicationScreeningStore(
                 ApplicationScreeningRepository applicationScreeningRepository,
                 Clock clock
         ) {
-            return new CvScreeningStateService(
+            return new com.recruitment.app.modules.applications.infrastructure.persistence.repository.JpaApplicationScreeningStore(
                     applicationScreeningRepository,
                     new JsonMapper(),
                     clock,
                     new SecureRandom()
             );
+        }
+
+        @Bean
+        CvScreeningStateService cvScreeningStateService(
+                com.recruitment.app.modules.applications.application.screening.port.out.ApplicationScreeningStore applicationScreeningStore
+        ) {
+            return new CvScreeningStateService(applicationScreeningStore);
         }
 
         @Bean

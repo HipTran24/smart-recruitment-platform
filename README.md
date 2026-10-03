@@ -20,3 +20,7 @@ Backend cho nền tảng tuyển dụng, xây dựng theo modular monolith Sprin
 Xem cấu hình JWT, Google OAuth, CORS và Gemini trong [runbook xác thực & AI](docs/runbooks/authentication-and-ai.md). Chạy `./scripts/verify.sh` để kiểm tra đầy đủ; script dùng MySQL Testcontainer tách biệt và không thay đổi database local.
 
 See [documentation](docs/README.md), [contribution guidance](CONTRIBUTING.md), and [security reporting](SECURITY.md).
+
+## Backend implementation
+
+Target: Spring Boot 4.1.1 / Java 25 LTS, shared recruiter team. Track actual implementation and outstanding acceptance checks in [the backlog](docs/architecture/implementation-backlog.md); the full recruitment MVP is not implemented yet. [Frontend contract mapping](docs/api/frontend-mapping.md).

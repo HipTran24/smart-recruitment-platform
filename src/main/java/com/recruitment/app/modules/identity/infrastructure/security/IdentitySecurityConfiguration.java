@@ -1,5 +1,7 @@
 package com.recruitment.app.modules.identity.infrastructure.security;
 
+import com.recruitment.app.common.api.error.ApiErrorWriter;
+
 import com.recruitment.app.modules.identity.infrastructure.security.oauth.DiscardingOAuth2AuthorizedClientRepository;
 import com.recruitment.app.modules.identity.infrastructure.security.oauth.GoogleOAuth2FailureHandler;
 import com.recruitment.app.modules.identity.infrastructure.security.oauth.GoogleOAuth2SuccessHandler;
@@ -74,17 +76,24 @@ public class IdentitySecurityConfiguration {
                         ))
                 )
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/actuator/health/**", "/actuator/info").permitAll()
+                        .requestMatchers("/actuator/health/**", "/actuator/info", "/v3/api-docs/**", "/v3/api-docs").permitAll()
                         .requestMatchers(
                                 "/api/v1/auth/register",
                                 "/api/v1/auth/login",
                                 "/api/v1/auth/refresh",
                                 "/api/v1/auth/logout",
                                 "/api/v1/auth/oauth/exchange",
+                                "/api/v1/auth/password/reset-request",
+                                "/api/v1/auth/password/reset-confirm",
+                                "/api/v1/auth/verify-email",
                                 "/oauth2/**",
                                 "/login/oauth2/**"
                         ).permitAll()
-                        .requestMatchers("/api/v1/auth/me").authenticated()
+                        .requestMatchers(
+                                "/api/v1/auth/me",
+                                "/api/v1/auth/password/change",
+                                "/api/v1/auth/oauth/link-google"
+                        ).authenticated()
                         .anyRequest().denyAll()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
@@ -105,8 +114,13 @@ public class IdentitySecurityConfiguration {
     }
 
     @Bean
+    LiveAccountValidator liveAccountValidator(com.recruitment.app.modules.identity.application.port.out.IdentityAccountStore accountStore) {
+        return accountStore::isAccountLive;
+    }
+
+    @Bean
     PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(12);
+        return new Argon2idMigratingPasswordEncoder();
     }
 
     /**
@@ -135,7 +149,6 @@ public class IdentitySecurityConfiguration {
         if (bearerChallenge) {
             response.setHeader(HttpHeaders.WWW_AUTHENTICATE, "Bearer");
         }
-        response.getWriter().write("{\"code\":\"" + code + "\",\"message\":\"" + message
-                + "\",\"fieldErrors\":{}}");
+        ApiErrorWriter.write(response, status, code, message);
     }
 }

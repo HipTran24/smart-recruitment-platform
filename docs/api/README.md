@@ -56,7 +56,8 @@ Mẫu lỗi hiện hành:
 {
   "code": "VALIDATION_ERROR",
   "message": "The request is invalid.",
-  "fieldErrors": {}
+  "fieldErrors": {},
+  "requestId": "server-generated-uuid"
 }
 ```
 
@@ -75,7 +76,7 @@ GET /api/v1/jobs?page=0&size=20&sort=createdAt,desc
 
 ## Authorization
 
-JWT access token mang `roles` và Spring Security map chúng thành authorities `ROLE_*`. Endpoint tuyển dụng tương lai phải khai báo policy nghiệp vụ ở endpoint/use case (ví dụ owner, company membership, hoặc role), không chỉ tin `userId` từ request. `GET /me` luôn đọc lại account active từ database.
+JWT access token mang `roles` và Spring Security map chúng thành authorities `ROLE_*`. Endpoint tuyển dụng tương lai phải khai báo policy nghiệp vụ ở endpoint/use case (ví dụ owner hoặc role; Recruiter dùng chung dữ liệu của đội), không chỉ tin `userId` từ request. `GET /me` luôn đọc lại account active từ database.
 
 ## Contract và tài liệu
 

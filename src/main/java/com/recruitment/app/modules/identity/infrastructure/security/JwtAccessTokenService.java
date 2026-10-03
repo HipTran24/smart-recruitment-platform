@@ -55,6 +55,7 @@ public final class JwtAccessTokenService implements AccessTokenIssuer {
                 .id(UUID.randomUUID().toString())
                 .claim(ApplicationAccessTokenValidator.TOKEN_USE_CLAIM, ApplicationAccessTokenValidator.ACCESS_TOKEN_USE)
                 .claim(ApplicationAccessTokenValidator.ROLES_CLAIM, subject.roleCodes().stream().sorted().toList())
+                .claim(ApplicationAccessTokenValidator.CREDENTIAL_VERSION_CLAIM, subject.credentialVersion())
                 .build();
         JwsHeader headers = JwsHeader.with(SignatureAlgorithm.RS256)
                 .type("JWT")
@@ -75,7 +76,9 @@ public final class JwtAccessTokenService implements AccessTokenIssuer {
         try {
             Jwt jwt = jwtDecoder.decode(compactToken);
             Set<String> roleCodes = new LinkedHashSet<>(jwt.getClaimAsStringList(ApplicationAccessTokenValidator.ROLES_CLAIM));
-            return new JwtPrincipal(Long.parseLong(jwt.getSubject()), roleCodes, jwt.getId());
+            Object cvClaim = jwt.getClaim(ApplicationAccessTokenValidator.CREDENTIAL_VERSION_CLAIM);
+            int credentialVersion = cvClaim instanceof Number number ? number.intValue() : 1;
+            return new JwtPrincipal(Long.parseLong(jwt.getSubject()), roleCodes, jwt.getId(), credentialVersion);
         } catch (JwtException | IllegalArgumentException exception) {
             throw new InvalidAccessTokenException(exception);
         }

@@ -1,9 +1,8 @@
 package com.recruitment.app.modules.identity.application;
 
-import com.recruitment.app.modules.identity.infrastructure.security.oauth.GoogleOAuthProperties;
 import com.recruitment.app.modules.identity.application.exception.OAuthIdentityException;
-import com.recruitment.app.modules.identity.infrastructure.persistence.entity.OAuthAuthorizationCode;
-import com.recruitment.app.modules.identity.infrastructure.persistence.repository.OAuthAuthorizationCodeRepository;
+import com.recruitment.app.modules.identity.application.port.out.OAuthAuthorizationCodeStore;
+import com.recruitment.app.modules.identity.domain.model.OAuthCodeSnapshot;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -15,6 +14,7 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.HexFormat;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -31,11 +31,11 @@ class OAuthAuthorizationCodeServiceTests {
 
     @Test
     void issuesOnlyHashAndConsumesTheBrowserHandoffCodeOnce() throws Exception {
-        OAuthAuthorizationCodeRepository repository = mock(OAuthAuthorizationCodeRepository.class);
+        OAuthAuthorizationCodeStore store = mock(OAuthAuthorizationCodeStore.class);
         OAuthAuthorizationCodeService service = new OAuthAuthorizationCodeService(
-                repository,
-                new GoogleOAuthProperties(true, "client", "secret", null, Duration.ofMinutes(1)),
-                Clock.fixed(NOW, ZoneOffset.UTC)
+                store,
+                Clock.fixed(NOW, ZoneOffset.UTC),
+                Duration.ofMinutes(1)
         );
 
         String verifier = "a".repeat(43);
@@ -45,30 +45,48 @@ class OAuthAuthorizationCodeServiceTests {
                 codeChallenge(verifier),
                 transactionId
         );
-        ArgumentCaptor<OAuthAuthorizationCode> persisted = ArgumentCaptor.forClass(OAuthAuthorizationCode.class);
-        verify(repository).save(persisted.capture());
 
-        OAuthAuthorizationCode code = persisted.getValue();
+        ArgumentCaptor<String> hashCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<Instant> expiresCaptor = ArgumentCaptor.forClass(Instant.class);
+        verify(store).save(eq(42L), hashCaptor.capture(), eq(codeChallenge(verifier)), eq(transactionId), expiresCaptor.capture());
+
+        String savedHash = hashCaptor.getValue();
         assertEquals(43, issued.rawCode().length());
-        assertNotEquals(issued.rawCode(), code.getCodeHash());
-        assertEquals(sha256(issued.rawCode()), code.getCodeHash());
-        assertEquals(transactionId, code.getTransactionId());
+        assertNotEquals(issued.rawCode(), savedHash);
+        assertEquals(sha256(issued.rawCode()), savedHash);
         assertEquals(transactionId, issued.transactionId());
-        assertEquals(NOW.plus(Duration.ofMinutes(1)), code.getExpiresAt());
+        assertEquals(NOW.plus(Duration.ofMinutes(1)), expiresCaptor.getValue());
 
-        when(repository.findByCodeHashForUpdate(eq(code.getCodeHash()))).thenReturn(Optional.of(code));
+        AtomicReference<Instant> consumedAt = new AtomicReference<>();
+        when(store.lockByCodeHash(eq(savedHash))).thenAnswer(invocation -> {
+            OAuthCodeSnapshot snapshot = new OAuthCodeSnapshot(
+                    1L,
+                    42L,
+                    savedHash,
+                    codeChallenge(verifier),
+                    transactionId,
+                    NOW.plus(Duration.ofMinutes(1)),
+                    consumedAt.get()
+            );
+            return Optional.of(snapshot);
+        });
+        org.mockito.Mockito.doAnswer(invocation -> {
+            consumedAt.set(invocation.getArgument(1));
+            return null;
+        }).when(store).markConsumed(eq(1L), any(Instant.class));
+
         assertEquals(42L, service.consume(issued.rawCode(), verifier, transactionId));
-        assertEquals(NOW, code.getConsumedAt());
+        assertEquals(NOW, consumedAt.get());
         assertThrows(OAuthIdentityException.class, () -> service.consume(issued.rawCode(), verifier, transactionId));
     }
 
     @Test
     void rejectsMalformedCodesBeforeQueryingPersistence() {
-        OAuthAuthorizationCodeRepository repository = mock(OAuthAuthorizationCodeRepository.class);
+        OAuthAuthorizationCodeStore store = mock(OAuthAuthorizationCodeStore.class);
         OAuthAuthorizationCodeService service = new OAuthAuthorizationCodeService(
-                repository,
-                new GoogleOAuthProperties(true, "client", "secret", null, Duration.ofMinutes(1)),
-                Clock.fixed(NOW, ZoneOffset.UTC)
+                store,
+                Clock.fixed(NOW, ZoneOffset.UTC),
+                Duration.ofMinutes(1)
         );
 
         assertThrows(OAuthIdentityException.class, () -> service.consume(
@@ -76,16 +94,16 @@ class OAuthAuthorizationCodeServiceTests {
                 "a".repeat(43),
                 "t".repeat(43)
         ));
-        verify(repository, org.mockito.Mockito.never()).findByCodeHashForUpdate(any());
+        verify(store, org.mockito.Mockito.never()).lockByCodeHash(any());
     }
 
     @Test
     void consumesTheCodeWhenItsTransactionDoesNotMatch() throws Exception {
-        OAuthAuthorizationCodeRepository repository = mock(OAuthAuthorizationCodeRepository.class);
+        OAuthAuthorizationCodeStore store = mock(OAuthAuthorizationCodeStore.class);
         OAuthAuthorizationCodeService service = new OAuthAuthorizationCodeService(
-                repository,
-                new GoogleOAuthProperties(true, "client", "secret", null, Duration.ofMinutes(1)),
-                Clock.fixed(NOW, ZoneOffset.UTC)
+                store,
+                Clock.fixed(NOW, ZoneOffset.UTC),
+                Duration.ofMinutes(1)
         );
 
         String verifier = "a".repeat(43);
@@ -94,17 +112,27 @@ class OAuthAuthorizationCodeServiceTests {
                 codeChallenge(verifier),
                 "t".repeat(43)
         );
-        ArgumentCaptor<OAuthAuthorizationCode> persisted = ArgumentCaptor.forClass(OAuthAuthorizationCode.class);
-        verify(repository).save(persisted.capture());
-        OAuthAuthorizationCode code = persisted.getValue();
-        when(repository.findByCodeHashForUpdate(eq(code.getCodeHash()))).thenReturn(Optional.of(code));
+        ArgumentCaptor<String> hashCaptor = ArgumentCaptor.forClass(String.class);
+        verify(store).save(eq(42L), hashCaptor.capture(), eq(codeChallenge(verifier)), eq("t".repeat(43)), any());
+
+        String savedHash = hashCaptor.getValue();
+        OAuthCodeSnapshot snapshot = new OAuthCodeSnapshot(
+                1L,
+                42L,
+                savedHash,
+                codeChallenge(verifier),
+                "t".repeat(43),
+                NOW.plus(Duration.ofMinutes(1)),
+                null
+        );
+        when(store.lockByCodeHash(eq(savedHash))).thenReturn(Optional.of(snapshot));
 
         assertThrows(OAuthIdentityException.class, () -> service.consume(
                 issued.rawCode(),
                 verifier,
                 "u".repeat(43)
         ));
-        assertEquals(NOW, code.getConsumedAt());
+        verify(store).markConsumed(eq(1L), eq(NOW));
     }
 
     private static String sha256(String value) throws Exception {

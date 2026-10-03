@@ -4,7 +4,7 @@ This directory contains the reproducible local runtime for the Spring Boot appli
 
 ## Contents
 
-- `backend.Dockerfile`: multi-stage build that compiles the Maven application with Java 26 and runs it as a non-root user.
+- `backend.Dockerfile`: multi-stage build that compiles the Maven application with Java 25 and runs it as a non-root user.
 - `compose.local.yml`: starts MySQL 8.4 and the application after MySQL is healthy; both services expose health checks.
 
 ## Usage

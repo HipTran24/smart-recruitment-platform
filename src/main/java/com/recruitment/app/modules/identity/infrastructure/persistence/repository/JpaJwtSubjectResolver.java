@@ -32,7 +32,8 @@ class JpaJwtSubjectResolver implements JwtSubjectResolver {
                 .filter(User::isActive)
                 .map(user -> new JwtSubject(
                         user.getId(),
-                        user.getRoles().stream().map(role -> role.getCode()).collect(java.util.stream.Collectors.toSet())
+                        user.getRoles().stream().map(role -> role.getCode()).collect(java.util.stream.Collectors.toSet()),
+                        user.getCredentialVersion()
                 ));
     }
 }

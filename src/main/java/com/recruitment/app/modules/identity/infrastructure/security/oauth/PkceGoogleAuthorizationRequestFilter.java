@@ -1,5 +1,7 @@
 package com.recruitment.app.modules.identity.infrastructure.security.oauth;
 
+import com.recruitment.app.common.api.error.ApiErrorWriter;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -154,6 +156,7 @@ public final class PkceGoogleAuthorizationRequestFilter extends OncePerRequestFi
         response.setHeader("Cache-Control", "no-store, max-age=0");
         response.setHeader("Pragma", "no-cache");
         response.setHeader("Referrer-Policy", "no-referrer");
-        response.getWriter().write("{\"code\":\"INVALID_OAUTH_REQUEST\",\"message\":\"A valid PKCE challenge is required.\",\"fieldErrors\":{}}");
+        ApiErrorWriter.write(response, response.getStatus(),
+                "INVALID_OAUTH_REQUEST", "A valid PKCE challenge is required.");
     }
 }

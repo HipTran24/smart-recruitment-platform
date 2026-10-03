@@ -63,8 +63,11 @@ public class JwtSecurityConfiguration {
     }
 
     @Bean
-    JwtAuthenticationFilter jwtAuthenticationFilter(JwtAccessTokenService jwtAccessTokenService) {
-        return new JwtAuthenticationFilter(jwtAccessTokenService);
+    JwtAuthenticationFilter jwtAuthenticationFilter(
+            JwtAccessTokenService jwtAccessTokenService,
+            org.springframework.beans.factory.ObjectProvider<LiveAccountValidator> liveAccountValidator
+    ) {
+        return new JwtAuthenticationFilter(jwtAccessTokenService, liveAccountValidator.getIfAvailable());
     }
 
     /**

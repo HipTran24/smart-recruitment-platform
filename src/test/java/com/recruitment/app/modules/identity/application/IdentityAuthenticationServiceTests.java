@@ -1,47 +1,77 @@
 package com.recruitment.app.modules.identity.application;
 
 import com.recruitment.app.modules.identity.application.command.GoogleIdentityProfile;
+import com.recruitment.app.modules.identity.application.command.PasswordLoginCommand;
+import com.recruitment.app.modules.identity.application.command.RegisterAccountCommand;
+import com.recruitment.app.modules.identity.application.exception.IdentityAuthenticationException;
 import com.recruitment.app.modules.identity.application.exception.OAuthIdentityException;
-import com.recruitment.app.modules.identity.infrastructure.persistence.entity.User;
-import com.recruitment.app.modules.identity.infrastructure.persistence.repository.RoleRepository;
-import com.recruitment.app.modules.identity.infrastructure.persistence.repository.UserOAuthIdentityRepository;
-import com.recruitment.app.modules.identity.infrastructure.persistence.repository.UserRepository;
+import com.recruitment.app.modules.identity.application.port.out.IdentityAccountStore;
+import com.recruitment.app.modules.identity.domain.model.AccountSnapshot;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
+import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 class IdentityAuthenticationServiceTests {
+    private final IdentityAccountStore accounts = mock(IdentityAccountStore.class);
+    private final PasswordEncoder passwords = mock(PasswordEncoder.class);
+    private final TokenSessionService tokens = mock(TokenSessionService.class);
+    private final IdentityAuthenticationService service =
+            new IdentityAuthenticationService(accounts, passwords, tokens);
 
     @Test
-    void refusesToAutoLinkAGoogleSubjectToAnExistingEmailAccount() {
-        UserRepository users = mock(UserRepository.class);
-        UserOAuthIdentityRepository identities = mock(UserOAuthIdentityRepository.class);
-        when(identities.findForUpdate(any(), any())).thenReturn(Optional.empty());
-        when(users.findByEmail("candidate@example.test")).thenReturn(Optional.of(mock(User.class)));
+    void refusesEmailOnlyGoogleAutoLinking() {
+        when(accounts.lockGoogleAccount("subject")).thenReturn(Optional.empty());
+        when(accounts.findByEmail("candidate@example.test")).thenReturn(Optional.of(account(true)));
+        assertThrows(OAuthIdentityException.class, () -> service.resolveGoogleAccount(google(true)));
+        verify(accounts, never()).bindGoogleIdentity(any(), any(), any());
+        verify(accounts, never()).createCandidate(any(), any(), any());
+    }
 
-        IdentityAuthenticationService service = new IdentityAuthenticationService(
-                users,
-                mock(RoleRepository.class),
-                identities,
-                mock(PasswordEncoder.class),
-                mock(TokenSessionService.class)
-        );
+    @Test
+    void refusesInactiveLinkedGoogleAccount() {
+        when(accounts.lockGoogleAccount("subject")).thenReturn(Optional.of(account(false)));
+        assertThrows(IdentityAuthenticationException.class, () -> service.resolveGoogleAccount(google(true)));
+        verify(accounts, never()).refreshGoogleProfile(any(), any(), anyBoolean());
+    }
 
-        assertThrows(OAuthIdentityException.class, () -> service.resolveGoogleAccount(new GoogleIdentityProfile(
-                "google-subject-123",
-                "candidate@example.test",
-                true,
-                "Candidate Example"
-        )));
+    @Test
+    void refusesUnverifiedNewGoogleAccount() {
+        when(accounts.lockGoogleAccount("subject")).thenReturn(Optional.empty());
+        assertThrows(OAuthIdentityException.class, () -> service.resolveGoogleAccount(google(false)));
+        verify(accounts, never()).createCandidate(any(), any(), any());
+    }
 
-        verify(identities, never()).saveAndFlush(any());
+    @Test
+    void localRegistrationNormalizesEmailAndCreatesCandidateThroughPort() {
+        when(accounts.findByEmail("candidate@example.test")).thenReturn(Optional.empty());
+        when(passwords.encode("long-password-value")).thenReturn("encoded-password");
+        when(accounts.createCandidate("candidate@example.test", "encoded-password", "Candidate"))
+                .thenReturn(account(true));
+        service.register(new RegisterAccountCommand("Candidate", " CANDIDATE@example.test ",
+                "long-password-value"));
+        verify(tokens).issueFor(7L);
+    }
+
+    @Test
+    void inactivePasswordAccountNeverReceivesTokens() {
+        when(accounts.findByEmail("candidate@example.test")).thenReturn(Optional.of(account(false)));
+        assertThrows(IdentityAuthenticationException.class, () -> service.loginWithPassword(
+                new PasswordLoginCommand("candidate@example.test", "long-password-value")));
+        verifyNoInteractions(tokens);
+    }
+
+    private static AccountSnapshot account(boolean active) {
+        return new AccountSnapshot(7L, "candidate@example.test", "Candidate", "hash", active,
+                Set.of("ROLE_CANDIDATE"));
+    }
+
+    private static GoogleIdentityProfile google(boolean verified) {
+        return new GoogleIdentityProfile("subject", "candidate@example.test", verified, "Candidate");
     }
 }

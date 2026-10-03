@@ -1,5 +1,7 @@
 package com.recruitment.app.modules.identity.infrastructure.security.oauth;
 
+import com.recruitment.app.common.api.error.ApiErrorWriter;
+
 import com.recruitment.app.modules.identity.api.response.OAuthAuthorizationCodeResponse;
 import com.recruitment.app.modules.identity.application.GoogleOAuthLoginService;
 import com.recruitment.app.modules.identity.application.OAuthAuthorizationCodeService;
@@ -159,6 +161,7 @@ public class GoogleOAuth2SuccessHandler implements AuthenticationSuccessHandler 
         applySensitiveResponseHeaders(response);
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        response.getWriter().write("{\"code\":\"OAUTH_AUTHENTICATION_FAILED\",\"message\":\"OAuth authentication failed.\",\"fieldErrors\":{}}");
+        ApiErrorWriter.write(response, response.getStatus(),
+                "OAUTH_AUTHENTICATION_FAILED", "OAuth authentication failed.");
     }
 }

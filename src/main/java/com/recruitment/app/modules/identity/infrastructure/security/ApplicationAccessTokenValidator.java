@@ -17,6 +17,7 @@ final class ApplicationAccessTokenValidator implements OAuth2TokenValidator<Jwt>
     static final String TOKEN_USE_CLAIM = "token_use";
     static final String ACCESS_TOKEN_USE = "access";
     static final String ROLES_CLAIM = "roles";
+    static final String CREDENTIAL_VERSION_CLAIM = "credential_version";
     private static final String JWT_TYPE = "JWT";
 
     private static final OAuth2Error INVALID_TOKEN = new OAuth2Error(

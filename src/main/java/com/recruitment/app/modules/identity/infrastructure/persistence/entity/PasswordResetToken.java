@@ -3,7 +3,6 @@ package com.recruitment.app.modules.identity.infrastructure.persistence.entity;
 import com.recruitment.app.common.infrastructure.persistence.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
@@ -11,17 +10,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.Instant;
+import java.util.Objects;
 
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(
         name = "password_reset_tokens",
-        indexes = @Index(name = "idx_password_reset_tokens_user_id", columnList = "user_id"),
-        uniqueConstraints = @UniqueConstraint(
-                name = "uk_password_reset_tokens_token_hash",
-                columnNames = "token_hash"
-        )
+        uniqueConstraints = @UniqueConstraint(name = "uk_password_reset_tokens_token_hash", columnNames = "token_hash")
 )
 public class PasswordResetToken extends BaseEntity {
 
@@ -44,22 +40,23 @@ public class PasswordResetToken extends BaseEntity {
         if (tokenHash == null || tokenHash.isBlank()) {
             throw new IllegalArgumentException("token hash must not be blank");
         }
-        if (expiresAt == null) {
-            throw new IllegalArgumentException("expires at must not be null");
-        }
         this.userId = userId;
-        this.tokenHash = tokenHash;
-        this.expiresAt = expiresAt;
+        this.tokenHash = tokenHash.strip();
+        this.expiresAt = Objects.requireNonNull(expiresAt, "expires at must not be null");
     }
 
-    public boolean isUsable(Instant now) {
-        return usedAt == null && expiresAt.isAfter(now);
+    public boolean isConsumed() {
+        return usedAt != null;
     }
 
-    public void markUsed(Instant now) {
-        if (!isUsable(now)) {
-            throw new IllegalStateException("password reset token is no longer usable");
+    public boolean isExpired(Instant now) {
+        return now.isAfter(expiresAt);
+    }
+
+    public void consume(Instant now) {
+        if (usedAt != null) {
+            throw new IllegalStateException("token is already consumed");
         }
-        usedAt = now;
+        this.usedAt = Objects.requireNonNull(now, "consumed at must not be null");
     }
 }

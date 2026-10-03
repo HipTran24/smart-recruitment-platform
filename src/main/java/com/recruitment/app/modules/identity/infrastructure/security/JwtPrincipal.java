@@ -15,11 +15,14 @@ import java.util.Set;
  * It contains only stable authorization data; personal profile data remains in
  * the identity database.
  */
-public record JwtPrincipal(Long userId, Set<String> roleCodes, String tokenId) implements Principal {
+public record JwtPrincipal(Long userId, Set<String> roleCodes, String tokenId, int credentialVersion) implements Principal {
 
     public JwtPrincipal {
         if (userId == null || userId <= 0) {
             throw new IllegalArgumentException("user id must be positive");
+        }
+        if (credentialVersion <= 0) {
+            throw new IllegalArgumentException("credential version must be positive");
         }
         Objects.requireNonNull(roleCodes, "role codes must not be null");
         LinkedHashSet<String> normalizedRoles = new LinkedHashSet<>();
@@ -36,6 +39,10 @@ public record JwtPrincipal(Long userId, Set<String> roleCodes, String tokenId) i
         if (tokenId == null || tokenId.isBlank()) {
             throw new IllegalArgumentException("token id must not be blank");
         }
+    }
+
+    public JwtPrincipal(Long userId, Set<String> roleCodes, String tokenId) {
+        this(userId, roleCodes, tokenId, 1);
     }
 
     @Override

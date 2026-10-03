@@ -1,5 +1,7 @@
 # Current Schema Notes
 
+> Target decisions: [ADR 0003](../adr/0003-backend-mvp-baseline.md). Historical company persistence remains until G1 migration; it is not the target authorization boundary. See [implementation status](../architecture/implementation-backlog.md).
+
 `V001__initial_schema.sql` creates the initial identity tables. `V002__create_recruitment_domain_schema.sql` adds the recruitment persistence model. Các migration sau được áp dụng theo thứ tự, không sửa migration đã được deploy:
 
 - `V003__add_identity_authentication_schema.sql`: Google stable subject bindings, OAuth handoff codes, và role `ROLE_CANDIDATE`.

@@ -1,0 +1,10 @@
+{
+  "java.jdt.ls.java.home": "/Users/ProM2/Library/Java/JavaVirtualMachines/amazon-corretto-25.jdk/Contents/Home",
+  "java.configuration.runtimes": [
+    {
+      "name": "JavaSE-25",
+      "path": "/Users/ProM2/Library/Java/JavaVirtualMachines/amazon-corretto-25.jdk/Contents/Home",
+      "default": true
+    }
+  ]
+}

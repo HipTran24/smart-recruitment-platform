@@ -32,8 +32,11 @@ public class Job extends BaseEntity {
     @Column(name = "company_id", nullable = false)
     private Long companyId;
 
-    @Column(name = "created_by_member_id", nullable = false)
+    @Column(name = "created_by_member_id")
     private Long createdByMemberId;
+
+    @Column(name = "created_by_user_id", nullable = false)
+    private Long createdByUserId;
 
     @Column(nullable = false, length = 200)
     private String title;
@@ -92,8 +95,22 @@ public class Job extends BaseEntity {
             EmploymentType employmentType,
             WorkplaceType workplaceType
     ) {
+        this(companyId, createdByMemberId, createdByMemberId, title, slug, description, employmentType, workplaceType);
+    }
+
+    public Job(
+            Long companyId,
+            Long createdByMemberId,
+            Long createdByUserId,
+            String title,
+            String slug,
+            String description,
+            EmploymentType employmentType,
+            WorkplaceType workplaceType
+    ) {
         this.companyId = requireId(companyId, "company id");
-        this.createdByMemberId = requireId(createdByMemberId, "company member id");
+        this.createdByMemberId = createdByMemberId;
+        this.createdByUserId = requireId(createdByUserId, "created by user id");
         this.title = requireText(title, "job title");
         this.slug = normalizeSlug(slug);
         this.description = requireText(description, "job description");

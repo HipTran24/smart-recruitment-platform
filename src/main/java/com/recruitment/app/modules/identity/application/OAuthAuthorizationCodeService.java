@@ -1,9 +1,9 @@
 package com.recruitment.app.modules.identity.application;
 
-import com.recruitment.app.modules.identity.infrastructure.security.oauth.GoogleOAuthProperties;
 import com.recruitment.app.modules.identity.application.exception.OAuthIdentityException;
-import com.recruitment.app.modules.identity.infrastructure.persistence.entity.OAuthAuthorizationCode;
-import com.recruitment.app.modules.identity.infrastructure.persistence.repository.OAuthAuthorizationCodeRepository;
+import com.recruitment.app.modules.identity.application.port.out.OAuthAuthorizationCodeStore;
+import com.recruitment.app.modules.identity.domain.model.OAuthCodeSnapshot;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,6 +13,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.HexFormat;
@@ -27,19 +28,28 @@ public class OAuthAuthorizationCodeService {
 
     private static final int RANDOM_BYTES = 32;
 
-    private final OAuthAuthorizationCodeRepository authorizationCodes;
-    private final GoogleOAuthProperties properties;
+    private final OAuthAuthorizationCodeStore authorizationCodes;
+    private final Duration authorizationCodeTtl;
     private final Clock clock;
     private final SecureRandom secureRandom = new SecureRandom();
 
+    @org.springframework.beans.factory.annotation.Autowired
     public OAuthAuthorizationCodeService(
-            OAuthAuthorizationCodeRepository authorizationCodes,
-            GoogleOAuthProperties properties,
+            OAuthAuthorizationCodeStore authorizationCodes,
+            @Value("${app.security.oauth2.google.authorization-code-ttl:PT1M}") Duration authorizationCodeTtl,
             Clock clock
     ) {
         this.authorizationCodes = authorizationCodes;
-        this.properties = properties;
+        this.authorizationCodeTtl = authorizationCodeTtl == null ? Duration.ofMinutes(1) : authorizationCodeTtl;
         this.clock = clock;
+    }
+
+    public OAuthAuthorizationCodeService(
+            OAuthAuthorizationCodeStore authorizationCodes,
+            Clock clock,
+            Duration authorizationCodeTtl
+    ) {
+        this(authorizationCodes, authorizationCodeTtl, clock);
     }
 
     @Transactional
@@ -49,15 +59,15 @@ public class OAuthAuthorizationCodeService {
         byte[] bytes = new byte[RANDOM_BYTES];
         secureRandom.nextBytes(bytes);
         String rawCode = Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
-        Instant expiresAt = clock.instant().plus(properties.authorizationCodeTtl());
+        Instant expiresAt = clock.instant().plus(authorizationCodeTtl);
 
-        authorizationCodes.save(new OAuthAuthorizationCode(
+        authorizationCodes.save(
                 userId,
                 sha256(rawCode),
                 validatedChallenge,
                 validatedTransactionId,
                 expiresAt
-        ));
+        );
         return new IssuedAuthorizationCode(rawCode, validatedTransactionId, expiresAt);
     }
 
@@ -65,23 +75,23 @@ public class OAuthAuthorizationCodeService {
     public Long consume(String rawCode, String codeVerifier, String transactionId) {
         String validatedTransactionId = validateTransactionIdForConsumption(transactionId);
         Instant now = clock.instant();
-        OAuthAuthorizationCode code = authorizationCodes.findByCodeHashForUpdate(sha256(rawCode))
+        OAuthCodeSnapshot code = authorizationCodes.lockByCodeHash(sha256(rawCode))
                 .orElseThrow(OAuthAuthorizationCodeService::invalidCode);
 
         if (!code.isUsable(now)) {
             throw invalidCode();
         }
 
-        if (!matches(code.getTransactionId(), validatedTransactionId)
-                || !matches(code.getCodeChallenge(), deriveCodeChallenge(codeVerifier))) {
+        if (!matches(code.transactionId(), validatedTransactionId)
+                || !matches(code.codeChallenge(), deriveCodeChallenge(codeVerifier))) {
             // A handoff code is single-use even when an attacker presents a
             // wrong verifier, preventing online verifier guessing.
-            code.consume(now);
+            authorizationCodes.markConsumed(code.id(), now);
             throw invalidCode();
         }
 
-        code.consume(now);
-        return code.getUserId();
+        authorizationCodes.markConsumed(code.id(), now);
+        return code.userId();
     }
 
     private static OAuthIdentityException invalidCode() {

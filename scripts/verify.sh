@@ -9,4 +9,5 @@ source "$SCRIPT_DIR/lib/common.sh"
 require_project_java
 
 printf 'Running Maven verification with an isolated MySQL Testcontainer.\n'
-run_maven -B -ntp verify
+run_maven -B -ntp clean verify
+

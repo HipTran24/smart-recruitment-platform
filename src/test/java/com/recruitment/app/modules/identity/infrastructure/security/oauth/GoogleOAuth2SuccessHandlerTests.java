@@ -87,8 +87,12 @@ class GoogleOAuth2SuccessHandlerTests {
         handler.onAuthenticationSuccess(new MockHttpServletRequest(), response, googleAuthentication(false));
 
         assertEquals(401, response.getStatus());
-        assertEquals("{\"code\":\"OAUTH_AUTHENTICATION_FAILED\",\"message\":\"OAuth authentication failed.\",\"fieldErrors\":{}}",
-                response.getContentAsString());
+        var error = tools.jackson.databind.json.JsonMapper.builder().build()
+                .readTree(response.getContentAsString());
+        assertEquals("OAUTH_AUTHENTICATION_FAILED", error.path("code").asText());
+        assertEquals("OAuth authentication failed.", error.path("message").asText());
+        org.junit.jupiter.api.Assertions.assertTrue(error.path("fieldErrors").isObject());
+        org.junit.jupiter.api.Assertions.assertTrue(error.has("requestId"));
         verify(loginService, never()).complete(any(), any(), any());
     }
 

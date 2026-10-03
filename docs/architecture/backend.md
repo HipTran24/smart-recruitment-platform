@@ -1,5 +1,7 @@
 # Kiến trúc Backend
 
+> Target decisions: [ADR 0003](../adr/0003-backend-mvp-baseline.md). Historical company persistence remains until G1 migration; it is not the target authorization boundary. See [implementation status](../architecture/implementation-backlog.md).
+
 > Trạng thái: **Current baseline + target structure**. Backend là một Spring Boot application tại repository root. Identity có API/application/security riêng; Gemini là adapter của module applications.
 
 ## Công nghệ hiện có

@@ -1,5 +1,7 @@
 package com.recruitment.app.modules.identity.infrastructure.security;
 
+import com.recruitment.app.common.api.error.ApiErrorWriter;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,14 +28,17 @@ import java.util.List;
 public final class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private static final String BEARER_PREFIX = "Bearer ";
-    private static final String INVALID_TOKEN_BODY = """
-            {"code":"INVALID_ACCESS_TOKEN","message":"Access token is invalid or expired."}
-            """.strip();
 
     private final JwtAccessTokenService jwtAccessTokenService;
+    private final LiveAccountValidator liveAccountValidator;
 
     JwtAuthenticationFilter(JwtAccessTokenService jwtAccessTokenService) {
+        this(jwtAccessTokenService, null);
+    }
+
+    JwtAuthenticationFilter(JwtAccessTokenService jwtAccessTokenService, LiveAccountValidator liveAccountValidator) {
         this.jwtAccessTokenService = jwtAccessTokenService;
+        this.liveAccountValidator = liveAccountValidator;
     }
 
     @Override
@@ -54,6 +59,11 @@ public final class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         try {
             JwtPrincipal principal = jwtAccessTokenService.authenticate(resolution.token());
+            if (liveAccountValidator != null && !liveAccountValidator.isAccountLive(principal.userId(), principal.credentialVersion())) {
+                SecurityContextHolder.clearContext();
+                writeInvalidToken(response);
+                return;
+            }
             Authentication authentication = UsernamePasswordAuthenticationToken.authenticated(
                     principal,
                     null,
@@ -111,7 +121,9 @@ public final class JwtAuthenticationFilter extends OncePerRequestFilter {
         response.setHeader(HttpHeaders.WWW_AUTHENTICATE, "Bearer error=\"invalid_token\"");
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        response.getWriter().write(INVALID_TOKEN_BODY);
+        ApiErrorWriter.write(response,
+                HttpServletResponse.SC_UNAUTHORIZED, "INVALID_ACCESS_TOKEN",
+                "Access token is invalid or expired.");
     }
 
     private record BearerTokenResolution(String token, boolean malformed) {

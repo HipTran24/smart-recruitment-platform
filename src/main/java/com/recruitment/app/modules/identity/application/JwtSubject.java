@@ -11,11 +11,14 @@ import java.util.Set;
  * <p>The subject is deliberately independent from the persistence entity so
  * token issuance does not expose JPA models outside the identity module.</p>
  */
-public record JwtSubject(Long userId, Set<String> roleCodes) {
+public record JwtSubject(Long userId, Set<String> roleCodes, int credentialVersion) {
 
     public JwtSubject {
         if (userId == null || userId <= 0) {
             throw new IllegalArgumentException("user id must be positive");
+        }
+        if (credentialVersion <= 0) {
+            throw new IllegalArgumentException("credential version must be positive");
         }
         Objects.requireNonNull(roleCodes, "role codes must not be null");
 
@@ -30,5 +33,9 @@ public record JwtSubject(Long userId, Set<String> roleCodes) {
             throw new IllegalArgumentException("at least one role code is required");
         }
         roleCodes = Collections.unmodifiableSet(normalizedRoles);
+    }
+
+    public JwtSubject(Long userId, Set<String> roleCodes) {
+        this(userId, roleCodes, 1);
     }
 }
