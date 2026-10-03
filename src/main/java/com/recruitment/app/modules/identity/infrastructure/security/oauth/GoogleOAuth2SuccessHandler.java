@@ -1,8 +1,6 @@
 package com.recruitment.app.modules.identity.infrastructure.security.oauth;
 
 import com.recruitment.app.common.api.error.ApiErrorWriter;
-
-import com.recruitment.app.modules.identity.api.response.OAuthAuthorizationCodeResponse;
 import com.recruitment.app.modules.identity.application.GoogleOAuthLoginService;
 import com.recruitment.app.modules.identity.application.OAuthAuthorizationCodeService;
 import com.recruitment.app.modules.identity.application.command.GoogleIdentityProfile;
@@ -83,9 +81,11 @@ public class GoogleOAuth2SuccessHandler implements AuthenticationSuccessHandler 
 
             response.setStatus(HttpServletResponse.SC_OK);
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-            response.getWriter().write(objectMapper.writeValueAsString(
-                    new OAuthAuthorizationCodeResponse(code.rawCode(), code.transactionId(), code.expiresAt())
-            ));
+            response.getWriter().write(objectMapper.writeValueAsString(Map.of(
+                    "code", code.rawCode(),
+                    "transactionId", code.transactionId(),
+                    "expiresAt", code.expiresAt().toString()
+            )));
         }
         catch (IdentityAuthenticationException | OAuthIdentityException | DataIntegrityViolationException exception) {
             PkceGoogleAuthorizationRequestFilter.discardCodeChallenge(request);

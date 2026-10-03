@@ -2,7 +2,7 @@ package com.recruitment.app.modules.identity.infrastructure.bootstrap;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "recruitment.identity.bootstrap-admin")
+@ConfigurationProperties(prefix = "app.identity.bootstrap-admin")
 public record BootstrapAdminProperties(
         boolean enabled,
         String email,

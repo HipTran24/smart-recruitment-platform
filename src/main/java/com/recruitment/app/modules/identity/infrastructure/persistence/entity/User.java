@@ -70,7 +70,9 @@ public class User extends BaseEntity {
         if ("ROLE_PLATFORM_ADMIN".equals(role.getCode()) && hasRole("ROLE_RECRUITER")) {
             throw new IllegalStateException("Platform Administrator cannot hold Recruiter role");
         }
-        roles.add(role);
+        if (roles.add(role) && getId() != null) {
+            incrementCredentialVersion();
+        }
     }
 
     public boolean hasRole(String roleCode) {
@@ -78,7 +80,9 @@ public class User extends BaseEntity {
     }
 
     public void removeRole(Role role) {
-        roles.remove(Objects.requireNonNull(role, "role must not be null"));
+        if (roles.remove(Objects.requireNonNull(role, "role must not be null"))) {
+            incrementCredentialVersion();
+        }
     }
 
     public Set<Role> getRoles() {
@@ -91,7 +95,7 @@ public class User extends BaseEntity {
 
     public void changePassword(String passwordHash) {
         this.passwordHash = requireText(passwordHash, "password hash");
-        this.credentialVersion++;
+        incrementCredentialVersion();
     }
 
     public void incrementCredentialVersion() {
@@ -103,7 +107,8 @@ public class User extends BaseEntity {
     }
 
     public void deactivate() {
-        active = false;
+        this.active = false;
+        incrementCredentialVersion();
     }
 
     public void activate() {

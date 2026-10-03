@@ -1,8 +1,11 @@
 package com.recruitment.app.modules.identity.application;
 
+import com.recruitment.app.common.security.TokenDigest;
 import com.recruitment.app.modules.identity.application.exception.IdentityAuthenticationException;
 import com.recruitment.app.modules.identity.application.exception.InvalidCurrentPasswordException;
+import com.recruitment.app.modules.identity.application.exception.InvalidPasswordPolicyException;
 import com.recruitment.app.modules.identity.application.exception.InvalidResetTokenException;
+import com.recruitment.app.modules.identity.application.port.out.AccountNotificationGateway;
 import com.recruitment.app.modules.identity.application.port.out.IdentityAccountStore;
 import com.recruitment.app.modules.identity.application.port.out.PasswordResetStore;
 import com.recruitment.app.modules.identity.domain.model.AccountSnapshot;
@@ -11,15 +14,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Base64;
-import java.util.HexFormat;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
@@ -28,7 +25,6 @@ import java.util.Optional;
 public class PasswordManagementService {
 
     private static final Duration DEFAULT_RESET_TTL = Duration.ofMinutes(15);
-    private static final int TOKEN_BYTES = 32;
 
     private final IdentityAccountStore accounts;
     private final PasswordResetStore passwordResetStore;
@@ -36,9 +32,8 @@ public class PasswordManagementService {
     private final TokenSessionService tokenSessions;
     private final Clock clock;
     private final Duration resetTokenTtl;
-    private final SecureRandom secureRandom = new SecureRandom();
+    private final AccountNotificationGateway notifications;
 
-    @org.springframework.beans.factory.annotation.Autowired
     public PasswordManagementService(
             IdentityAccountStore accounts,
             PasswordResetStore passwordResetStore,
@@ -46,7 +41,19 @@ public class PasswordManagementService {
             TokenSessionService tokenSessions,
             Clock clock
     ) {
-        this(accounts, passwordResetStore, passwordEncoder, tokenSessions, clock, DEFAULT_RESET_TTL);
+        this(accounts, passwordResetStore, passwordEncoder, tokenSessions, clock, DEFAULT_RESET_TTL, null);
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public PasswordManagementService(
+            IdentityAccountStore accounts,
+            PasswordResetStore passwordResetStore,
+            PasswordEncoder passwordEncoder,
+            TokenSessionService tokenSessions,
+            Clock clock,
+            @org.springframework.beans.factory.annotation.Autowired(required = false) AccountNotificationGateway notifications
+    ) {
+        this(accounts, passwordResetStore, passwordEncoder, tokenSessions, clock, DEFAULT_RESET_TTL, notifications);
     }
 
     public PasswordManagementService(
@@ -55,7 +62,8 @@ public class PasswordManagementService {
             PasswordEncoder passwordEncoder,
             TokenSessionService tokenSessions,
             Clock clock,
-            Duration resetTokenTtl
+            Duration resetTokenTtl,
+            AccountNotificationGateway notifications
     ) {
         this.accounts = Objects.requireNonNull(accounts, "accounts must not be null");
         this.passwordResetStore = Objects.requireNonNull(passwordResetStore, "password reset store must not be null");
@@ -63,6 +71,7 @@ public class PasswordManagementService {
         this.tokenSessions = Objects.requireNonNull(tokenSessions, "token sessions must not be null");
         this.clock = Objects.requireNonNull(clock, "clock must not be null");
         this.resetTokenTtl = Objects.requireNonNull(resetTokenTtl, "reset token TTL must not be null");
+        this.notifications = notifications;
     }
 
     @Transactional
@@ -89,18 +98,24 @@ public class PasswordManagementService {
         }
 
         AccountSnapshot user = userOpt.get();
-        String rawToken = generateRawToken();
-        String tokenHash = hashToken(rawToken);
+        String rawToken = TokenDigest.newOpaqueToken();
+        String tokenHash = TokenDigest.sha256Hex(rawToken);
         Instant expiresAt = clock.instant().plus(resetTokenTtl);
         passwordResetStore.saveToken(user.id(), tokenHash, expiresAt);
+        if (notifications != null) {
+            notifications.sendPasswordResetNotification(email, rawToken);
+        }
         return Optional.of(rawToken);
     }
 
     @Transactional
     public void confirmPasswordReset(String rawToken, String newPassword) {
         validatePassword(newPassword);
+        if (rawToken == null || rawToken.isBlank()) {
+            throw new InvalidResetTokenException();
+        }
         Instant now = clock.instant();
-        String tokenHash = hashToken(rawToken);
+        String tokenHash = TokenDigest.sha256Hex(rawToken);
 
         PasswordResetTokenSnapshot token = passwordResetStore.lockToken(tokenHash)
                 .orElseThrow(InvalidResetTokenException::new);
@@ -118,28 +133,9 @@ public class PasswordManagementService {
         tokenSessions.revokeAllFor(user.id());
     }
 
-    private String generateRawToken() {
-        byte[] bytes = new byte[TOKEN_BYTES];
-        secureRandom.nextBytes(bytes);
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
-    }
-
-    private static String hashToken(String rawToken) {
-        if (rawToken == null || rawToken.isBlank()) {
-            throw new InvalidResetTokenException();
-        }
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(rawToken.strip().getBytes(StandardCharsets.UTF_8));
-            return HexFormat.of().formatHex(hash);
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("SHA-256 not available", e);
-        }
-    }
-
     private static void validatePassword(String value) {
         if (value == null || value.length() < 12 || value.length() > 128) {
-            throw new IllegalArgumentException("Password must be between 12 and 128 characters");
+            throw new InvalidPasswordPolicyException("Password must be between 12 and 128 characters");
         }
     }
 

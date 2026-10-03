@@ -153,28 +153,6 @@ public class ApplicationScreening extends BaseEntity {
                 && (processingLeaseExpiresAt == null || !processingLeaseExpiresAt.isAfter(requireTime(now)));
     }
 
-    public void complete(
-            Integer score,
-            Recommendation recommendation,
-            String summary,
-            String matchedCriteria,
-            String missingCriteria,
-            Instant evaluatedAt
-    ) {
-        complete(
-                score,
-                recommendation,
-                summary,
-                matchedCriteria,
-                missingCriteria,
-                null,
-                provider,
-                modelVersion,
-                promptVersion,
-                evaluatedAt
-        );
-    }
-
     /**
      * Applies the normalized provider output after the worker has re-acquired a pessimistic lock.
      * The provider metadata records the model actually used, rather than only the model requested

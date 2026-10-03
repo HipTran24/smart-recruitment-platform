@@ -70,4 +70,47 @@ class AdminBootstrapTests {
         verify(accounts, never()).existsByRole(anyString());
         verify(accounts, never()).createAdmin(anyString(), anyString(), anyString());
     }
+
+    @Test
+    void throwsIllegalStateExceptionWhenPasswordIsTooShort() {
+        BootstrapAdminProperties properties = new BootstrapAdminProperties(
+                true,
+                "admin@smartrecruit.org",
+                "short",
+                "Admin Boss"
+        );
+
+        AdminBootstrapRunner runner = new AdminBootstrapRunner(accounts, passwordEncoder, properties);
+        org.junit.jupiter.api.Assertions.assertThrows(
+                IllegalStateException.class,
+                () -> runner.run(new DefaultApplicationArguments())
+        );
+    }
+
+    @Test
+    void bindsConfigurationPropertiesFromAppIdentityPrefix() {
+        org.springframework.boot.test.context.runner.ApplicationContextRunner runner =
+                new org.springframework.boot.test.context.runner.ApplicationContextRunner()
+                        .withConfiguration(org.springframework.boot.autoconfigure.AutoConfigurations.of())
+                        .withUserConfiguration(BootstrapAdminConfiguration.class)
+                        .withPropertyValues(
+                                "app.identity.bootstrap-admin.enabled=true",
+                                "app.identity.bootstrap-admin.email=testadmin@smartrecruit.org",
+                                "app.identity.bootstrap-admin.password=SuperSecret12345",
+                                "app.identity.bootstrap-admin.full-name=Test Admin"
+                        );
+
+        runner.run(context -> {
+            org.assertj.core.api.Assertions.assertThat(context).hasNotFailed();
+            BootstrapAdminProperties props = context.getBean(BootstrapAdminProperties.class);
+            org.assertj.core.api.Assertions.assertThat(props.enabled()).isTrue();
+            org.assertj.core.api.Assertions.assertThat(props.email()).isEqualTo("testadmin@smartrecruit.org");
+            org.assertj.core.api.Assertions.assertThat(props.password()).isEqualTo("SuperSecret12345");
+            org.assertj.core.api.Assertions.assertThat(props.fullName()).isEqualTo("Test Admin");
+        });
+    }
+
+    @org.springframework.boot.context.properties.EnableConfigurationProperties(BootstrapAdminProperties.class)
+    static class BootstrapAdminConfiguration {
+    }
 }

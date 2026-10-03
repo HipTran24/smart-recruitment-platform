@@ -32,7 +32,10 @@ public final class GeminiCvScreeningClient implements CvScreeningGateway {
     static final String PROMPT_VERSION = "gemini-cv-screening-v1";
 
     private static final Pattern EMAIL = Pattern.compile("(?i)\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}\\b");
-    private static final Pattern PHONE = Pattern.compile("(?<![A-Za-z0-9])(?:\\+?\\d[\\d().\\s-]{6,}\\d)(?![A-Za-z0-9])");
+    private static final Pattern PHONE = Pattern.compile(
+            "(?<![A-Za-z0-9/])(?!(?:19|20)\\d{2}\\s*[-–—/]\\s*(?:(?:\\d{1,2}/)?(?:19|20)\\d{2}|present|hiện\\s*tại))"
+                    + "(?:\\+?\\d{1,4}[\\s.-]?)?(?:\\(?\\d{2,4}\\)?[\\s.-]?)?\\d{3,4}[\\s.-]?\\d{3,4}(?![A-Za-z0-9/])"
+    );
     private static final Pattern URL = Pattern.compile("(?i)\\bhttps?://[^\\s<>]+|\\b(?:www\\.)[^\\s<>]+");
     private static final Pattern LABELLED_SENSITIVE_LINE = Pattern.compile(
             "(?im)^\\s*(?:full\\s*name|name|họ\\s*(?:và|va)\\s*tên|address|địa\\s*chỉ|date\\s*of\\s*birth|dob|ngày\\s*sinh|"
@@ -125,12 +128,8 @@ public final class GeminiCvScreeningClient implements CvScreeningGateway {
         payload.put("generationConfig", Map.of(
                 "temperature", 0,
                 "maxOutputTokens", properties.getMaxOutputTokens(),
-                "responseFormat", Map.of(
-                        "text", Map.of(
-                                "mimeType", "application/json",
-                                "schema", responseSchema()
-                        )
-                )
+                "responseMimeType", "application/json",
+                "responseSchema", responseSchema()
         ));
         payload.put("safetySettings", List.of(
                 safetySetting("HARM_CATEGORY_HATE_SPEECH"),

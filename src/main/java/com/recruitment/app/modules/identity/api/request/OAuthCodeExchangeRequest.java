@@ -11,7 +11,7 @@ public record OAuthCodeExchangeRequest(
         @Pattern(regexp = "[A-Za-z0-9\\-._~]{43,128}")
         String codeVerifier,
         @NotBlank
-        @Pattern(regexp = "[A-Za-z0-9_-]{43}")
+        @Pattern(regexp = "[A-Za-z0-9_-]{43,128}")
         String transactionId
 ) {
 }

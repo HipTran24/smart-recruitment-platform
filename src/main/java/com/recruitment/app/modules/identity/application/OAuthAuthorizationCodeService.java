@@ -56,9 +56,7 @@ public class OAuthAuthorizationCodeService {
     public IssuedAuthorizationCode issueFor(Long userId, String codeChallenge, String transactionId) {
         String validatedChallenge = validateCodeChallenge(codeChallenge);
         String validatedTransactionId = validateTransactionId(transactionId);
-        byte[] bytes = new byte[RANDOM_BYTES];
-        secureRandom.nextBytes(bytes);
-        String rawCode = Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+        String rawCode = com.recruitment.app.common.security.TokenDigest.newOpaqueToken();
         Instant expiresAt = clock.instant().plus(authorizationCodeTtl);
 
         authorizationCodes.save(
@@ -99,35 +97,28 @@ public class OAuthAuthorizationCodeService {
     }
 
     private static String sha256(String value) {
-        if (value == null || !value.matches("[A-Za-z0-9_-]{43}")) {
+        if (value == null || !com.recruitment.app.common.security.TokenDigest.OPAQUE_TOKEN_PATTERN.matcher(value).matches()) {
             throw invalidCode();
         }
-        try {
-            return HexFormat.of().formatHex(
-                    MessageDigest.getInstance("SHA-256").digest(value.getBytes(StandardCharsets.US_ASCII))
-            );
-        }
-        catch (NoSuchAlgorithmException exception) {
-            throw new IllegalStateException("SHA-256 is unavailable", exception);
-        }
+        return com.recruitment.app.common.security.TokenDigest.sha256Hex(value);
     }
 
     private static String validateCodeChallenge(String codeChallenge) {
-        if (codeChallenge == null || !codeChallenge.matches("[A-Za-z0-9_-]{43}")) {
+        if (codeChallenge == null || !com.recruitment.app.common.security.TokenDigest.OPAQUE_TOKEN_PATTERN.matcher(codeChallenge).matches()) {
             throw new OAuthIdentityException("PKCE code challenge is invalid");
         }
         return codeChallenge;
     }
 
     private static String validateTransactionId(String transactionId) {
-        if (transactionId == null || !transactionId.matches("[A-Za-z0-9_-]{43}")) {
+        if (transactionId == null || !com.recruitment.app.common.security.TokenDigest.FLEXIBLE_TOKEN_PATTERN.matcher(transactionId).matches()) {
             throw new OAuthIdentityException("OAuth transaction id is invalid");
         }
         return transactionId;
     }
 
     private static String validateTransactionIdForConsumption(String transactionId) {
-        if (transactionId == null || !transactionId.matches("[A-Za-z0-9_-]{43}")) {
+        if (transactionId == null || !com.recruitment.app.common.security.TokenDigest.FLEXIBLE_TOKEN_PATTERN.matcher(transactionId).matches()) {
             throw invalidCode();
         }
         return transactionId;
@@ -144,14 +135,7 @@ public class OAuthAuthorizationCodeService {
         if (codeVerifier == null || !codeVerifier.matches("[A-Za-z0-9\\-._~]{43,128}")) {
             throw invalidCode();
         }
-        try {
-            byte[] digest = MessageDigest.getInstance("SHA-256")
-                    .digest(codeVerifier.getBytes(StandardCharsets.US_ASCII));
-            return Base64.getUrlEncoder().withoutPadding().encodeToString(digest);
-        }
-        catch (NoSuchAlgorithmException exception) {
-            throw new IllegalStateException("SHA-256 is unavailable", exception);
-        }
+        return com.recruitment.app.common.security.TokenDigest.sha256Base64Url(codeVerifier);
     }
 
     public record IssuedAuthorizationCode(String rawCode, String transactionId, Instant expiresAt) {

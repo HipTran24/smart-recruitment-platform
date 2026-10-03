@@ -8,12 +8,16 @@
 - `V004__bind_oauth_handoff_codes_to_pkce.sql`: PKCE S256 challenge cho handoff code; code legacy bị vô hiệu hóa thay vì được redeem không có verifier.
 - `V005__add_application_screening_audit_data.sql`: output sàng lọc có thể audit, failure metadata, và worker lease để recovery an toàn.
 - `V006__bind_oauth_handoff_codes_to_transactions.sql`: bind handoff code với transaction OAuth để các tab đăng nhập song song không thể trộn verifier/challenge.
+- `V007__convert_job_creator_membership_to_user_references.sql`: thêm `created_by_user_id` trên `jobs` tham chiếu trực tiếp `users (id)`.
+- `V008__add_identity_credential_version_and_verification.sql`: thêm `credential_version`, `email_verified` trên `users`, và bảng `email_verification_tokens`.
+- `V009__harden_schema_integrity_and_precision.sql`: dọn dẹp bảng audit Envers cũ, xóa 3 index trùng prefix, xóa cột thừa `created_by_member_id`, bổ sung compound FK `(company_id, created_by_user_id)` tham chiếu `company_members (company_id, user_id)`, chuẩn hóa timestamp sang `datetime(6)`, và thêm CHECK constraints ở tầng database cho các cột enum/format.
 
 ## Cross-module references
 
 JPA entities use scalar identifiers across module boundaries. Flyway owns the database foreign keys:
 
-- `jobs.created_by_member_id, jobs.company_id` references a member of the same company.
+- `jobs (company_id, created_by_user_id)` references `company_members (company_id, user_id)` để bảo đảm người tạo job phải là thành viên thuộc chính công ty đó.
+- `jobs.created_by_user_id` references `users (id)`.
 - `job_applications.candidate_resume_id, job_applications.candidate_profile_id` references a resume owned by the applicant.
 - Candidate, company, job and token records reference identity IDs through foreign keys.
 

@@ -30,7 +30,6 @@ public class TokenSessionService {
     private final RefreshTokenStore refreshTokenStore;
     private final Clock clock;
     private final Duration refreshTokenTtl;
-    private final SecureRandom secureRandom;
 
     public TokenSessionService(
             JwtSubjectResolver subjectResolver,
@@ -39,23 +38,11 @@ public class TokenSessionService {
             Clock clock,
             Duration refreshTokenTtl
     ) {
-        this(subjectResolver, accessTokenIssuer, refreshTokenStore, clock, refreshTokenTtl, new SecureRandom());
-    }
-
-    TokenSessionService(
-            JwtSubjectResolver subjectResolver,
-            AccessTokenIssuer accessTokenIssuer,
-            RefreshTokenStore refreshTokenStore,
-            Clock clock,
-            Duration refreshTokenTtl,
-            SecureRandom secureRandom
-    ) {
         this.subjectResolver = Objects.requireNonNull(subjectResolver, "subject resolver must not be null");
         this.accessTokenIssuer = Objects.requireNonNull(accessTokenIssuer, "access token issuer must not be null");
         this.refreshTokenStore = Objects.requireNonNull(refreshTokenStore, "refresh token store must not be null");
         this.clock = Objects.requireNonNull(clock, "clock must not be null");
         this.refreshTokenTtl = requirePositive(refreshTokenTtl, "refresh token TTL");
-        this.secureRandom = Objects.requireNonNull(secureRandom, "secure random must not be null");
     }
 
     /**
@@ -150,27 +137,19 @@ public class TokenSessionService {
                 .orElseThrow(InactiveIdentityException::new);
     }
 
-    private String generateRefreshToken() {
-        byte[] bytes = new byte[REFRESH_TOKEN_BYTES];
-        secureRandom.nextBytes(bytes);
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+    private static String generateRefreshToken() {
+        return com.recruitment.app.common.security.TokenDigest.newOpaqueToken();
     }
 
     private static String hash(String rawToken) {
         if (!isRefreshTokenSyntaxValid(rawToken)) {
             throw new InvalidRefreshTokenException();
         }
-        try {
-            byte[] digest = MessageDigest.getInstance("SHA-256")
-                    .digest(rawToken.getBytes(StandardCharsets.UTF_8));
-            return Base64.getUrlEncoder().withoutPadding().encodeToString(digest);
-        } catch (NoSuchAlgorithmException exception) {
-            throw new IllegalStateException("SHA-256 is unavailable", exception);
-        }
+        return com.recruitment.app.common.security.TokenDigest.sha256Base64Url(rawToken);
     }
 
     private static boolean isRefreshTokenSyntaxValid(String rawToken) {
-        return rawToken != null && rawToken.matches(REFRESH_TOKEN_PATTERN);
+        return rawToken != null && com.recruitment.app.common.security.TokenDigest.OPAQUE_TOKEN_PATTERN.matcher(rawToken).matches();
     }
 
     private static Duration requirePositive(Duration value, String field) {

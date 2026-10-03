@@ -15,6 +15,9 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.recruitment.app.modules.identity.application.JwtPrincipal;
+import org.springframework.security.web.util.matcher.RequestMatcher;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
@@ -31,14 +34,24 @@ public final class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtAccessTokenService jwtAccessTokenService;
     private final LiveAccountValidator liveAccountValidator;
+    private final RequestMatcher publicEndpointsMatcher;
 
-    JwtAuthenticationFilter(JwtAccessTokenService jwtAccessTokenService) {
-        this(jwtAccessTokenService, null);
+    public JwtAuthenticationFilter(JwtAccessTokenService jwtAccessTokenService) {
+        this(jwtAccessTokenService, null, null);
     }
 
-    JwtAuthenticationFilter(JwtAccessTokenService jwtAccessTokenService, LiveAccountValidator liveAccountValidator) {
+    public JwtAuthenticationFilter(JwtAccessTokenService jwtAccessTokenService, LiveAccountValidator liveAccountValidator) {
+        this(jwtAccessTokenService, liveAccountValidator, null);
+    }
+
+    public JwtAuthenticationFilter(
+            JwtAccessTokenService jwtAccessTokenService,
+            LiveAccountValidator liveAccountValidator,
+            RequestMatcher publicEndpointsMatcher
+    ) {
         this.jwtAccessTokenService = jwtAccessTokenService;
         this.liveAccountValidator = liveAccountValidator;
+        this.publicEndpointsMatcher = publicEndpointsMatcher;
     }
 
     @Override
@@ -47,6 +60,11 @@ public final class JwtAuthenticationFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain
     ) throws ServletException, IOException {
+        if (publicEndpointsMatcher != null && publicEndpointsMatcher.matches(request)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         BearerTokenResolution resolution = resolveBearerToken(request);
         if (resolution.malformed()) {
             writeInvalidToken(response);

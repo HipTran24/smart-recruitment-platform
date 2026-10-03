@@ -15,6 +15,13 @@ Migration hiện có:
 ```text
 V001__initial_schema.sql
 V002__create_recruitment_domain_schema.sql
+V003__add_identity_authentication_schema.sql
+V004__bind_oauth_handoff_codes_to_pkce.sql
+V005__add_application_screening_audit_data.sql
+V006__bind_oauth_handoff_codes_to_transactions.sql
+V007__convert_job_creator_membership_to_user_references.sql
+V008__add_identity_credential_version_and_verification.sql
+V009__harden_schema_integrity_and_precision.sql
 ```
 
 Một migration đã chạy ở môi trường chung là bất biến. Nếu cần đổi schema, thêm migration mới; không sửa file cũ.

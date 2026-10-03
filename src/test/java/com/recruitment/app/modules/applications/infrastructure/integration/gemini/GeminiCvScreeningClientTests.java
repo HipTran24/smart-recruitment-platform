@@ -67,6 +67,7 @@ class GeminiCvScreeningClientTests {
                 List.of("Java", "Spring Boot", "Kubernetes"),
                 "Name: Jane Doe\nAddress: 1 Example Street\nDOB: 1990-01-01\n"
                         + "jane.doe@example.com\n+84 912 345 678\nhttps://linkedin.example/jane\n"
+                        + "Experience: Senior Dev (03/2019 - 07/2023)\nEducation: BSc CS (2013 - 2017)\n"
                         + "Five years building Java services."
         ));
 
@@ -83,6 +84,8 @@ class GeminiCvScreeningClientTests {
         assertTrue(prompt.contains("[redacted-phone]"));
         assertTrue(prompt.contains("[redacted-sensitive-line]"));
         assertTrue(prompt.contains("[redacted-url]"));
+        assertTrue(prompt.contains("(03/2019 - 07/2023)"));
+        assertTrue(prompt.contains("(2013 - 2017)"));
         assertFalse(prompt.contains("Jane Doe"));
         assertFalse(prompt.contains("1 Example Street"));
         assertFalse(prompt.contains("1990-01-01"));
@@ -90,10 +93,10 @@ class GeminiCvScreeningClientTests {
         assertFalse(prompt.contains("+84 912 345 678"));
         assertEquals(
                 "application/json",
-                payload.path("generationConfig").path("responseFormat").path("text").path("mimeType").asText()
+                payload.path("generationConfig").path("responseMimeType").asText()
         );
         assertTrue(
-                payload.path("generationConfig").path("responseFormat").path("text").path("schema").path("required").isArray()
+                payload.path("generationConfig").path("responseSchema").path("required").isArray()
         );
     }
 

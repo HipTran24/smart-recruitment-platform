@@ -20,6 +20,9 @@ spring:
       hibernate:
         jdbc:
           time_zone: UTC
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: true
 
 server:
   shutdown: graceful
@@ -51,6 +54,12 @@ management:
 # configuration deliberately has no source-controlled fallback: all JWT key
 # locations and issuer settings must be provided by the deployment.
 app:
+  identity:
+    bootstrap-admin:
+      enabled: ${APP_IDENTITY_BOOTSTRAP_ADMIN_ENABLED:false}
+      email: ${APP_IDENTITY_BOOTSTRAP_ADMIN_EMAIL:}
+      password: ${APP_IDENTITY_BOOTSTRAP_ADMIN_PASSWORD:}
+      full-name: ${APP_IDENTITY_BOOTSTRAP_ADMIN_FULL_NAME:Platform Administrator}
   web:
     cors:
       # Comma-separated exact browser origins. Empty denies browser CORS.

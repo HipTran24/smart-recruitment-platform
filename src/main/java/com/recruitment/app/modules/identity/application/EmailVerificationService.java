@@ -56,8 +56,8 @@ public class EmailVerificationService {
         if (userId == null || userId <= 0) {
             throw new IllegalArgumentException("user id must be positive");
         }
-        String rawToken = generateRawToken();
-        String tokenHash = hashToken(rawToken);
+        String rawToken = com.recruitment.app.common.security.TokenDigest.newOpaqueToken();
+        String tokenHash = com.recruitment.app.common.security.TokenDigest.sha256Hex(rawToken);
         Instant expiresAt = clock.instant().plus(verificationTokenTtl);
         verificationStore.saveToken(userId, tokenHash, expiresAt);
         return rawToken;
@@ -65,8 +65,11 @@ public class EmailVerificationService {
 
     @Transactional
     public void verifyEmail(String rawToken) {
+        if (rawToken == null || rawToken.isBlank()) {
+            throw new InvalidVerificationTokenException();
+        }
         Instant now = clock.instant();
-        String tokenHash = hashToken(rawToken);
+        String tokenHash = com.recruitment.app.common.security.TokenDigest.sha256Hex(rawToken);
 
         EmailVerificationTokenSnapshot token = verificationStore.lockToken(tokenHash)
                 .orElseThrow(InvalidVerificationTokenException::new);
@@ -77,24 +80,5 @@ public class EmailVerificationService {
 
         accounts.markEmailVerified(token.userId());
         verificationStore.consumeToken(token.id(), now);
-    }
-
-    private String generateRawToken() {
-        byte[] bytes = new byte[TOKEN_BYTES];
-        secureRandom.nextBytes(bytes);
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
-    }
-
-    private static String hashToken(String rawToken) {
-        if (rawToken == null || rawToken.isBlank()) {
-            throw new InvalidVerificationTokenException();
-        }
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(rawToken.strip().getBytes(StandardCharsets.UTF_8));
-            return HexFormat.of().formatHex(hash);
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("SHA-256 not available", e);
-        }
     }
 }

@@ -1,5 +1,6 @@
 package com.recruitment.app.modules.identity.infrastructure.security;
 
+import com.recruitment.app.modules.identity.application.JwtPrincipal;
 import com.recruitment.app.modules.identity.application.JwtSubject;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -221,6 +222,7 @@ class JwtAccessTokenServiceTests {
                     .id(UUID.randomUUID().toString())
                     .claim(ApplicationAccessTokenValidator.TOKEN_USE_CLAIM, tokenUse)
                     .claim(ApplicationAccessTokenValidator.ROLES_CLAIM, roles)
+                    .claim(ApplicationAccessTokenValidator.CREDENTIAL_VERSION_CLAIM, 1)
                     .build();
             Jwt jwt = signingEncoder.encode(JwtEncoderParameters.from(
                     JwsHeader.with(SignatureAlgorithm.RS256).type("JWT").keyId(properties.keyId()).build(),
@@ -228,5 +230,71 @@ class JwtAccessTokenServiceTests {
             ));
             return jwt.getTokenValue();
         }
+
+        String mintWithClaim(String claimName, Object claimValue) {
+            Instant now = CLOCK.instant();
+            JwtClaimsSet.Builder builder = JwtClaimsSet.builder()
+                    .issuer(properties.issuer())
+                    .subject("42")
+                    .audience(List.of(properties.audience()))
+                    .issuedAt(now)
+                    .notBefore(now)
+                    .expiresAt(now.plus(Duration.ofMinutes(15)))
+                    .id(UUID.randomUUID().toString())
+                    .claim(ApplicationAccessTokenValidator.TOKEN_USE_CLAIM, ApplicationAccessTokenValidator.ACCESS_TOKEN_USE)
+                    .claim(ApplicationAccessTokenValidator.ROLES_CLAIM, List.of("ROLE_CANDIDATE"));
+            if (claimValue != null) {
+                builder.claim(claimName, claimValue);
+            }
+            Jwt jwt = encoder.encode(JwtEncoderParameters.from(
+                    JwsHeader.with(SignatureAlgorithm.RS256).type("JWT").keyId(properties.keyId()).build(),
+                    builder.build()
+            ));
+            return jwt.getTokenValue();
+        }
+    }
+
+    @Test
+    void rejectsTokenMissingCredentialVersion() throws Exception {
+        JwtFixture fixture = JwtFixture.create();
+        String tokenWithoutCv = fixture.mintWithClaim(ApplicationAccessTokenValidator.CREDENTIAL_VERSION_CLAIM, null);
+        org.junit.jupiter.api.Assertions.assertThrows(
+                InvalidAccessTokenException.class,
+                () -> fixture.service.authenticate(tokenWithoutCv)
+        );
+    }
+
+    @Test
+    void rejectsTokenWithStringOrNonPositiveCredentialVersion() throws Exception {
+        JwtFixture fixture = JwtFixture.create();
+        String tokenWithStringCv = fixture.mintWithClaim(ApplicationAccessTokenValidator.CREDENTIAL_VERSION_CLAIM, "1");
+        org.junit.jupiter.api.Assertions.assertThrows(
+                InvalidAccessTokenException.class,
+                () -> fixture.service.authenticate(tokenWithStringCv)
+        );
+
+        String tokenWithZeroCv = fixture.mintWithClaim(ApplicationAccessTokenValidator.CREDENTIAL_VERSION_CLAIM, 0);
+        org.junit.jupiter.api.Assertions.assertThrows(
+                InvalidAccessTokenException.class,
+                () -> fixture.service.authenticate(tokenWithZeroCv)
+        );
+    }
+
+    @Test
+    void authenticationFilterBypassesPublicEndpointsWhenBearerIsMalformedOrInvalid() throws Exception {
+        JwtFixture fixture = JwtFixture.create();
+        org.springframework.security.web.util.matcher.RequestMatcher publicMatcher =
+                org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher.pathPattern("/api/v1/auth/login");
+        JwtAuthenticationFilter filter = new JwtAuthenticationFilter(fixture.service, null, publicMatcher);
+
+        MockHttpServletRequest request = new MockHttpServletRequest("POST", "/api/v1/auth/login");
+        request.addHeader("Authorization", "Bearer stale.invalid.token");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        jakarta.servlet.FilterChain chain = org.mockito.Mockito.mock(jakarta.servlet.FilterChain.class);
+
+        filter.doFilter(request, response, chain);
+
+        org.mockito.Mockito.verify(chain).doFilter(request, response);
+        org.junit.jupiter.api.Assertions.assertEquals(200, response.getStatus());
     }
 }

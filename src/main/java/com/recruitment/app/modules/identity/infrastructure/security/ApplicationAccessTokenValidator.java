@@ -35,12 +35,15 @@ final class ApplicationAccessTokenValidator implements OAuth2TokenValidator<Jwt>
     @Override
     public OAuth2TokenValidatorResult validate(Jwt token) {
         try {
+            Object cvClaim = token.getClaims().get(CREDENTIAL_VERSION_CLAIM);
             if (!JWT_TYPE.equals(token.getHeaders().get("typ"))
                     || !token.getAudience().contains(expectedAudience)
                     || !ACCESS_TOKEN_USE.equals(token.getClaimAsString(TOKEN_USE_CLAIM))
                     || !isPositiveIdentifier(token.getSubject())
                     || isBlank(token.getId())
-                    || !hasValidRoles(token.getClaimAsStringList(ROLES_CLAIM))) {
+                    || !hasValidRoles(token.getClaimAsStringList(ROLES_CLAIM))
+                    || !(cvClaim instanceof Number cvNumber)
+                    || cvNumber.longValue() <= 0) {
                 return OAuth2TokenValidatorResult.failure(INVALID_TOKEN);
             }
             return OAuth2TokenValidatorResult.success();

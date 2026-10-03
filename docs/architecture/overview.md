@@ -52,10 +52,12 @@ smart-recruitment/
 │   ├── database/                    # ERD, data dictionary, quy ước SQL
 │   ├── adr/                         # Architecture Decision Records
 │   └── runbooks/                    # Cách chạy, deploy và xử lý sự cố
+├── frontend/                        # Giao diện React SPA
 ├── infra/                           # Docker và hạ tầng triển khai
 │   └── docker/
-├── scripts/                         # Script hỗ trợ local/CI, không có secret
-├── src/                             # Spring Boot backend hiện tại
+├── scripts/                         # Script hỗ trợ local/CI (shell), không có secret
+├── tools/                           # Script tiện ích sinh báo cáo/tài liệu (Python)
+├── src/                             # Spring Boot backend
 ├── pom.xml
 ├── mvnw
 ├── mvnw.cmd
@@ -66,8 +68,6 @@ smart-recruitment/
 ├── CONTRIBUTING.md
 └── SECURITY.md
 ```
-
-Không tạo thư mục `backend/` ở giai đoạn này: repository hiện tại đã là backend Spring Boot. Một thư mục `frontend/` chỉ được thêm khi đội đã chọn công nghệ và bắt đầu xây giao diện.
 
 ## 5. Cấu trúc package backend
 
@@ -138,21 +138,31 @@ Controller không được trả JPA entity trực tiếp ra API. Request/respon
 
 ```text
 src/main/resources/
-├── application.yml                  # Không có credential; đọc datasource từ environment
-├── application-local.yml.example    # Mẫu cấu hình local
-├── application-test.yml             # Cấu hình test
-└── db/migration/                    # Flyway migration
+├── application.yml                  # Không có credential; nạp cấu hình từ environment
+├── application-local.yml.example    # Mẫu cấu hình local (khi chạy ứng dụng trực tiếp trên host)
+└── db/migration/                    # Flyway migrations (V001 đến V009)
     ├── V001__initial_schema.sql
-    └── V002__create_recruitment_domain_schema.sql
+    ├── V002__create_recruitment_domain_schema.sql
+    ├── V003__add_identity_authentication_schema.sql
+    ├── V004__bind_oauth_handoff_codes_to_pkce.sql
+    ├── V005__add_application_screening_audit_data.sql
+    ├── V006__bind_oauth_handoff_codes_to_transactions.sql
+    ├── V007__convert_job_creator_membership_to_user_references.sql
+    ├── V008__add_identity_credential_version_and_verification.sql
+    └── V009__harden_schema_integrity_and_precision.sql
+
+src/test/resources/
+└── application-test.yml             # Cấu hình kiểm thử tự động với Testcontainers MySQL
 ```
 
 Nguyên tắc:
 
-- Mỗi thay đổi schema là một migration SQL mới, có version tăng dần.
+- File `application-local.yml.example` chỉ dùng làm mẫu cho lập trình viên khi chạy trực tiếp ngoài Docker (`./scripts/run-local.sh`); khi chạy ứng dụng trong Docker container qua Docker Compose, toàn bộ cấu hình được inject qua biến môi trường định nghĩa tại `.env` và `infra/docker/compose.local.yml`.
+- Mỗi thay đổi schema là một migration SQL mới, có version tăng dần (hiện có V001–V009).
 - Không sửa migration đã chạy ở môi trường chung.
 - Production và shared environment không dùng `ddl-auto: create` hoặc `ddl-auto: update`.
 - Password database, JWT secret và API key đến từ biến môi trường hoặc secret manager; không commit vào YAML.
-- Instant được ghi theo UTC: MySQL session và Hibernate JDBC timezone đều đặt UTC.
+- Instant được ghi theo UTC: MySQL session và Hibernate JDBC timezone đều đặt UTC. Precision của các audit instant và screening lease được chuẩn hóa ở cấp độ microsecond `datetime(6)`.
 - File build trong `target/` không phải nguồn cấu hình và không được commit.
 
 ## 8. Kiểm thử

@@ -61,8 +61,8 @@ class RoleEscalationAndGoogleLinkingTests {
 
     @Test
     void googleAccountLinkingEnforcesUniquenessAcrossAccounts() {
-        var user1Tokens = identityService.register(new RegisterAccountCommand("User One", "user1@link.test", "Password-123456"));
-        var user2Tokens = identityService.register(new RegisterAccountCommand("User Two", "user2@link.test", "Password-123456"));
+        identityService.register(new RegisterAccountCommand("User One", "user1@link.test", "Password-123456"));
+        identityService.register(new RegisterAccountCommand("User Two", "user2@link.test", "Password-123456"));
 
         Long user1Id = userRepository.findByEmail("user1@link.test").orElseThrow().getId();
         Long user2Id = userRepository.findByEmail("user2@link.test").orElseThrow().getId();

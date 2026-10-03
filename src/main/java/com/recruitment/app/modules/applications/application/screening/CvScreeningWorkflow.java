@@ -19,6 +19,8 @@ import java.util.Objects;
 @Service
 public class CvScreeningWorkflow {
 
+    public static final int MAX_PROVIDER_ATTEMPTS = 3;
+
     private final CvScreeningStateService stateService;
     private final ObjectProvider<CvScreeningGateway> screeningGateway;
 
@@ -39,16 +41,11 @@ public class CvScreeningWorkflow {
                 CvScreeningInputFingerprint.sha256(request)
         );
         switch (claim.status()) {
-            case NOT_FOUND:
-                return CvScreeningExecutionOutcome.notFound(screeningId);
-            case NOT_CLAIMABLE:
-                return CvScreeningExecutionOutcome.notClaimable(screeningId);
-            case INPUT_REJECTED:
-                return CvScreeningExecutionOutcome.failed(screeningId, CvScreeningFailure.inputFingerprintMismatch());
-            case APPLICATION_REJECTED:
-                return CvScreeningExecutionOutcome.failed(screeningId, CvScreeningFailure.applicationNotEligible());
-            case CLAIMED:
-                break;
+            case NOT_FOUND -> { return CvScreeningExecutionOutcome.notFound(screeningId); }
+            case NOT_CLAIMABLE -> { return CvScreeningExecutionOutcome.notClaimable(screeningId); }
+            case INPUT_REJECTED -> { return CvScreeningExecutionOutcome.failed(screeningId, CvScreeningFailure.inputFingerprintMismatch()); }
+            case APPLICATION_REJECTED -> { return CvScreeningExecutionOutcome.failed(screeningId, CvScreeningFailure.applicationNotEligible()); }
+            case CLAIMED -> {}
         }
 
         CvScreeningStateService.ScreeningLease lease = claim.lease();
@@ -57,24 +54,31 @@ public class CvScreeningWorkflow {
             return persistFailure(lease, CvScreeningFailure.providerNotConfigured());
         }
 
-        try {
-            CvScreeningResult result = gateway.screen(request);
-            CvScreeningStateService.CompletionResult completion = stateService.complete(lease, result);
-            return switch (completion.status()) {
-                case COMPLETED -> CvScreeningExecutionOutcome.completed(screeningId);
-                case APPLICATION_REJECTED -> CvScreeningExecutionOutcome.failed(
-                        screeningId,
-                        CvScreeningFailure.applicationNotEligible()
-                );
-                case NOT_APPLIED -> CvScreeningExecutionOutcome.staleResultDiscarded(screeningId);
-            };
-        } catch (CvScreeningException exception) {
-            return persistFailure(lease, CvScreeningFailure.from(exception));
-        } catch (RuntimeException exception) {
-            // Do not persist arbitrary exception text: adapters or dependencies can include CV
-            // content, provider bodies, credentials, or implementation details in their message.
-            return persistFailure(lease, CvScreeningFailure.unexpectedProviderFailure());
+        CvScreeningResult result = null;
+        for (int attempt = 1; attempt <= MAX_PROVIDER_ATTEMPTS; attempt++) {
+            try {
+                result = gateway.screen(request);
+                break;
+            } catch (CvScreeningException exception) {
+                if (!exception.isRetryable() || attempt == MAX_PROVIDER_ATTEMPTS) {
+                    return persistFailure(lease, CvScreeningFailure.from(exception));
+                }
+            } catch (RuntimeException exception) {
+                // Do not persist arbitrary exception text: adapters or dependencies can include CV
+                // content, provider bodies, credentials, or implementation details in their message.
+                return persistFailure(lease, CvScreeningFailure.unexpectedProviderFailure());
+            }
         }
+
+        CvScreeningStateService.CompletionResult completion = stateService.complete(lease, Objects.requireNonNull(result));
+        return switch (completion.status()) {
+            case COMPLETED -> CvScreeningExecutionOutcome.completed(screeningId);
+            case APPLICATION_REJECTED -> CvScreeningExecutionOutcome.failed(
+                    screeningId,
+                    CvScreeningFailure.applicationNotEligible()
+            );
+            case NOT_APPLIED -> CvScreeningExecutionOutcome.staleResultDiscarded(screeningId);
+        };
     }
 
     private CvScreeningExecutionOutcome persistFailure(

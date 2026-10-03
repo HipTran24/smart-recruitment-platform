@@ -77,14 +77,32 @@ class GoogleOAuth2SuccessHandlerTests {
     @Test
     void rejectsAnUnverifiedGoogleEmailWithoutProvisioningAnAccount() throws Exception {
         GoogleOAuthLoginService loginService = mock(GoogleOAuthLoginService.class);
+        GoogleOAuthProperties properties = new GoogleOAuthProperties(
+                true, "client-id", "client-secret", null, Duration.ofMinutes(1)
+        );
         GoogleOAuth2SuccessHandler handler = new GoogleOAuth2SuccessHandler(
                 loginService,
-                new GoogleOAuthProperties(true, "client-id", "client-secret", null, Duration.ofMinutes(1)),
+                properties,
                 mock(ObjectMapper.class)
+        );
+        String transactionId = "t".repeat(43);
+        String codeChallenge = "b".repeat(43);
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        assertTrue(PkceGoogleAuthorizationRequestFilter.registerPendingTransaction(
+                request,
+                transactionId,
+                codeChallenge
+        ));
+        request.setAttribute(
+                TransactionBoundOAuth2AuthorizationRequestRepository.CALLBACK_TRANSACTION_ID_ATTRIBUTE,
+                transactionId
+        );
+        when(loginService.complete(any(), any(), any())).thenThrow(
+                new com.recruitment.app.modules.identity.application.exception.OAuthIdentityException("Google account email is not verified")
         );
         MockHttpServletResponse response = new MockHttpServletResponse();
 
-        handler.onAuthenticationSuccess(new MockHttpServletRequest(), response, googleAuthentication(false));
+        handler.onAuthenticationSuccess(request, response, googleAuthentication(false));
 
         assertEquals(401, response.getStatus());
         var error = tools.jackson.databind.json.JsonMapper.builder().build()
@@ -93,7 +111,11 @@ class GoogleOAuth2SuccessHandlerTests {
         assertEquals("OAuth authentication failed.", error.path("message").asText());
         org.junit.jupiter.api.Assertions.assertTrue(error.path("fieldErrors").isObject());
         org.junit.jupiter.api.Assertions.assertTrue(error.has("requestId"));
-        verify(loginService, never()).complete(any(), any(), any());
+        verify(loginService).complete(
+                org.mockito.ArgumentMatchers.argThat(profile -> !profile.emailVerified() && "candidate@example.test".equals(profile.email())),
+                eq(codeChallenge),
+                eq(transactionId)
+        );
     }
 
     private static OAuth2AuthenticationToken googleAuthentication(boolean emailVerified) {

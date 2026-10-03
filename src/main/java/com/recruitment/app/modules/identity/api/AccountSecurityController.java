@@ -7,7 +7,7 @@ import com.recruitment.app.modules.identity.api.request.VerifyEmailRequest;
 import com.recruitment.app.modules.identity.application.EmailVerificationService;
 import com.recruitment.app.modules.identity.application.PasswordManagementService;
 import com.recruitment.app.modules.identity.application.exception.IdentityAuthenticationException;
-import com.recruitment.app.modules.identity.infrastructure.security.JwtPrincipal;
+import com.recruitment.app.modules.identity.application.JwtPrincipal;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -24,13 +24,16 @@ public class AccountSecurityController {
 
     private final PasswordManagementService passwordManagement;
     private final EmailVerificationService emailVerification;
+    private final com.recruitment.app.modules.identity.application.AuthenticationThrottlingService throttling;
 
     public AccountSecurityController(
             PasswordManagementService passwordManagement,
-            EmailVerificationService emailVerification
+            EmailVerificationService emailVerification,
+            com.recruitment.app.modules.identity.application.AuthenticationThrottlingService throttling
     ) {
         this.passwordManagement = passwordManagement;
         this.emailVerification = emailVerification;
+        this.throttling = throttling;
     }
 
     @PostMapping("/password/change")
@@ -49,9 +52,11 @@ public class AccountSecurityController {
     public ResponseEntity<Map<String, String>> requestPasswordReset(
             @Valid @RequestBody PasswordResetRequest request
     ) {
+        throttling.checkThrottled("reset:" + request.email());
         passwordManagement.requestPasswordReset(request.email());
+        throttling.recordFailure("reset:" + request.email());
         return ResponseEntity.ok(Map.of(
-                "message", "If an active account exists with this email, a reset token has been dispatched."
+                "message", "If an active account exists with this email, password reset instructions have been dispatched."
         ));
     }
 
@@ -67,7 +72,13 @@ public class AccountSecurityController {
     public ResponseEntity<Void> verifyEmail(
             @Valid @RequestBody VerifyEmailRequest request
     ) {
-        emailVerification.verifyEmail(request.token());
-        return ResponseEntity.noContent().build();
+        throttling.checkThrottled("verify:" + request.token());
+        try {
+            emailVerification.verifyEmail(request.token());
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            throttling.recordFailure("verify:" + request.token());
+            throw e;
+        }
     }
 }

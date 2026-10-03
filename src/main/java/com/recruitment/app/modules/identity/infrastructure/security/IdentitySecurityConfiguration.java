@@ -25,8 +25,12 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
+import org.springframework.security.web.util.matcher.OrRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Bearer-token API security with a narrowly scoped transient session only for
@@ -37,6 +41,33 @@ import java.io.IOException;
 @Configuration(proxyBeanMethods = false)
 @EnableMethodSecurity
 public class IdentitySecurityConfiguration {
+
+    public static final List<String> PUBLIC_PATH_PATTERNS = List.of(
+            "/actuator/health/**",
+            "/actuator/info",
+            "/v3/api-docs/**",
+            "/v3/api-docs",
+            "/api/v1/auth/register",
+            "/api/v1/auth/login",
+            "/api/v1/auth/refresh",
+            "/api/v1/auth/logout",
+            "/api/v1/auth/oauth/exchange",
+            "/api/v1/auth/password/reset-request",
+            "/api/v1/auth/password/reset-confirm",
+            "/api/v1/auth/verify-email",
+            "/oauth2/**",
+            "/login/oauth2/**"
+    );
+
+    @Bean
+    public RequestMatcher publicEndpointsMatcher() {
+        return new OrRequestMatcher(
+                PUBLIC_PATH_PATTERNS.stream()
+                        .map(PathPatternRequestMatcher::pathPattern)
+                        .map(RequestMatcher.class::cast)
+                        .toList()
+        );
+    }
 
     @Bean
     SecurityFilterChain securityFilterChain(
@@ -76,23 +107,10 @@ public class IdentitySecurityConfiguration {
                         ))
                 )
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/actuator/health/**", "/actuator/info", "/v3/api-docs/**", "/v3/api-docs").permitAll()
-                        .requestMatchers(
-                                "/api/v1/auth/register",
-                                "/api/v1/auth/login",
-                                "/api/v1/auth/refresh",
-                                "/api/v1/auth/logout",
-                                "/api/v1/auth/oauth/exchange",
-                                "/api/v1/auth/password/reset-request",
-                                "/api/v1/auth/password/reset-confirm",
-                                "/api/v1/auth/verify-email",
-                                "/oauth2/**",
-                                "/login/oauth2/**"
-                        ).permitAll()
+                        .requestMatchers(PUBLIC_PATH_PATTERNS.toArray(String[]::new)).permitAll()
                         .requestMatchers(
                                 "/api/v1/auth/me",
-                                "/api/v1/auth/password/change",
-                                "/api/v1/auth/oauth/link-google"
+                                "/api/v1/auth/password/change"
                         ).authenticated()
                         .anyRequest().denyAll()
                 )

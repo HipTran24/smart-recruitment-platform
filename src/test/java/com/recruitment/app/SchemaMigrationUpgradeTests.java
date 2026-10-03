@@ -23,7 +23,7 @@ class SchemaMigrationUpgradeTests {
     }
 
     @Test
-    void verifiesEmptyDatabaseMigrationUpToV008() throws Exception {
+    void verifiesEmptyDatabaseMigrationUpToLatest() throws Exception {
         String dbName = "empty_upgrade_test";
         String rootUrl = ApplicationTests.MYSQL.getJdbcUrl().replaceAll("/[^/]+$", "/") + "?allowPublicKeyRetrieval=true&useSSL=false";
         try (Connection rootConn = DriverManager.getConnection(rootUrl, "root", ApplicationTests.MYSQL.getPassword());
@@ -40,8 +40,8 @@ class SchemaMigrationUpgradeTests {
                 .load();
 
         var result = flyway.migrate();
-        assertTrue(result.migrationsExecuted >= 8, "All migrations through V008 must execute on an empty database");
-        assertEquals("008", flyway.info().current().getVersion().getVersion());
+        assertTrue(result.migrationsExecuted >= 9, "All migrations through V009 must execute on an empty database");
+        assertEquals("009", flyway.info().current().getVersion().getVersion());
 
         try (Connection conn = DriverManager.getConnection(jdbcUrl, "root", ApplicationTests.MYSQL.getPassword());
              Statement stmt = conn.createStatement()) {

@@ -65,9 +65,10 @@ public class JwtSecurityConfiguration {
     @Bean
     JwtAuthenticationFilter jwtAuthenticationFilter(
             JwtAccessTokenService jwtAccessTokenService,
-            org.springframework.beans.factory.ObjectProvider<LiveAccountValidator> liveAccountValidator
+            org.springframework.beans.factory.ObjectProvider<LiveAccountValidator> liveAccountValidator,
+            org.springframework.beans.factory.ObjectProvider<org.springframework.security.web.util.matcher.RequestMatcher> publicEndpointsMatcher
     ) {
-        return new JwtAuthenticationFilter(jwtAccessTokenService, liveAccountValidator.getIfAvailable());
+        return new JwtAuthenticationFilter(jwtAccessTokenService, liveAccountValidator.getIfAvailable(), publicEndpointsMatcher.getIfAvailable());
     }
 
     /**

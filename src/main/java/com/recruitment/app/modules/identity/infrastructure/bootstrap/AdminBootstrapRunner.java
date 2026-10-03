@@ -36,8 +36,7 @@ public class AdminBootstrapRunner implements ApplicationRunner {
         }
 
         if (properties.password() == null || properties.password().length() < 12) {
-            log.warn("Bootstrap admin is enabled but password is blank or shorter than 12 characters. Skipping bootstrap.");
-            return;
+            throw new IllegalStateException("Bootstrap admin is enabled but password is blank or shorter than 12 characters.");
         }
 
         if (accounts.existsByRole("ROLE_PLATFORM_ADMIN")) {

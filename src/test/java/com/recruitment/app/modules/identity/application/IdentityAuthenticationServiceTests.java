@@ -21,8 +21,12 @@ class IdentityAuthenticationServiceTests {
     private final IdentityAccountStore accounts = mock(IdentityAccountStore.class);
     private final PasswordEncoder passwords = mock(PasswordEncoder.class);
     private final TokenSessionService tokens = mock(TokenSessionService.class);
+    private final AuthenticationThrottlingService throttling = new AuthenticationThrottlingService();
+    private final EmailVerificationService verificationService = mock(EmailVerificationService.class);
+    private final com.recruitment.app.modules.identity.application.port.out.AccountNotificationGateway notifications =
+            mock(com.recruitment.app.modules.identity.application.port.out.AccountNotificationGateway.class);
     private final IdentityAuthenticationService service =
-            new IdentityAuthenticationService(accounts, passwords, tokens);
+            new IdentityAuthenticationService(accounts, passwords, tokens, throttling, verificationService, notifications);
 
     @Test
     void refusesEmailOnlyGoogleAutoLinking() {

@@ -13,7 +13,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Set;
+import com.recruitment.app.modules.identity.application.port.out.AccountNotificationGateway;
 import com.recruitment.app.modules.identity.application.port.out.IdentityAccountStore;
 import com.recruitment.app.modules.identity.domain.model.AccountSnapshot;
 
@@ -31,21 +33,23 @@ public class IdentityAuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final TokenSessionService tokenSessions;
     private final AuthenticationThrottlingService throttling;
-    private final SecureRandom secureRandom = new SecureRandom();
+    private final EmailVerificationService verificationService;
+    private final AccountNotificationGateway notifications;
 
-    public IdentityAuthenticationService(IdentityAccountStore accounts,
-            PasswordEncoder passwordEncoder, TokenSessionService tokenSessions) {
-        this(accounts, passwordEncoder, tokenSessions, new AuthenticationThrottlingService());
-    }
-
-    @org.springframework.beans.factory.annotation.Autowired
-    public IdentityAuthenticationService(IdentityAccountStore accounts,
-            PasswordEncoder passwordEncoder, TokenSessionService tokenSessions,
-            AuthenticationThrottlingService throttling) {
-        this.accounts = accounts;
-        this.passwordEncoder = passwordEncoder;
-        this.tokenSessions = tokenSessions;
+    public IdentityAuthenticationService(
+            IdentityAccountStore accounts,
+            PasswordEncoder passwordEncoder,
+            TokenSessionService tokenSessions,
+            AuthenticationThrottlingService throttling,
+            @org.springframework.beans.factory.annotation.Autowired(required = false) EmailVerificationService verificationService,
+            @org.springframework.beans.factory.annotation.Autowired(required = false) AccountNotificationGateway notifications
+    ) {
+        this.accounts = Objects.requireNonNull(accounts, "accounts must not be null");
+        this.passwordEncoder = Objects.requireNonNull(passwordEncoder, "password encoder must not be null");
+        this.tokenSessions = Objects.requireNonNull(tokenSessions, "token sessions must not be null");
         this.throttling = throttling != null ? throttling : new AuthenticationThrottlingService();
+        this.verificationService = verificationService;
+        this.notifications = notifications;
     }
 
     @Transactional
@@ -59,6 +63,10 @@ public class IdentityAuthenticationService {
         }
 
         AccountSnapshot account = accounts.createCandidate(email, passwordEncoder.encode(password), fullName);
+        if (verificationService != null && notifications != null) {
+            String verificationToken = verificationService.createVerificationToken(account.id());
+            notifications.sendEmailVerificationNotification(email, verificationToken);
+        }
         return tokenSessions.issueFor(account.id());
     }
 
@@ -155,10 +163,8 @@ public class IdentityAuthenticationService {
         return new AuthenticatedAccount(account.id(), account.email(), account.fullName(), account.roles());
     }
 
-    private String generateUnusablePassword() {
-        byte[] bytes = new byte[UNUSABLE_PASSWORD_BYTES];
-        secureRandom.nextBytes(bytes);
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+    private static String generateUnusablePassword() {
+        return com.recruitment.app.common.security.TokenDigest.newOpaqueToken(UNUSABLE_PASSWORD_BYTES);
     }
 
     private static String normalizeEmail(String value) {

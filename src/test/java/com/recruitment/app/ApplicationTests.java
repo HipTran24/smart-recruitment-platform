@@ -38,6 +38,7 @@ public class ApplicationTests {
 
 	@Test
 	void contextLoads() {
+        org.junit.jupiter.api.Assertions.assertNotNull(mockMvc);
 	}
 
     @Test

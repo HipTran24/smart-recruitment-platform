@@ -1,4 +1,4 @@
-package com.recruitment.app.modules.identity.infrastructure.security;
+package com.recruitment.app.modules.identity.application;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

@@ -2,6 +2,7 @@ package com.recruitment.app.modules.identity.infrastructure.security;
 
 import com.recruitment.app.modules.identity.application.AccessTokenIssuer;
 import com.recruitment.app.modules.identity.application.IssuedAccessToken;
+import com.recruitment.app.modules.identity.application.JwtPrincipal;
 import com.recruitment.app.modules.identity.application.JwtSubject;
 import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -77,7 +78,10 @@ public final class JwtAccessTokenService implements AccessTokenIssuer {
             Jwt jwt = jwtDecoder.decode(compactToken);
             Set<String> roleCodes = new LinkedHashSet<>(jwt.getClaimAsStringList(ApplicationAccessTokenValidator.ROLES_CLAIM));
             Object cvClaim = jwt.getClaim(ApplicationAccessTokenValidator.CREDENTIAL_VERSION_CLAIM);
-            int credentialVersion = cvClaim instanceof Number number ? number.intValue() : 1;
+            if (!(cvClaim instanceof Number number) || number.longValue() <= 0) {
+                throw new InvalidAccessTokenException();
+            }
+            int credentialVersion = number.intValue();
             return new JwtPrincipal(Long.parseLong(jwt.getSubject()), roleCodes, jwt.getId(), credentialVersion);
         } catch (JwtException | IllegalArgumentException exception) {
             throw new InvalidAccessTokenException(exception);

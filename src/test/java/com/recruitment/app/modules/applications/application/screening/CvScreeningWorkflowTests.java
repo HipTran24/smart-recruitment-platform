@@ -134,6 +134,66 @@ class CvScreeningWorkflowTests {
     }
 
     @Test
+    void retriesUpToMaxAttemptsOnRetryableProviderErrorAndSucceeds() throws Exception {
+        MutableClock clock = new MutableClock(NOW);
+        CvScreeningRequest request = validRequest();
+        ApplicationScreening screening = pendingScreening(request);
+        ApplicationScreeningRepository repository = repositoryReturning(screening);
+        AtomicInteger attempts = new AtomicInteger();
+        CvScreeningGateway gateway = ignored -> {
+            if (attempts.incrementAndGet() < CvScreeningWorkflow.MAX_PROVIDER_ATTEMPTS) {
+                throw new CvScreeningException(
+                        CvScreeningException.Reason.PROVIDER_UNAVAILABLE,
+                        true,
+                        "temporary provider overload"
+                );
+            }
+            return validResult();
+        };
+        CvScreeningWorkflow workflow = new CvScreeningWorkflow(
+                stateService(repository, clock),
+                gatewayProvider(gateway)
+        );
+
+        CvScreeningExecutionOutcome outcome = workflow.execute(screening.getId(), request);
+
+        assertEquals(CvScreeningExecutionOutcome.Status.COMPLETED, outcome.status());
+        assertEquals(3, attempts.get());
+        assertEquals(ApplicationScreening.ScreeningStatus.COMPLETED, screening.getStatus());
+        assertEquals(82, screening.getScore());
+    }
+
+    @Test
+    void doesNotRetryOnNonRetryableProviderError() throws Exception {
+        MutableClock clock = new MutableClock(NOW);
+        CvScreeningRequest request = validRequest();
+        ApplicationScreening screening = pendingScreening(request);
+        ApplicationScreeningRepository repository = repositoryReturning(screening);
+        AtomicInteger attempts = new AtomicInteger();
+        CvScreeningGateway gateway = ignored -> {
+            attempts.incrementAndGet();
+            throw new CvScreeningException(
+                    CvScreeningException.Reason.PROVIDER_REJECTED,
+                    false,
+                    "payload rejected"
+            );
+        };
+        CvScreeningWorkflow workflow = new CvScreeningWorkflow(
+                stateService(repository, clock),
+                gatewayProvider(gateway)
+        );
+
+        CvScreeningExecutionOutcome outcome = workflow.execute(screening.getId(), request);
+
+        assertEquals(CvScreeningExecutionOutcome.Status.FAILED, outcome.status());
+        assertEquals("PROVIDER_REJECTED", outcome.failureCode());
+        assertFalse(outcome.retryable());
+        assertEquals(1, attempts.get());
+        assertEquals(ApplicationScreening.ScreeningStatus.FAILED, screening.getStatus());
+        assertFalse(screening.getRetryable());
+    }
+
+    @Test
     void expiredLeaseCanBeReclaimedAndItsLateCompletionCannotOverwriteTheNewClaim() throws Exception {
         MutableClock clock = new MutableClock(NOW);
         CvScreeningRequest request = validRequest();

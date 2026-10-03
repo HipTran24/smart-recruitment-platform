@@ -13,7 +13,7 @@ import com.recruitment.app.modules.identity.application.command.PasswordLoginCom
 import com.recruitment.app.modules.identity.application.command.RegisterAccountCommand;
 import com.recruitment.app.modules.identity.application.exception.IdentityAuthenticationException;
 import com.recruitment.app.modules.identity.application.exception.OAuthFeatureUnavailableException;
-import com.recruitment.app.modules.identity.infrastructure.security.JwtPrincipal;
+import com.recruitment.app.modules.identity.application.JwtPrincipal;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.http.CacheControl;
@@ -33,17 +33,21 @@ public class AuthController {
 
     private final IdentityAuthenticationService identities;
     private final ObjectProvider<GoogleOAuthCodeExchangeService> googleOAuthCodeExchange;
+    private final com.recruitment.app.modules.identity.application.AuthenticationThrottlingService throttling;
 
     public AuthController(
             IdentityAuthenticationService identities,
-            ObjectProvider<GoogleOAuthCodeExchangeService> googleOAuthCodeExchange
+            ObjectProvider<GoogleOAuthCodeExchangeService> googleOAuthCodeExchange,
+            com.recruitment.app.modules.identity.application.AuthenticationThrottlingService throttling
     ) {
         this.identities = identities;
         this.googleOAuthCodeExchange = googleOAuthCodeExchange;
+        this.throttling = throttling;
     }
 
     @PostMapping("/register")
     public ResponseEntity<TokenResponse> register(@Valid @RequestBody RegistrationRequest request) {
+        throttling.checkThrottled("register:" + request.email());
         IssuedTokenPair tokens = identities.register(new RegisterAccountCommand(
                 request.fullName(),
                 request.email(),
@@ -62,6 +66,7 @@ public class AuthController {
 
     @PostMapping("/refresh")
     public ResponseEntity<TokenResponse> refresh(@Valid @RequestBody RefreshTokenRequest request) {
+        throttling.checkThrottled("refresh:" + request.refreshToken());
         return tokenResponse(identities.refresh(request.refreshToken()), HttpStatus.OK);
     }
 
@@ -73,6 +78,7 @@ public class AuthController {
 
     @PostMapping("/oauth/exchange")
     public ResponseEntity<TokenResponse> exchangeGoogleAuthorizationCode(@Valid @RequestBody OAuthCodeExchangeRequest request) {
+        throttling.checkThrottled("oauth:" + request.transactionId());
         GoogleOAuthCodeExchangeService exchange = googleOAuthCodeExchange.getIfAvailable();
         if (exchange == null) {
             throw new OAuthFeatureUnavailableException();

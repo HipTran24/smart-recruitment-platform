@@ -122,7 +122,7 @@ public final class PkceGoogleAuthorizationRequestFilter extends OncePerRequestFi
     }
 
     static boolean isValidTransactionId(String value) {
-        return value != null && value.matches("[A-Za-z0-9_-]{43}");
+        return value != null && com.recruitment.app.common.security.TokenDigest.FLEXIBLE_TOKEN_PATTERN.matcher(value).matches();
     }
 
     private static String singleParameter(HttpServletRequest request, String name) {
