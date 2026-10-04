@@ -2,6 +2,11 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AdminLayout } from './components/layout/AdminLayout';
 import { RecruiterLayout } from './components/layout/RecruiterLayout';
 
+// Shared Authentication Pages
+import SignIn from './pages/auth/SignIn';
+import SignUp from './pages/auth/SignUp';
+import ForgotPassword from './pages/auth/ForgotPassword';
+
 // Admin Workspace Pages
 import AdminConsole from './pages/AdminConsole';
 import JobManagement from './pages/JobManagement';
@@ -31,6 +36,15 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* ========================================================================= */}
+        {/* GIAO DIỆN XÁC THỰC DÙNG CHUNG (SIGN IN, SIGN UP, FORGOT PASSWORD)        */}
+        {/* ========================================================================= */}
+        <Route path="/signin" element={<SignIn />} />
+        <Route path="/login" element={<SignIn />} />
+        <Route path="/signup" element={<SignUp />} />
+        <Route path="/register" element={<SignUp />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+
         {/* ========================================================================= */}
         {/* GIAO DIỆN RECRUITER (CHẠY RIÊNG BIỆT VỚI RECRUITERLAYOUT)                */}
         {/* ========================================================================= */}
