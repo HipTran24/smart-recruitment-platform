@@ -17,6 +17,7 @@ import java.util.regex.Pattern;
 public class GeminiCvScreeningProperties {
 
     private static final Pattern MODEL_NAME = Pattern.compile("[A-Za-z0-9._-]{1,128}");
+    private static final Pattern API_VERSION_PATTERN = Pattern.compile("v[0-9]+(?:[A-Za-z0-9._-]+)?");
 
     private boolean enabled;
     private URI apiBaseUrl = URI.create("https://generativelanguage.googleapis.com");
@@ -52,7 +53,7 @@ public class GeminiCvScreeningProperties {
         if ("http".equals(scheme) && (!allowInsecureEndpoint || !isLoopbackHost(apiBaseUrl.getHost()))) {
             throw configurationError("Gemini API base URL must use HTTPS; insecure endpoints are limited to local testing");
         }
-        if (apiVersion == null || !apiVersion.matches("v[0-9]+(?:[A-Za-z0-9._-]+)?")) {
+        if (apiVersion == null || !API_VERSION_PATTERN.matcher(apiVersion).matches()) {
             throw configurationError("Gemini API version is invalid");
         }
         validateDuration(connectTimeout, "Gemini connect timeout");

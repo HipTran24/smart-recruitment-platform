@@ -45,7 +45,7 @@ public final class PkceGoogleAuthorizationRequestFilter extends OncePerRequestFi
         String codeChallenge = singleParameter(request, "code_challenge");
         String codeChallengeMethod = singleParameter(request, "code_challenge_method");
         String transactionId = singleParameter(request, TRANSACTION_ID_PARAMETER);
-        if (codeChallenge == null || !codeChallenge.matches("[A-Za-z0-9_-]{43}")
+        if (codeChallenge == null || !com.recruitment.app.common.security.TokenDigest.OPAQUE_TOKEN_PATTERN.matcher(codeChallenge).matches()
                 || !"S256".equals(codeChallengeMethod)
                 || !isValidTransactionId(transactionId)
                 || !registerPendingTransaction(request, transactionId, codeChallenge)) {
@@ -68,7 +68,7 @@ public final class PkceGoogleAuthorizationRequestFilter extends OncePerRequestFi
             String transactionId,
             String codeChallenge
     ) {
-        if (!isValidTransactionId(transactionId) || codeChallenge == null || !codeChallenge.matches("[A-Za-z0-9_-]{43}")) {
+        if (!isValidTransactionId(transactionId) || codeChallenge == null || !com.recruitment.app.common.security.TokenDigest.OPAQUE_TOKEN_PATTERN.matcher(codeChallenge).matches()) {
             return false;
         }
 
@@ -101,7 +101,7 @@ public final class PkceGoogleAuthorizationRequestFilter extends OncePerRequestFi
             Map<String, String> transactions = pendingTransactions(session);
             String challenge = transactions.remove(transactionId);
             removeWhenEmpty(session, transactions);
-            return challenge != null && challenge.matches("[A-Za-z0-9_-]{43}") ? challenge : null;
+            return challenge != null && com.recruitment.app.common.security.TokenDigest.OPAQUE_TOKEN_PATTERN.matcher(challenge).matches() ? challenge : null;
         }
     }
 
@@ -151,12 +151,10 @@ public final class PkceGoogleAuthorizationRequestFilter extends OncePerRequestFi
     }
 
     private static void writeInvalidRequest(HttpServletResponse response) throws IOException {
-        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setHeader("Cache-Control", "no-store, max-age=0");
         response.setHeader("Pragma", "no-cache");
         response.setHeader("Referrer-Policy", "no-referrer");
-        ApiErrorWriter.write(response, response.getStatus(),
+        ApiErrorWriter.write(response, HttpServletResponse.SC_BAD_REQUEST,
                 "INVALID_OAUTH_REQUEST", "A valid PKCE challenge is required.");
     }
 }

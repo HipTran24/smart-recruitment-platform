@@ -43,6 +43,7 @@ import java.util.List;
 public class IdentitySecurityConfiguration {
 
     public static final List<String> PUBLIC_PATH_PATTERNS = List.of(
+            "/error",
             "/actuator/health/**",
             "/actuator/info",
             "/v3/api-docs/**",
@@ -107,6 +108,7 @@ public class IdentitySecurityConfiguration {
                         ))
                 )
                 .authorizeHttpRequests(authorize -> authorize
+                        .dispatcherTypeMatchers(jakarta.servlet.DispatcherType.ERROR, jakarta.servlet.DispatcherType.FORWARD).permitAll()
                         .requestMatchers(PUBLIC_PATH_PATTERNS.toArray(String[]::new)).permitAll()
                         .requestMatchers(
                                 "/api/v1/auth/me",
@@ -162,8 +164,6 @@ public class IdentitySecurityConfiguration {
         if (response.isCommitted()) {
             return;
         }
-        response.setStatus(status);
-        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         if (bearerChallenge) {
             response.setHeader(HttpHeaders.WWW_AUTHENTICATE, "Bearer");
         }

@@ -53,6 +53,6 @@ data. Cloud apply and real-provider smoke tests are opt-in deployment actions.
     change endpoints with single-use replay protection and session revocation.
   - Role escalation prevention: domain invariant prevents holding both `ROLE_PLATFORM_ADMIN`
     and `ROLE_RECRUITER`.
-  - Google account linking uniqueness enforced with HTTP 409 conflict handling.
+  - Google account linking uniqueness enforced at application service layer with HTTP 409 conflict handling (HTTP endpoint mapping scheduled for Sprint 3 frontend integration).
   - Initial admin bootstrap runner configurable via `app.identity.bootstrap-admin`.
 - G3–G9 remain pending. Docker image build and AWS/provider smoke tests have not been run.

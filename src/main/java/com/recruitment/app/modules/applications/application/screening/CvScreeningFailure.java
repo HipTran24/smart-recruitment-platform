@@ -1,6 +1,7 @@
 package com.recruitment.app.modules.applications.application.screening;
 
 import java.util.Objects;
+import java.util.regex.Pattern;
 
 /**
  * A bounded, non-sensitive failure record that is safe to persist. Provider messages and generic
@@ -10,9 +11,10 @@ import java.util.Objects;
 public record CvScreeningFailure(String code, boolean retryable, String message) {
 
     private static final int MAX_MESSAGE_LENGTH = 1_000;
+    private static final Pattern CODE_PATTERN = Pattern.compile("^[A-Z][A-Z0-9_]{1,63}$");
 
     public CvScreeningFailure {
-        if (code == null || !code.matches("[A-Z][A-Z0-9_]{1,63}")) {
+        if (code == null || !CODE_PATTERN.matcher(code).matches()) {
             throw new IllegalArgumentException("CV screening failure code is invalid");
         }
         message = boundedMessage(message);

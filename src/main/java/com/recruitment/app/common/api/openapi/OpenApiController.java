@@ -43,10 +43,10 @@ public class OpenApiController {
 
     private static Map<String, Object> authPaths() {
         return Map.of(
-                "/api/v1/auth/register", postEndpoint("Register candidate account", "Auth", false, "201", "Created"),
-                "/api/v1/auth/login", postEndpoint("Log in with email and password", "Auth", false, "200", "Authenticated"),
-                "/api/v1/auth/refresh", postEndpoint("Rotate refresh session and issue new access token", "Auth", false, "200", "Tokens refreshed"),
-                "/api/v1/auth/logout", postEndpoint("Revoke refresh session", "Auth", false, "204", "Logged out"),
+                "/api/v1/auth/register", postEndpoint("Register candidate account", "Auth", false, "RegistrationRequest", "201", "Created"),
+                "/api/v1/auth/login", postEndpoint("Log in with email and password", "Auth", false, "PasswordLoginRequest", "200", "Authenticated"),
+                "/api/v1/auth/refresh", postEndpoint("Rotate refresh session and issue new access token", "Auth", false, "RefreshTokenRequest", "200", "Tokens refreshed"),
+                "/api/v1/auth/logout", postEndpoint("Revoke refresh session", "Auth", false, "RefreshTokenRequest", "204", "Logged out"),
                 "/api/v1/auth/me", Map.of(
                         "get", Map.of(
                                 "summary", "Retrieve current authenticated account",
@@ -55,25 +55,29 @@ public class OpenApiController {
                                 "responses", standardResponses("200", "Current user account")
                         )
                 ),
-                "/api/v1/auth/oauth/exchange", postEndpoint("Exchange single-use PKCE-bound OAuth handoff code", "Auth", false, "200", "Session issued")
+                "/api/v1/auth/oauth/exchange", postEndpoint("Exchange single-use PKCE-bound OAuth handoff code", "Auth", false, "OAuthCodeExchangeRequest", "200", "Session issued")
         );
     }
 
     private static Map<String, Object> accountSecurityPaths() {
         return Map.of(
-                "/api/v1/auth/password/change", postEndpoint("Change current account password", "Account Security", true, "204", "Password changed"),
-                "/api/v1/auth/password/reset-request", postEndpoint("Request password reset dispatch", "Account Security", false, "200", "Reset request accepted"),
-                "/api/v1/auth/password/reset-confirm", postEndpoint("Confirm password reset with token", "Account Security", false, "204", "Password reset confirmed"),
-                "/api/v1/auth/verify-email", postEndpoint("Verify candidate email address", "Account Security", false, "204", "Email verified")
+                "/api/v1/auth/password/change", postEndpoint("Change current account password", "Account Security", true, "ChangePasswordRequest", "204", "Password changed"),
+                "/api/v1/auth/password/reset-request", postEndpoint("Request password reset dispatch", "Account Security", false, "PasswordResetRequest", "200", "Reset request accepted"),
+                "/api/v1/auth/password/reset-confirm", postEndpoint("Confirm password reset with token", "Account Security", false, "PasswordResetConfirmRequest", "204", "Password reset confirmed"),
+                "/api/v1/auth/verify-email", postEndpoint("Verify candidate email address", "Account Security", false, "VerifyEmailRequest", "204", "Email verified")
         );
     }
 
-    private static Map<String, Object> postEndpoint(String summary, String tag, boolean authenticated, String successCode, String successDesc) {
+    private static Map<String, Object> postEndpoint(
+            String summary, String tag, boolean authenticated, String requestSchema, String successCode, String successDesc) {
         Map<String, Object> operation = new LinkedHashMap<>();
         operation.put("summary", summary);
         operation.put("tags", List.of(tag));
         if (!authenticated) {
             operation.put("security", List.of());
+        }
+        if (requestSchema != null) {
+            operation.put("requestBody", Map.of("required", true, "content", jsonContent(requestSchema)));
         }
         operation.put("responses", standardResponses(successCode, successDesc));
         return Map.of("post", operation);
@@ -95,24 +99,44 @@ public class OpenApiController {
     private static Map<String, Object> components() {
         return Map.of(
                 "securitySchemes", Map.of(
-                        "bearerAuth", Map.of(
-                                "type", "http",
-                                "scheme", "bearer",
-                                "bearerFormat", "JWT"
-                        )
+                        "bearerAuth", Map.of("type", "http", "scheme", "bearer", "bearerFormat", "JWT")
                 ),
-                "schemas", Map.of(
-                        "ApiErrorResponse", Map.of(
-                                "type", "object",
-                                "required", List.of("code", "message", "fieldErrors", "requestId"),
-                                "properties", Map.of(
-                                        "code", Map.of("type", "string"),
-                                        "message", Map.of("type", "string"),
-                                        "fieldErrors", Map.of("type", "object"),
-                                        "requestId", Map.of("type", "string")
-                                )
-                        )
-                )
+                "schemas", requestSchemas()
         );
+    }
+
+    private static Map<String, Object> requestSchemas() {
+        Map<String, Object> schemas = new LinkedHashMap<>();
+        schemas.put("ApiErrorResponse", schema(List.of("code", "message", "fieldErrors", "requestId"),
+                Map.of("code", stringProp(), "message", stringProp(), "fieldErrors", objectProp(), "requestId", stringProp())));
+        schemas.put("RegistrationRequest", schema(List.of("fullName", "email", "password"),
+                Map.of("fullName", stringProp(), "email", stringProp(), "password", stringProp())));
+        schemas.put("PasswordLoginRequest", schema(List.of("email", "password"),
+                Map.of("email", stringProp(), "password", stringProp())));
+        schemas.put("RefreshTokenRequest", schema(List.of("refreshToken"),
+                Map.of("refreshToken", stringProp())));
+        schemas.put("OAuthCodeExchangeRequest", schema(List.of("code", "codeVerifier", "transactionId"),
+                Map.of("code", stringProp(), "codeVerifier", stringProp(), "transactionId", stringProp())));
+        schemas.put("ChangePasswordRequest", schema(List.of("currentPassword", "newPassword"),
+                Map.of("currentPassword", stringProp(), "newPassword", stringProp())));
+        schemas.put("PasswordResetRequest", schema(List.of("email"),
+                Map.of("email", stringProp())));
+        schemas.put("PasswordResetConfirmRequest", schema(List.of("token", "newPassword"),
+                Map.of("token", stringProp(), "newPassword", stringProp())));
+        schemas.put("VerifyEmailRequest", schema(List.of("token"),
+                Map.of("token", stringProp())));
+        return schemas;
+    }
+
+    private static Map<String, Object> schema(List<String> required, Map<String, Object> props) {
+        return Map.of("type", "object", "required", required, "properties", props);
+    }
+
+    private static Map<String, String> stringProp() {
+        return Map.of("type", "string");
+    }
+
+    private static Map<String, String> objectProp() {
+        return Map.of("type", "object");
     }
 }

@@ -40,6 +40,9 @@ class LiveAccountAuthorizationIntegrationTests {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private com.recruitment.app.modules.identity.infrastructure.persistence.repository.RoleRepository roleRepository;
+
     private final JsonMapper jsonMapper = JsonMapper.builder().build();
 
     @Test
@@ -141,5 +144,39 @@ class LiveAccountAuthorizationIntegrationTests {
         mockMvc.perform(get("/api/v1/auth/me")
                         .header("Authorization", "Bearer " + newAccessToken))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void roleChangeIncrementsCredentialVersionAndInvalidatesExistingTokens() throws Exception {
+        String email = "role-change-user@example.test";
+        String password = "Password-123456";
+        String registerBody = """
+                {"fullName":"Role Change Tester","email":"%s","password":"%s"}
+                """.formatted(email, password);
+
+        var regResponse = mockMvc.perform(post("/api/v1/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(registerBody))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse();
+
+        String oldAccessToken = jsonMapper.readTree(regResponse.getContentAsString()).path("accessToken").asText();
+
+        // Valid access token works
+        mockMvc.perform(get("/api/v1/auth/me")
+                        .header("Authorization", "Bearer " + oldAccessToken))
+                .andExpect(status().isOk());
+
+        // Assign a role directly to the user
+        User user = userRepository.findByEmail(email).orElseThrow();
+        var recruiterRole = roleRepository.findByCode("ROLE_RECRUITER")
+                .orElseGet(() -> roleRepository.save(new com.recruitment.app.modules.identity.infrastructure.persistence.entity.Role("ROLE_RECRUITER", "Recruiter")));
+        user.addRole(recruiterRole);
+        userRepository.saveAndFlush(user);
+
+        // Old token must now be rejected immediately because credentialVersion changed
+        mockMvc.perform(get("/api/v1/auth/me")
+                        .header("Authorization", "Bearer " + oldAccessToken))
+                .andExpect(status().isUnauthorized());
     }
 }

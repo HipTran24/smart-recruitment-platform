@@ -18,6 +18,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 import java.util.Objects;
+import java.util.regex.Pattern;
 
 @Getter
 @Entity
@@ -31,6 +32,10 @@ import java.util.Objects;
         )
 )
 public class ApplicationScreening extends BaseEntity {
+
+    private static final Pattern SHA256_HEX_PATTERN = Pattern.compile("^[a-fA-F0-9]{64}$");
+    private static final Pattern FAILURE_CODE_PATTERN = Pattern.compile("^[A-Z][A-Z0-9_]{1,63}$");
+    private static final Pattern LEASE_TOKEN_PATTERN = Pattern.compile("^[A-Za-z0-9_-]{22,64}$");
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(
@@ -116,7 +121,7 @@ public class ApplicationScreening extends BaseEntity {
         this.provider = requireText(provider, "screening provider");
         this.modelVersion = requireText(modelVersion, "model version");
         this.promptVersion = requireText(promptVersion, "prompt version");
-        if (inputHash == null || !inputHash.matches("[a-fA-F0-9]{64}")) {
+        if (inputHash == null || !SHA256_HEX_PATTERN.matcher(inputHash).matches()) {
             throw new IllegalArgumentException("input hash must be a SHA-256 hash");
         }
         this.inputHash = inputHash.toLowerCase();
@@ -236,14 +241,14 @@ public class ApplicationScreening extends BaseEntity {
     }
 
     private static String requireFailureCode(String value) {
-        if (value == null || !value.matches("[A-Z][A-Z0-9_]{1,63}")) {
+        if (value == null || !FAILURE_CODE_PATTERN.matcher(value).matches()) {
             throw new IllegalArgumentException("screening failure code is invalid");
         }
         return value;
     }
 
     private static String requireLeaseToken(String value) {
-        if (value == null || !value.matches("[A-Za-z0-9_-]{22,64}")) {
+        if (value == null || !LEASE_TOKEN_PATTERN.matcher(value).matches()) {
             throw new IllegalArgumentException("screening processing lease token is invalid");
         }
         return value;

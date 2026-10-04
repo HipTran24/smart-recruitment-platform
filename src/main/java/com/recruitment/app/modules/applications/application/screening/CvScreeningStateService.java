@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.util.Objects;
+import java.util.regex.Pattern;
 
 /**
  * Owns only short, durable screening-state transitions. Every operation executes
@@ -14,6 +15,9 @@ import java.util.Objects;
  */
 @Service
 public class CvScreeningStateService {
+
+    private static final Pattern SHA256_HEX_PATTERN = Pattern.compile("^[a-fA-F0-9]{64}$");
+    private static final Pattern LEASE_TOKEN_PATTERN = Pattern.compile("^[A-Za-z0-9_-]{22,64}$");
 
     /**
      * The Gemini adapter caps both connection and read timeouts, so five minutes leaves room for
@@ -66,7 +70,7 @@ public class CvScreeningStateService {
     }
 
     private static void validateInputHash(String inputHash) {
-        if (inputHash == null || !inputHash.matches("[a-fA-F0-9]{64}")) {
+        if (inputHash == null || !SHA256_HEX_PATTERN.matcher(inputHash).matches()) {
             throw new IllegalArgumentException("screening input hash must be a SHA-256 hash");
         }
     }
@@ -75,7 +79,7 @@ public class CvScreeningStateService {
 
         public ScreeningLease {
             validateScreeningId(screeningId);
-            if (token == null || !token.matches("[A-Za-z0-9_-]{22,64}")) {
+            if (token == null || !LEASE_TOKEN_PATTERN.matcher(token).matches()) {
                 throw new IllegalArgumentException("screening lease token is invalid");
             }
         }

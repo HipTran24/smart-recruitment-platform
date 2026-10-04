@@ -77,7 +77,12 @@ APP_WEB_CORS_ALLOWED_ORIGINS=https://app.example.com,https://admin.example.com
 
 Wildcard bị từ chối. OAuth chỉ dùng session tạm cho state/PKCE; cookie là `HttpOnly`, `SameSite=Lax`, và phải `Secure=true` ở production. Local HTTPS-free có thể dùng `SERVER_SESSION_COOKIE_SECURE=false`.
 
-Mặc định `SERVER_FORWARD_HEADERS_STRATEGY=none`. Chỉ đặt `framework` khi backend nằm sau proxy/load balancer đáng tin cậy có nhiệm vụ loại bỏ header `Forwarded`/`X-Forwarded-*` do client tự gửi và thay bằng header của chính proxy; nếu không callback Google có thể bị open-redirect hoặc sai base URL.
+Mặc định `SERVER_FORWARD_HEADERS_STRATEGY=none`. Chỉ đặt `framework` khi backend nằm sau proxy/load balancer đáng tin cậy có nhiệm vụ loại bỏ header `Forwarded`/`X-Forwarded-*` do client tự gửi và thay bằng header của chính proxy; nếu không callback Google có thể bị open-redirect hoặc sai base URL. Tương tự, `app.security.client-ip.trust-forwarded-header` mặc định `false`, chỉ bật khi đứng sau reverse proxy đã strip client header để bảo vệ cơ chế rate limiting.
+
+## Quản lý phiên và thu hồi Token (Logout & Credential Versioning)
+
+- **Refresh Token Revocation**: Khi client gọi `POST /api/v1/auth/logout`, refresh token tương ứng bị thu hồi lập tức trong cơ sở dữ liệu (`revoked_at`), ngăn chặn vĩnh viễn việc tái cấp access token từ phiên này.
+- **Access Token Lifespan**: Access Token là JWT phi trạng thái (stateless) với thời gian sống ngắn (TTL mặc định 15 phút). Access Token tiếp tục có hiệu lực cho tới khi hết hạn TTL, trừ khi tài khoản bị vô hiệu hóa (`active = false`), đổi mật khẩu (`changePassword`), hoặc thay đổi vai trò (`addRole`/`removeRole`). Trong các trường hợp đó, `credential_version` được tăng lên, kích hoạt kiểm tra thời gian thực (`LiveAccountAuthorizationService`) từ chối ngay lập tức mọi access token cũ.
 
 ## Gemini CV screening
 
@@ -96,6 +101,8 @@ GEMINI_READ_TIMEOUT=PT30S
 Adapter gửi structured JSON request, kiểm tra response schema, có timeout và phân loại 429/5xx/network là retryable. Nó remove email, phone, URL và các dòng CV có nhãn direct/sensitive identifier trước call, đồng thời sanitize direct identifier nhận được trong output trước khi workflow lưu audit data. Đây là defense-in-depth, không thay thế consent, retention/deletion policy, quyền truy cập tối thiểu, hoặc anonymization ở tầng ingestion. Không gửi CV có dữ liệu không cần thiết cho job criteria.
 
 `CvScreeningWorkflow` chỉ nhận screening đã queue: claim state trong transaction ngắn bằng lease, gọi provider ngoài transaction/DB lock, rồi re-lock để complete/fail. Worker crash có thể được reclaim khi lease hết hạn; result từ worker cũ bị discard. Deployment cần scheduler/outbox/queue và alert riêng để gọi workflow cho record pending hoặc retryable — repository không tự chạy scheduler hay expose public endpoint cho việc đó.
+
+Cột `attempt` trong bảng `application_screenings` (được bảo vệ bởi unique constraint `(job_application_id, attempt)`) định danh lần chạy sàng lọc của một hồ sơ ứng viên. Nếu một lượt sàng lọc thất bại (FAILED), worker orchestrator có thể cấp phát một bản ghi mới với `attempt` tăng dần (tối đa 3 attempt theo ADR 0003). Đồng thời, trong mỗi lượt thực thi, adapter Gemini tích hợp cơ chế retry tự động tối đa 3 lần cho các lỗi mạng tạm thời hoặc 429/5xx trước khi đánh dấu lượt đó thất bại.
 
 Raw CV không được lưu trong workflow record, nhưng `input_hash` được suy ra từ input để chống worker nhận nhầm payload. Hãy quản lý hash này như metadata liên quan dữ liệu cá nhân: không expose ra API/log, áp retention/access control cùng hồ sơ ứng viên, và cân nhắc keyed fingerprint trong deployment có threat model database-disclosure/membership-inference.
 

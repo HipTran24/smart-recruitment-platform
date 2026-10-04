@@ -9,6 +9,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
+import org.springframework.web.ErrorResponse;
+import org.springframework.web.HttpMediaTypeNotAcceptableException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -63,8 +67,47 @@ public class ApiExceptionHandler {
         ));
     }
 
+    @ExceptionHandler({
+            HttpRequestMethodNotSupportedException.class,
+            HttpMediaTypeNotSupportedException.class,
+            HttpMediaTypeNotAcceptableException.class
+    })
+    ResponseEntity<ApiErrorResponse> handleSpringMvcErrors(Exception exception) {
+        org.springframework.http.HttpStatusCode statusCode = (exception instanceof ErrorResponse er)
+                ? er.getStatusCode()
+                : HttpStatus.BAD_REQUEST;
+        log.warn("Spring MVC client error: status={}, message={}, requestId={}",
+                statusCode, exception.getMessage(), RequestContext.requestId());
+        String code = switch (statusCode.value()) {
+            case 404 -> "NOT_FOUND";
+            case 405 -> "METHOD_NOT_ALLOWED";
+            case 406 -> "NOT_ACCEPTABLE";
+            case 415 -> "UNSUPPORTED_MEDIA_TYPE";
+            default -> "REQUEST_REJECTED";
+        };
+        return ResponseEntity.status(statusCode).body(ApiErrorResponse.of(
+                code,
+                "The request could not be processed."
+        ));
+    }
+
     @ExceptionHandler(Exception.class)
     ResponseEntity<ApiErrorResponse> handleUnexpected(Exception exception) {
+        if (exception instanceof ErrorResponse errorResponse) {
+            log.warn("Client error response: status={}, message={}, requestId={}",
+                    errorResponse.getStatusCode(), exception.getMessage(), RequestContext.requestId());
+            String code = switch (errorResponse.getStatusCode().value()) {
+                case 404 -> "NOT_FOUND";
+                case 405 -> "METHOD_NOT_ALLOWED";
+                case 406 -> "NOT_ACCEPTABLE";
+                case 415 -> "UNSUPPORTED_MEDIA_TYPE";
+                default -> "REQUEST_REJECTED";
+            };
+            return ResponseEntity.status(errorResponse.getStatusCode()).body(ApiErrorResponse.of(
+                    code,
+                    "The request could not be processed."
+            ));
+        }
         log.error("Unhandled unexpected exception: requestId={}", RequestContext.requestId(), exception);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiErrorResponse.of(
                 "INTERNAL_ERROR",

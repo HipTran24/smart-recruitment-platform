@@ -47,12 +47,13 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<TokenResponse> register(@Valid @RequestBody RegistrationRequest request) {
-        throttling.checkThrottled("register:" + request.email());
+        throttling.checkRegistrationThrottled();
         IssuedTokenPair tokens = identities.register(new RegisterAccountCommand(
                 request.fullName(),
                 request.email(),
                 request.password()
         ));
+        throttling.recordRegistrationDispatch();
         return tokenResponse(tokens, HttpStatus.CREATED);
     }
 
@@ -66,8 +67,13 @@ public class AuthController {
 
     @PostMapping("/refresh")
     public ResponseEntity<TokenResponse> refresh(@Valid @RequestBody RefreshTokenRequest request) {
-        throttling.checkThrottled("refresh:" + request.refreshToken());
-        return tokenResponse(identities.refresh(request.refreshToken()), HttpStatus.OK);
+        throttling.checkRefreshThrottled();
+        try {
+            return tokenResponse(identities.refresh(request.refreshToken()), HttpStatus.OK);
+        } catch (RuntimeException e) {
+            throttling.recordRefreshFailure();
+            throw e;
+        }
     }
 
     @PostMapping("/logout")
@@ -78,12 +84,17 @@ public class AuthController {
 
     @PostMapping("/oauth/exchange")
     public ResponseEntity<TokenResponse> exchangeGoogleAuthorizationCode(@Valid @RequestBody OAuthCodeExchangeRequest request) {
-        throttling.checkThrottled("oauth:" + request.transactionId());
+        throttling.checkOAuthExchangeThrottled();
         GoogleOAuthCodeExchangeService exchange = googleOAuthCodeExchange.getIfAvailable();
         if (exchange == null) {
             throw new OAuthFeatureUnavailableException();
         }
-        return tokenResponse(exchange.exchange(request.code(), request.codeVerifier(), request.transactionId()), HttpStatus.OK);
+        try {
+            return tokenResponse(exchange.exchange(request.code(), request.codeVerifier(), request.transactionId()), HttpStatus.OK);
+        } catch (RuntimeException e) {
+            throttling.recordOAuthExchangeFailure();
+            throw e;
+        }
     }
 
     @GetMapping("/me")

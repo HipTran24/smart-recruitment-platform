@@ -52,9 +52,9 @@ public class AccountSecurityController {
     public ResponseEntity<Map<String, String>> requestPasswordReset(
             @Valid @RequestBody PasswordResetRequest request
     ) {
-        throttling.checkThrottled("reset:" + request.email());
+        throttling.checkPasswordResetThrottled(request.email());
         passwordManagement.requestPasswordReset(request.email());
-        throttling.recordFailure("reset:" + request.email());
+        throttling.recordPasswordResetDispatch(request.email());
         return ResponseEntity.ok(Map.of(
                 "message", "If an active account exists with this email, password reset instructions have been dispatched."
         ));
@@ -72,12 +72,12 @@ public class AccountSecurityController {
     public ResponseEntity<Void> verifyEmail(
             @Valid @RequestBody VerifyEmailRequest request
     ) {
-        throttling.checkThrottled("verify:" + request.token());
+        throttling.checkEmailVerificationThrottled();
         try {
             emailVerification.verifyEmail(request.token());
             return ResponseEntity.noContent().build();
         } catch (RuntimeException e) {
-            throttling.recordFailure("verify:" + request.token());
+            throttling.recordEmailVerificationFailure();
             throw e;
         }
     }

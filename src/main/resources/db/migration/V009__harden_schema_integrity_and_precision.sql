@@ -30,6 +30,44 @@ ALTER TABLE jobs
 ALTER TABLE jobs
     DROP COLUMN created_by_member_id;
 
+-- 4a. For any company that has jobs but ZERO members in company_members, synthesize an OWNER membership
+-- for the user who created the earliest job, guaranteeing a valid parent row in company_members.
+INSERT INTO company_members (version, created_at, updated_at, company_id, user_id, role, is_active)
+SELECT
+    0, NOW(), NOW(),
+    orphan_companies.company_id,
+    orphan_companies.created_by_user_id,
+    'OWNER',
+    1
+FROM (
+    SELECT company_id, created_by_user_id
+    FROM (
+        SELECT company_id, created_by_user_id,
+               ROW_NUMBER() OVER (PARTITION BY company_id ORDER BY id ASC) as rn
+        FROM jobs
+        WHERE company_id NOT IN (SELECT DISTINCT company_id FROM company_members)
+    ) ranked
+    WHERE ranked.rn = 1
+) orphan_companies;
+
+-- 4b. Backfill any orphaned created_by_user_id to an active company member (preferably OWNER) before enforcing constraint
+UPDATE jobs j
+SET j.created_by_user_id = (
+    SELECT cm.user_id
+    FROM company_members cm
+    WHERE cm.company_id = j.company_id
+    ORDER BY CASE WHEN cm.role = 'OWNER' THEN 0 ELSE 1 END, cm.id ASC
+    LIMIT 1
+)
+WHERE NOT EXISTS (
+    SELECT 1 FROM company_members m
+    WHERE m.company_id = j.company_id AND m.user_id = j.created_by_user_id
+)
+AND EXISTS (
+    SELECT 1 FROM company_members m2
+    WHERE m2.company_id = j.company_id
+);
+
 ALTER TABLE jobs
     ADD CONSTRAINT fk_jobs_created_by_user_company
     FOREIGN KEY (company_id, created_by_user_id) REFERENCES company_members (company_id, user_id);

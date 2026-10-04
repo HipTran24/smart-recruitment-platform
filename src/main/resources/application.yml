@@ -26,6 +26,10 @@ spring:
 
 server:
   shutdown: graceful
+  error:
+    include-message: never
+    include-stacktrace: never
+    include-exception: false
   # Keep this at `none` unless the deployment terminates TLS behind a trusted
   # proxy that strips client-supplied Forwarded/X-Forwarded-* headers.
   forward-headers-strategy: ${SERVER_FORWARD_HEADERS_STRATEGY:none}
@@ -54,6 +58,8 @@ management:
 # configuration deliberately has no source-controlled fallback: all JWT key
 # locations and issuer settings must be provided by the deployment.
 app:
+  notification:
+    provider: ${APP_NOTIFICATION_PROVIDER:logging}
   identity:
     bootstrap-admin:
       enabled: ${APP_IDENTITY_BOOTSTRAP_ADMIN_ENABLED:false}
@@ -65,6 +71,8 @@ app:
       # Comma-separated exact browser origins. Empty denies browser CORS.
       allowed-origins: ${APP_WEB_CORS_ALLOWED_ORIGINS:}
   security:
+    client-ip:
+      trust-forwarded-header: ${APP_SECURITY_CLIENT_IP_TRUST_FORWARDED_HEADER:false}
     oauth2:
       google:
         enabled: ${GOOGLE_OAUTH_ENABLED:false}

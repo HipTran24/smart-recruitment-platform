@@ -2,6 +2,8 @@ package com.recruitment.app.modules.identity.application;
 
 import com.recruitment.app.modules.identity.application.exception.AuthenticationThrottledException;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -11,14 +13,13 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Comparator;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * Sliding-window multi-dimensional throttling service that locks out brute-force attempts
- * while bounding memory consumption to prevent denial-of-service.
+ * Multi-dimensional sliding-window rate limiter and lockout service.
+ * Separates concerns by namespace (login credential lockout vs dispatch rate limiting).
  */
 @Service
 public class AuthenticationThrottlingService {
@@ -26,6 +27,13 @@ public class AuthenticationThrottlingService {
     public static final int DEFAULT_MAX_ATTEMPTS = 5;
     public static final int DEFAULT_IP_MAX_ATTEMPTS = 50;
     public static final int DEFAULT_ACCOUNT_MAX_ATTEMPTS = 25;
+    public static final int DEFAULT_RESET_EMAIL_MAX_ATTEMPTS = 3;
+    public static final int DEFAULT_RESET_IP_MAX_ATTEMPTS = 20;
+    public static final int DEFAULT_VERIFY_IP_MAX_ATTEMPTS = 20;
+    public static final int DEFAULT_REGISTER_IP_MAX_ATTEMPTS = 20;
+    public static final int DEFAULT_REFRESH_IP_MAX_ATTEMPTS = 30;
+    public static final int DEFAULT_OAUTH_IP_MAX_ATTEMPTS = 30;
+
     public static final int MAX_ENTRIES = 10_000;
     public static final Duration DEFAULT_WINDOW = Duration.ofMinutes(15);
 
@@ -34,19 +42,27 @@ public class AuthenticationThrottlingService {
     private final int maxIpAttempts;
     private final int maxAccountAttempts;
     private final Duration windowDuration;
+    private final boolean trustForwardedHeader;
     private final ConcurrentMap<String, AttemptRecord> attempts = new ConcurrentHashMap<>();
 
     public AuthenticationThrottlingService() {
-        this(Clock.systemUTC(), DEFAULT_MAX_ATTEMPTS, DEFAULT_WINDOW);
+        this(Clock.systemUTC(), false);
     }
 
-    @org.springframework.beans.factory.annotation.Autowired
     public AuthenticationThrottlingService(Clock clock) {
-        this(clock, DEFAULT_MAX_ATTEMPTS, DEFAULT_WINDOW);
+        this(clock, false);
+    }
+
+    @Autowired
+    public AuthenticationThrottlingService(
+            Clock clock,
+            @Value("${app.security.client-ip.trust-forwarded-header:false}") boolean trustForwardedHeader
+    ) {
+        this(clock, DEFAULT_MAX_ATTEMPTS, DEFAULT_IP_MAX_ATTEMPTS, DEFAULT_ACCOUNT_MAX_ATTEMPTS, DEFAULT_WINDOW, trustForwardedHeader);
     }
 
     public AuthenticationThrottlingService(Clock clock, int maxAttempts, Duration windowDuration) {
-        this(clock, maxAttempts, DEFAULT_IP_MAX_ATTEMPTS, DEFAULT_ACCOUNT_MAX_ATTEMPTS, windowDuration);
+        this(clock, maxAttempts, DEFAULT_IP_MAX_ATTEMPTS, DEFAULT_ACCOUNT_MAX_ATTEMPTS, windowDuration, false);
     }
 
     public AuthenticationThrottlingService(
@@ -54,37 +70,42 @@ public class AuthenticationThrottlingService {
             int maxAttempts,
             int maxIpAttempts,
             int maxAccountAttempts,
-            Duration windowDuration
+            Duration windowDuration,
+            boolean trustForwardedHeader
     ) {
         this.clock = Objects.requireNonNull(clock, "clock must not be null");
         this.maxAttempts = maxAttempts <= 0 ? DEFAULT_MAX_ATTEMPTS : maxAttempts;
         this.maxIpAttempts = maxIpAttempts <= 0 ? DEFAULT_IP_MAX_ATTEMPTS : maxIpAttempts;
         this.maxAccountAttempts = maxAccountAttempts <= 0 ? DEFAULT_ACCOUNT_MAX_ATTEMPTS : maxAccountAttempts;
         this.windowDuration = Objects.requireNonNull(windowDuration, "window duration must not be null");
+        this.trustForwardedHeader = trustForwardedHeader;
     }
 
     public void checkThrottled(String key) {
         if (key == null || key.isBlank()) {
             return;
         }
-        String ip = currentClientIp();
+        String ip = resolveClientIp();
         if (ip != null) {
-            checkThrottled(ip, key);
+            checkLoginThrottled(ip, key);
         } else {
-            checkKey(key.strip().toLowerCase(), maxAttempts);
+            checkKey("login:fallback:" + normalize(key), maxAttempts);
         }
     }
 
     public void checkThrottled(String ip, String email) {
-        Instant now = clock.instant();
+        checkLoginThrottled(ip, email);
+    }
+
+    public void checkLoginThrottled(String ip, String email) {
         if (ip != null && !ip.isBlank()) {
-            checkKey("ip:" + ip.strip().toLowerCase(), maxIpAttempts);
+            checkKey("login:ip:" + normalize(ip), maxIpAttempts);
         }
         if (email != null && !email.isBlank()) {
-            checkKey("account:" + email.strip().toLowerCase(), maxAccountAttempts);
+            checkKey("login:account:" + normalize(email), maxAccountAttempts);
         }
         if (ip != null && !ip.isBlank() && email != null && !email.isBlank()) {
-            checkKey("pair:" + ip.strip().toLowerCase() + ":" + email.strip().toLowerCase(), maxAttempts);
+            checkKey("login:pair:" + normalize(ip) + ":" + normalize(email), maxAttempts);
         }
     }
 
@@ -92,23 +113,27 @@ public class AuthenticationThrottlingService {
         if (key == null || key.isBlank()) {
             return;
         }
-        String ip = currentClientIp();
+        String ip = resolveClientIp();
         if (ip != null) {
-            recordFailure(ip, key);
+            recordLoginFailure(ip, key);
         } else {
-            recordKeyFailure(key.strip().toLowerCase());
+            recordKeyFailure("login:fallback:" + normalize(key));
         }
     }
 
     public void recordFailure(String ip, String email) {
+        recordLoginFailure(ip, email);
+    }
+
+    public void recordLoginFailure(String ip, String email) {
         if (ip != null && !ip.isBlank()) {
-            recordKeyFailure("ip:" + ip.strip().toLowerCase());
+            recordKeyFailure("login:ip:" + normalize(ip));
         }
         if (email != null && !email.isBlank()) {
-            recordKeyFailure("account:" + email.strip().toLowerCase());
+            recordKeyFailure("login:account:" + normalize(email));
         }
         if (ip != null && !ip.isBlank() && email != null && !email.isBlank()) {
-            recordKeyFailure("pair:" + ip.strip().toLowerCase() + ":" + email.strip().toLowerCase());
+            recordKeyFailure("login:pair:" + normalize(ip) + ":" + normalize(email));
         }
     }
 
@@ -116,20 +141,101 @@ public class AuthenticationThrottlingService {
         if (key == null || key.isBlank()) {
             return;
         }
-        String ip = currentClientIp();
-        if (ip != null) {
-            recordSuccess(ip, key);
-        } else {
-            attempts.remove(key.strip().toLowerCase());
-        }
+        String ip = resolveClientIp();
+        recordLoginSuccess(ip, key);
     }
 
     public void recordSuccess(String ip, String email) {
+        recordLoginSuccess(ip, email);
+    }
+
+    public void recordLoginSuccess(String ip, String email) {
         if (email != null && !email.isBlank()) {
-            attempts.remove("account:" + email.strip().toLowerCase());
+            attempts.remove("login:account:" + normalize(email));
             if (ip != null && !ip.isBlank()) {
-                attempts.remove("pair:" + ip.strip().toLowerCase() + ":" + email.strip().toLowerCase());
+                attempts.remove("login:pair:" + normalize(ip) + ":" + normalize(email));
             }
+        }
+    }
+
+    // Password reset dispatch rate limiting
+    public void checkPasswordResetThrottled(String email) {
+        String ip = resolveClientIp();
+        if (ip != null && !ip.isBlank()) {
+            checkKey("reset:ip:" + normalize(ip), DEFAULT_RESET_IP_MAX_ATTEMPTS);
+        }
+        if (email != null && !email.isBlank()) {
+            checkKey("reset:email:" + normalize(email), DEFAULT_RESET_EMAIL_MAX_ATTEMPTS);
+        }
+    }
+
+    public void recordPasswordResetDispatch(String email) {
+        String ip = resolveClientIp();
+        if (ip != null && !ip.isBlank()) {
+            recordKeyFailure("reset:ip:" + normalize(ip));
+        }
+        if (email != null && !email.isBlank()) {
+            recordKeyFailure("reset:email:" + normalize(email));
+        }
+    }
+
+    // Email verification rate limiting
+    public void checkEmailVerificationThrottled() {
+        String ip = resolveClientIp();
+        if (ip != null && !ip.isBlank()) {
+            checkKey("verify:ip:" + normalize(ip), DEFAULT_VERIFY_IP_MAX_ATTEMPTS);
+        }
+    }
+
+    public void recordEmailVerificationFailure() {
+        String ip = resolveClientIp();
+        if (ip != null && !ip.isBlank()) {
+            recordKeyFailure("verify:ip:" + normalize(ip));
+        }
+    }
+
+    // Registration rate limiting
+    public void checkRegistrationThrottled() {
+        String ip = resolveClientIp();
+        if (ip != null && !ip.isBlank()) {
+            checkKey("register:ip:" + normalize(ip), DEFAULT_REGISTER_IP_MAX_ATTEMPTS);
+        }
+    }
+
+    public void recordRegistrationDispatch() {
+        String ip = resolveClientIp();
+        if (ip != null && !ip.isBlank()) {
+            recordKeyFailure("register:ip:" + normalize(ip));
+        }
+    }
+
+    // Token refresh rate limiting
+    public void checkRefreshThrottled() {
+        String ip = resolveClientIp();
+        if (ip != null && !ip.isBlank()) {
+            checkKey("refresh:ip:" + normalize(ip), DEFAULT_REFRESH_IP_MAX_ATTEMPTS);
+        }
+    }
+
+    public void recordRefreshFailure() {
+        String ip = resolveClientIp();
+        if (ip != null && !ip.isBlank()) {
+            recordKeyFailure("refresh:ip:" + normalize(ip));
+        }
+    }
+
+    // OAuth code exchange rate limiting
+    public void checkOAuthExchangeThrottled() {
+        String ip = resolveClientIp();
+        if (ip != null && !ip.isBlank()) {
+            checkKey("oauth:ip:" + normalize(ip), DEFAULT_OAUTH_IP_MAX_ATTEMPTS);
+        }
+    }
+
+    public void recordOAuthExchangeFailure() {
+        String ip = resolveClientIp();
+        if (ip != null && !ip.isBlank()) {
+            recordKeyFailure("oauth:ip:" + normalize(ip));
         }
     }
 
@@ -139,6 +245,21 @@ public class AuthenticationThrottlingService {
 
     public void resetAll() {
         attempts.clear();
+    }
+
+    public String resolveClientIp() {
+        RequestAttributes attrs = RequestContextHolder.getRequestAttributes();
+        if (attrs instanceof ServletRequestAttributes servletAttrs) {
+            HttpServletRequest request = servletAttrs.getRequest();
+            if (trustForwardedHeader) {
+                String forwarded = request.getHeader("X-Forwarded-For");
+                if (forwarded != null && !forwarded.isBlank()) {
+                    return forwarded.split(",")[0].strip();
+                }
+            }
+            return request.getRemoteAddr();
+        }
+        return null;
     }
 
     private void checkKey(String normalizedKey, int threshold) {
@@ -168,23 +289,16 @@ public class AuthenticationThrottlingService {
         Instant now = clock.instant();
         attempts.entrySet().removeIf(entry -> entry.getValue().isExpired(now, windowDuration));
         if (attempts.size() >= MAX_ENTRIES) {
+            int toEvict = Math.max(10, MAX_ENTRIES / 20);
             attempts.entrySet().stream()
-                    .min(Comparator.comparing(e -> e.getValue().firstAttemptAt()))
-                    .ifPresent(oldest -> attempts.remove(oldest.getKey()));
+                    .sorted(Comparator.comparing(e -> e.getValue().firstAttemptAt()))
+                    .limit(toEvict)
+                    .forEach(e -> attempts.remove(e.getKey()));
         }
     }
 
-    private static String currentClientIp() {
-        RequestAttributes attrs = RequestContextHolder.getRequestAttributes();
-        if (attrs instanceof ServletRequestAttributes servletAttrs) {
-            HttpServletRequest request = servletAttrs.getRequest();
-            String forwarded = request.getHeader("X-Forwarded-For");
-            if (forwarded != null && !forwarded.isBlank()) {
-                return forwarded.split(",")[0].strip();
-            }
-            return request.getRemoteAddr();
-        }
-        return null;
+    private static String normalize(String str) {
+        return str == null ? "" : str.strip().toLowerCase();
     }
 
     private record AttemptRecord(int count, Instant firstAttemptAt) {

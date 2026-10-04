@@ -27,7 +27,7 @@ public record JwtPrincipal(Long userId, Set<String> roleCodes, String tokenId, i
         Objects.requireNonNull(roleCodes, "role codes must not be null");
         LinkedHashSet<String> normalizedRoles = new LinkedHashSet<>();
         for (String roleCode : roleCodes) {
-            if (roleCode == null || !roleCode.matches("ROLE_[A-Z0-9_]{1,45}")) {
+            if (roleCode == null || !com.recruitment.app.common.security.TokenDigest.ROLE_CODE_PATTERN.matcher(roleCode).matches()) {
                 throw new IllegalArgumentException("role code is invalid");
             }
             normalizedRoles.add(roleCode);

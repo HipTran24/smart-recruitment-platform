@@ -15,6 +15,7 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Locale;
+import java.util.regex.Pattern;
 
 @Getter
 @Entity
@@ -28,6 +29,9 @@ import java.util.Locale;
         uniqueConstraints = @UniqueConstraint(name = "uk_jobs_slug", columnNames = "slug")
 )
 public class Job extends BaseEntity {
+
+    private static final Pattern SLUG_PATTERN = Pattern.compile("^[a-z0-9]+(?:-[a-z0-9]+)*$");
+    private static final Pattern CURRENCY_PATTERN = Pattern.compile("^[A-Z]{3}$");
 
     @Column(name = "company_id", nullable = false)
     private Long companyId;
@@ -182,7 +186,7 @@ public class Job extends BaseEntity {
                 || salaryMin != null && salaryMax != null && salaryMin.compareTo(salaryMax) > 0) {
             throw new IllegalArgumentException("salary range is invalid");
         }
-        if (salaryCurrency == null || !salaryCurrency.matches("[A-Z]{3}")) {
+        if (salaryCurrency == null || !CURRENCY_PATTERN.matcher(salaryCurrency).matches()) {
             throw new IllegalArgumentException("salary currency must be an ISO 4217 code");
         }
         if (headcount == null || headcount < 1) {
@@ -199,7 +203,7 @@ public class Job extends BaseEntity {
 
     private static String normalizeSlug(String value) {
         String slug = requireText(value, "job slug").toLowerCase(Locale.ROOT);
-        if (!slug.matches("[a-z0-9]+(?:-[a-z0-9]+)*")) {
+        if (!SLUG_PATTERN.matcher(slug).matches()) {
             throw new IllegalArgumentException("job slug must use lower kebab-case");
         }
         return slug;

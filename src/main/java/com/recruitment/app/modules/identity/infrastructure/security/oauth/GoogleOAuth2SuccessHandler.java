@@ -87,7 +87,7 @@ public class GoogleOAuth2SuccessHandler implements AuthenticationSuccessHandler 
                     "expiresAt", code.expiresAt().toString()
             )));
         }
-        catch (IdentityAuthenticationException | OAuthIdentityException | DataIntegrityViolationException exception) {
+        catch (IdentityAuthenticationException | OAuthIdentityException | DataIntegrityViolationException | IllegalArgumentException exception) {
             PkceGoogleAuthorizationRequestFilter.discardCodeChallenge(request);
             clearOAuthSecurityContext();
             writeFailure(response);
@@ -159,9 +159,7 @@ public class GoogleOAuth2SuccessHandler implements AuthenticationSuccessHandler 
             return;
         }
         applySensitiveResponseHeaders(response);
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        ApiErrorWriter.write(response, response.getStatus(),
+        ApiErrorWriter.write(response, HttpServletResponse.SC_UNAUTHORIZED,
                 "OAUTH_AUTHENTICATION_FAILED", "OAuth authentication failed.");
     }
 }

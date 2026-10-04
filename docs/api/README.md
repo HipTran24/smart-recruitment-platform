@@ -39,12 +39,12 @@ Không thay đổi ý nghĩa của endpoint đã public theo cách phá vỡ cli
 | `POST /api/v1/auth/logout` | `refreshToken` | `204`; idempotent |
 | `POST /api/v1/auth/oauth/exchange` | `code`, `codeVerifier`, `transactionId` của cùng OAuth transaction | `200` và token pair |
 | `GET /api/v1/auth/me` | Bearer access token | `200` và identity/roles hiện hành |
-| `POST /api/v1/auth/password/change` | `oldPassword`, `newPassword` (Bearer token) | `204` |
+| `POST /api/v1/auth/password/change` | `currentPassword`, `newPassword` (Bearer token) | `204` |
 | `POST /api/v1/auth/password/reset-request` | `email` | `200` ("If an active account exists...") |
-| `POST /api/v1/auth/password/reset` | `token`, `newPassword` | `204` |
-| `POST /api/v1/auth/email/verify` | `token` | `204` |
+| `POST /api/v1/auth/password/reset-confirm` | `token`, `newPassword` | `204` |
+| `POST /api/v1/auth/verify-email` | `token` | `204` |
 
-Response có token luôn đặt `Cache-Control: no-store` và `Pragma: no-cache`. Refresh token là credential opaque, không phải JWT; client không được đưa access/refresh token vào URL, local storage không được bảo vệ, log hay analytics. Các endpoint nhạy cảm được bảo vệ bởi cơ chế Rate Limiting trượt; khi vượt ngưỡng sẽ trả `429 TOO_MANY_REQUESTS` kèm header `Retry-After`.
+Response có token luôn đặt `Cache-Control: no-store` và `Pragma: no-cache`. Refresh token là credential opaque, không phải JWT; client không được đưa access/refresh token vào URL, local storage không được bảo vệ, log hay analytics. Các endpoint nhạy cảm được bảo vệ bởi cơ chế Rate Limiting trượt đa chiều theo từng namespace riêng biệt (login lockout, registration limit, password reset dispatch, email verification, token refresh). Khoá IP mặc định phân giải an toàn từ kết nối socket TCP (`RemoteAddr`); header `X-Forwarded-For` chỉ được tin cậy khi bật `app.security.client-ip.trust-forwarded-header: true` sau reverse proxy đã cấu hình strip client header. Khi vượt ngưỡng hệ thống trả `429 TOO_MANY_REQUESTS` kèm header `Retry-After`.
 
 ## Request và response
 

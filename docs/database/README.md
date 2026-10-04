@@ -62,3 +62,4 @@ Xóa mềm chỉ được dùng khi có yêu cầu nghiệp vụ rõ ràng. Nế
 - A candidate has at most one primary resume, enforced with a generated nullable key and unique constraint.
 - Numeric ranges, date ordering, salary range and screening score have database checks in addition to entity validation.
 - Flyway migration is exercised against an empty MySQL Testcontainer in CI before Hibernate validates the mapping.
+- All foreign keys intentionally enforce `ON DELETE RESTRICT` (default MySQL behavior) to prevent accidental cascading data loss of compliance records and candidate submissions; automated data retention purging will be executed via a dedicated application service in Sprint 8.

@@ -23,7 +23,6 @@ import java.util.Objects;
 public class TokenSessionService {
 
     private static final int REFRESH_TOKEN_BYTES = 32;
-    private static final String REFRESH_TOKEN_PATTERN = "[A-Za-z0-9_-]{43}";
 
     private final JwtSubjectResolver subjectResolver;
     private final AccessTokenIssuer accessTokenIssuer;

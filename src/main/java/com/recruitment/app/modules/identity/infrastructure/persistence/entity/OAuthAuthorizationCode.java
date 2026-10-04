@@ -57,13 +57,13 @@ public class OAuthAuthorizationCode extends BaseEntity {
         if (userId == null || userId <= 0) {
             throw new IllegalArgumentException("user id must be positive");
         }
-        if (codeHash == null || !codeHash.matches("[a-f0-9]{64}")) {
+        if (codeHash == null || !com.recruitment.app.common.security.TokenDigest.SHA256_HEX_PATTERN.matcher(codeHash).matches()) {
             throw new IllegalArgumentException("code hash must be a SHA-256 hex digest");
         }
-        if (codeChallenge == null || !codeChallenge.matches("[A-Za-z0-9_-]{43}")) {
+        if (codeChallenge == null || !com.recruitment.app.common.security.TokenDigest.OPAQUE_TOKEN_PATTERN.matcher(codeChallenge).matches()) {
             throw new IllegalArgumentException("PKCE code challenge must be an S256 digest");
         }
-        if (transactionId == null || !transactionId.matches("[A-Za-z0-9_-]{43}")) {
+        if (transactionId == null || !com.recruitment.app.common.security.TokenDigest.FLEXIBLE_TOKEN_PATTERN.matcher(transactionId).matches()) {
             throw new IllegalArgumentException("OAuth transaction id must contain 32 random bytes");
         }
         if (expiresAt == null) {

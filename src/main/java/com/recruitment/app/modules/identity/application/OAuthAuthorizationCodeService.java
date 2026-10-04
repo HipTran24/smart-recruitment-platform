@@ -132,7 +132,7 @@ public class OAuthAuthorizationCodeService {
     }
 
     private static String deriveCodeChallenge(String codeVerifier) {
-        if (codeVerifier == null || !codeVerifier.matches("[A-Za-z0-9\\-._~]{43,128}")) {
+        if (codeVerifier == null || !com.recruitment.app.common.security.TokenDigest.PKCE_CODE_VERIFIER_PATTERN.matcher(codeVerifier).matches()) {
             throw invalidCode();
         }
         return com.recruitment.app.common.security.TokenDigest.sha256Base64Url(codeVerifier);

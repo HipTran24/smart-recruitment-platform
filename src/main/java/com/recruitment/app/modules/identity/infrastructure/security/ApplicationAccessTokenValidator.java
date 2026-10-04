@@ -67,7 +67,7 @@ final class ApplicationAccessTokenValidator implements OAuth2TokenValidator<Jwt>
         if (roleCodes == null || roleCodes.isEmpty()) {
             return false;
         }
-        return roleCodes.stream().allMatch(role -> role != null && role.matches("ROLE_[A-Z0-9_]{1,45}"));
+        return roleCodes.stream().allMatch(role -> role != null && com.recruitment.app.common.security.TokenDigest.ROLE_CODE_PATTERN.matcher(role).matches());
     }
 
     private static boolean isBlank(String value) {

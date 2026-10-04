@@ -51,7 +51,7 @@ public class PasswordManagementService {
             PasswordEncoder passwordEncoder,
             TokenSessionService tokenSessions,
             Clock clock,
-            @org.springframework.beans.factory.annotation.Autowired(required = false) AccountNotificationGateway notifications
+            AccountNotificationGateway notifications
     ) {
         this(accounts, passwordResetStore, passwordEncoder, tokenSessions, clock, DEFAULT_RESET_TTL, notifications);
     }

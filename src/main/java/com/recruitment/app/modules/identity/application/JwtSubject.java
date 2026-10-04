@@ -24,7 +24,7 @@ public record JwtSubject(Long userId, Set<String> roleCodes, int credentialVersi
 
         LinkedHashSet<String> normalizedRoles = new LinkedHashSet<>();
         for (String roleCode : roleCodes) {
-            if (roleCode == null || !roleCode.matches("ROLE_[A-Z0-9_]{1,45}")) {
+            if (roleCode == null || !com.recruitment.app.common.security.TokenDigest.ROLE_CODE_PATTERN.matcher(roleCode).matches()) {
                 throw new IllegalArgumentException("role codes must use the ROLE_<UPPER_SNAKE_CASE> format");
             }
             normalizedRoles.add(roleCode);

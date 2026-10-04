@@ -15,6 +15,7 @@ import java.util.Base64;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
+import java.util.regex.Pattern;
 import com.recruitment.app.modules.identity.application.port.out.AccountNotificationGateway;
 import com.recruitment.app.modules.identity.application.port.out.IdentityAccountStore;
 import com.recruitment.app.modules.identity.domain.model.AccountSnapshot;
@@ -28,6 +29,7 @@ import com.recruitment.app.modules.identity.domain.model.AccountSnapshot;
 public class IdentityAuthenticationService {
 
     private static final int UNUSABLE_PASSWORD_BYTES = 48;
+    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$");
 
     private final IdentityAccountStore accounts;
     private final PasswordEncoder passwordEncoder;
@@ -41,8 +43,8 @@ public class IdentityAuthenticationService {
             PasswordEncoder passwordEncoder,
             TokenSessionService tokenSessions,
             AuthenticationThrottlingService throttling,
-            @org.springframework.beans.factory.annotation.Autowired(required = false) EmailVerificationService verificationService,
-            @org.springframework.beans.factory.annotation.Autowired(required = false) AccountNotificationGateway notifications
+            EmailVerificationService verificationService,
+            AccountNotificationGateway notifications
     ) {
         this.accounts = Objects.requireNonNull(accounts, "accounts must not be null");
         this.passwordEncoder = Objects.requireNonNull(passwordEncoder, "password encoder must not be null");
@@ -169,7 +171,7 @@ public class IdentityAuthenticationService {
 
     private static String normalizeEmail(String value) {
         String email = requireText(value, "email").toLowerCase(Locale.ROOT);
-        if (email.length() > 255 || !email.matches("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$")) {
+        if (email.length() > 255 || !EMAIL_PATTERN.matcher(email).matches()) {
             throw new IdentityAuthenticationException();
         }
         return email;
