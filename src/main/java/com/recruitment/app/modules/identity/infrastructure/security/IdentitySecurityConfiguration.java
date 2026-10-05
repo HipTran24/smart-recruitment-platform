@@ -108,15 +108,7 @@ public class IdentitySecurityConfiguration {
                                 false
                         ))
                 )
-                .authorizeHttpRequests(authorize -> authorize
-                        .dispatcherTypeMatchers(jakarta.servlet.DispatcherType.ERROR, jakarta.servlet.DispatcherType.FORWARD).permitAll()
-                        .requestMatchers(PUBLIC_PATH_PATTERNS.toArray(String[]::new)).permitAll()
-                        .requestMatchers(
-                                "/api/v1/auth/me",
-                                "/api/v1/auth/password/change"
-                        ).authenticated()
-                        .anyRequest().denyAll()
-                )
+                .authorizeHttpRequests(IdentitySecurityConfiguration::configureAuthorization)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         if (oauthEnabled) {
@@ -153,6 +145,20 @@ public class IdentitySecurityConfiguration {
         return username -> {
             throw new UsernameNotFoundException("No form-login user store is configured");
         };
+    }
+
+    private static void configureAuthorization(
+            org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry authorize
+    ) {
+        authorize
+                .dispatcherTypeMatchers(jakarta.servlet.DispatcherType.ERROR, jakarta.servlet.DispatcherType.FORWARD).permitAll()
+                .requestMatchers(PUBLIC_PATH_PATTERNS.toArray(String[]::new)).permitAll()
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/jobs", "/api/v1/jobs/**", "/api/v1/skills", "/api/v1/skills/**").permitAll()
+                .requestMatchers("/api/v1/auth/me", "/api/v1/auth/password/change", "/api/v1/notifications", "/api/v1/notifications/**").authenticated()
+                .requestMatchers("/api/v1/candidates/**", "/api/v1/jobs/*/applications").hasAuthority("ROLE_CANDIDATE")
+                .requestMatchers("/api/v1/recruiter/**").hasAuthority("ROLE_RECRUITER")
+                .requestMatchers("/api/v1/admin/**").hasAuthority("ROLE_PLATFORM_ADMIN")
+                .anyRequest().denyAll();
     }
 
     private static void writeError(

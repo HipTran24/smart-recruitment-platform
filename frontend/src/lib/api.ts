@@ -66,7 +66,12 @@ async function executeRefresh(): Promise<TokenPair | null> {
     return null;
   }
 
+  const capturedGeneration = tokenStore.getSessionGeneration();
+
   const refreshPromise = (async () => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
+
     try {
       const url = buildUrl('/api/v1/auth/refresh');
       const res = await fetch(url, {
@@ -76,20 +81,31 @@ async function executeRefresh(): Promise<TokenPair | null> {
           'X-Request-Id': generateRequestId(),
         },
         body: JSON.stringify({ refreshToken }),
+        signal: controller.signal,
       });
 
       if (!res.ok) {
-        tokenStore.clear();
+        if (tokenStore.getSessionGeneration() === capturedGeneration) {
+          tokenStore.clear();
+        }
         return null;
       }
 
       const newTokens: TokenPair = await res.json();
+      // Drop late refresh response if session generation has progressed (e.g. user logged out or switched accounts)
+      if (tokenStore.getSessionGeneration() !== capturedGeneration) {
+        return null;
+      }
+
       tokenStore.setTokens(newTokens);
       return newTokens;
     } catch {
-      tokenStore.clear();
+      if (tokenStore.getSessionGeneration() === capturedGeneration) {
+        tokenStore.clear();
+      }
       return null;
     } finally {
+      clearTimeout(timeoutId);
       tokenStore.setRefreshPromise(null);
     }
   })();

@@ -26,4 +26,6 @@ public interface ApplicationScreeningRepository extends JpaRepository<Applicatio
             where screening.id = :screeningId
             """)
     Optional<ApplicationScreening> findByIdForUpdate(@Param("screeningId") Long screeningId);
+
+    Optional<ApplicationScreening> findTopByJobApplication_IdOrderByAttemptDesc(Long jobApplicationId);
 }

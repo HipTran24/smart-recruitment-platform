@@ -61,6 +61,8 @@ management:
 # configuration deliberately has no source-controlled fallback: all JWT key
 # locations and issuer settings must be provided by the deployment.
 app:
+  test-mailbox:
+    enabled: ${APP_TEST_MAILBOX_ENABLED:false}
   notification:
     provider: ${APP_NOTIFICATION_PROVIDER:logging}
   identity:

@@ -19,6 +19,8 @@ management:
         include: health,info
 
 app:
+  test-mailbox:
+    enabled: true
   security:
     jwt:
       issuer: https://smart-recruitment.test

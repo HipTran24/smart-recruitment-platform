@@ -15,12 +15,16 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.Arrays;
 import java.util.Map;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.web.bind.annotation.GetMapping;
+
 /**
  * Test mailbox harness for local, automated test, and browser UAT execution.
  * Allows retrieving verification and reset tokens issued by the in-memory test provider.
- * Automatically disabled in production environments.
+ * Automatically disabled in production environments and requires explicit opt-in.
  */
 @RestController
+@ConditionalOnProperty(name = "app.test-mailbox.enabled", havingValue = "true", matchIfMissing = false)
 @RequestMapping(value = "/api/v1/test/mailbox", produces = MediaType.APPLICATION_JSON_VALUE)
 public class TestMailboxController {
 

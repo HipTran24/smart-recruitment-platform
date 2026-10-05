@@ -26,4 +26,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("select count(u) > 0 from User u where u.id = :id and u.active = true and u.credentialVersion = :cv")
     boolean isAccountLive(@Param("id") Long id, @Param("cv") int cv);
+
+    @Query("select count(u) from User u join u.roles r where r.code = 'ROLE_PLATFORM_ADMIN' and u.active = true")
+    long countActivePlatformAdmins();
 }

@@ -8,6 +8,7 @@ export interface TokenPair {
 
 let inMemoryTokens: TokenPair | null = null;
 let refreshPromise: Promise<TokenPair | null> | null = null;
+let sessionGeneration = 0;
 const listeners = new Set<(tokens: TokenPair | null) => void>();
 
 /**
@@ -27,8 +28,13 @@ export const tokenStore = {
     return inMemoryTokens?.refreshToken ?? null;
   },
 
+  getSessionGeneration(): number {
+    return sessionGeneration;
+  },
+
   setTokens(tokens: TokenPair | null): void {
     inMemoryTokens = tokens;
+    sessionGeneration++;
     listeners.forEach((listener) => {
       try {
         listener(inMemoryTokens);
@@ -41,6 +47,7 @@ export const tokenStore = {
   clear(): void {
     inMemoryTokens = null;
     refreshPromise = null;
+    sessionGeneration++;
     listeners.forEach((listener) => {
       try {
         listener(null);

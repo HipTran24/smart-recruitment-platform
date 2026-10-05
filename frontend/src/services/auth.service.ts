@@ -40,7 +40,17 @@ export const authService = {
   },
 
   async getCurrentUser(): Promise<AuthenticatedUser> {
-    return apiClient.get<AuthenticatedUser>('/api/v1/auth/me', { auth: true });
+    const raw = await apiClient.get<any>('/api/v1/auth/me', { auth: true });
+    const roles: string[] = Array.isArray(raw?.roleCodes)
+      ? raw.roleCodes
+      : (Array.isArray(raw?.roles) ? raw.roles : []);
+    return {
+      id: raw.id,
+      email: raw.email,
+      fullName: raw.fullName,
+      roles,
+      roleCodes: roles,
+    };
   },
 
   async changePassword(payload: ChangePasswordRequest): Promise<void> {

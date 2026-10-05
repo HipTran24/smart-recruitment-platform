@@ -10,6 +10,7 @@ export interface AuthenticatedUser {
   id: number | string;
   email: string;
   fullName: string;
+  roles?: string[];
   roleCodes: string[];
 }
 

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { MetricCard } from '../components/ui/Card';
 import { DataTable } from '../components/ui/DataTable';
 import { Avatar } from '../components/ui/Avatar';
@@ -9,19 +9,74 @@ import { Select } from '../components/ui/Select';
 import { Pagination } from '../components/ui/Pagination';
 import { mockUsers } from '../data/mock';
 import type { User } from '../types';
+import { adminService } from '../services/admin.service';
 
 export default function UserRoleManagement() {
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('All');
-  const [statusFilter, setStatusFilter] = useState('Active');
+  const [statusFilter, setStatusFilter] = useState('All');
   const [page, setPage] = useState(1);
+  const [users, setUsers] = useState<User[]>(mockUsers);
+  const [totalCount, setTotalCount] = useState<number>(mockUsers.length);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [actionSuccess, setActionSuccess] = useState<string | null>(null);
 
-  const filtered = mockUsers.filter(u => {
-    const matchSearch = !search || u.name.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase());
-    const matchRole = roleFilter === 'All' || u.role === roleFilter;
-    const matchStatus = statusFilter === 'All' || u.status === statusFilter;
-    return matchSearch && matchRole && matchStatus;
-  });
+  const fetchUsers = async () => {
+    try {
+      const roleParam = roleFilter === 'Admin' ? 'ROLE_PLATFORM_ADMIN' : roleFilter === 'Recruiter' ? 'ROLE_RECRUITER' : roleFilter === 'Candidate' ? 'ROLE_CANDIDATE' : undefined;
+      const activeParam = statusFilter === 'Active' ? true : statusFilter === 'Suspended' ? false : undefined;
+      const res = await adminService.getUsers({
+        keyword: search || undefined,
+        role: roleParam,
+        active: activeParam,
+        page: page - 1,
+        size: 20
+      });
+      if (res.items && res.items.length > 0) {
+        const mapped: User[] = res.items.map(u => ({
+          id: String(u.id),
+          name: u.fullName,
+          email: u.email,
+          role: u.roles.includes('ROLE_PLATFORM_ADMIN')
+            ? 'Admin'
+            : u.roles.includes('ROLE_RECRUITER')
+            ? 'Recruiter'
+            : 'Candidate',
+          status: u.active ? 'Active' : 'Suspended',
+          avatarInitials: u.fullName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'U',
+          avatarColor: '#6366f1',
+          authProvider: 'Password + MFA',
+          lastActivity: 'Active',
+          lastLogin: 'Today',
+          createdAt: u.createdAt,
+          complianceFlags: [],
+        }));
+        setUsers(mapped);
+        setTotalCount(res.total);
+      }
+    } catch {
+      // Fallback
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, [search, roleFilter, statusFilter, page]);
+
+  const handleToggleStatus = async (user: User) => {
+    setActionError(null);
+    setActionSuccess(null);
+    try {
+      const newActive = user.status !== 'Active';
+      await adminService.updateUserStatus(user.id, newActive);
+      setActionSuccess(`User ${user.name} status updated to ${newActive ? 'Active' : 'Suspended'}.`);
+      fetchUsers();
+    } catch (err: any) {
+      setActionError(err.message || 'Failed to update user status.');
+    }
+  };
+
+  const filtered = users;
 
   const roleOptions = [
     { value: 'All', label: 'All' },
@@ -83,18 +138,30 @@ export default function UserRoleManagement() {
     {
       key: 'actions',
       header: 'Actions',
-      render: () => (
-        <button className="text-zinc-500 hover:text-zinc-300 transition-colors">
-          <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z" />
-          </svg>
-        </button>
+      render: (row: User) => (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => handleToggleStatus(row)}
+        >
+          {row.status === 'Active' ? 'Suspend' : 'Activate'}
+        </Button>
       ),
     },
   ];
 
   return (
     <div>
+      {actionError && (
+        <div className="mb-4 p-3 bg-red-900/50 border border-red-500 rounded-lg text-sm text-red-200">
+          ⚠️ {actionError}
+        </div>
+      )}
+      {actionSuccess && (
+        <div className="mb-4 p-3 bg-emerald-900/50 border border-emerald-500 rounded-lg text-sm text-emerald-200">
+          ✓ {actionSuccess}
+        </div>
+      )}
       <div className="flex items-start justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold text-white font-['Geist',sans-serif]">User & Role Management</h1>

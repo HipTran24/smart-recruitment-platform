@@ -8,6 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "test:e2e": "vitest run src/test/e2e",
     "format": "oxfmt"
   },
   "dependencies": {
