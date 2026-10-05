@@ -202,49 +202,80 @@ const bottomItems: NavItem[] = [
   },
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
   const location = useLocation();
 
   return (
-    <aside className="fixed left-0 top-0 bottom-0 w-[220px] bg-[#111111] border-r border-[#1e1e1e] flex flex-col z-40">
-      {/* Logo */}
-      <div className="px-4 py-4 border-b border-[#1e1e1e]">
+    <aside
+      className={`fixed left-0 top-0 bottom-0 w-[220px] bg-[var(--color-surface)] border-r border-[var(--color-border)] flex flex-col z-40 transition-transform duration-200 ease-in-out ${
+        isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+      }`}
+    >
+      {/* Logo & Close button on mobile */}
+      <div className="px-4 py-3.5 border-b border-[var(--color-border)] flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 bg-yellow-400 rounded-lg flex items-center justify-center">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="black">
+          <div className="w-7 h-7 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-xs shadow-xs">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
               <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
             </svg>
           </div>
-          <span className="text-white font-semibold text-sm font-['Geist',sans-serif]">
-            SmartRecruit
-          </span>
+          <div>
+            <span className="text-[var(--color-text-primary)] font-bold text-sm tracking-tight block leading-tight">
+              SmartRecruit
+            </span>
+            <span className="text-[10px] font-semibold text-indigo-400 uppercase tracking-wider">
+              Admin Console
+            </span>
+          </div>
         </div>
+
+        {onClose && (
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close sidebar"
+            className="lg:hidden p-1 text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] rounded-md hover:bg-[var(--color-surface-hover)]"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        )}
       </div>
 
       {/* Main nav */}
-      <nav className="flex-1 px-2 py-3 overflow-y-auto">
-        <ul className="flex flex-col gap-0.5">
+      <nav className="flex-1 px-2.5 py-3 overflow-y-auto">
+        <div className="px-2 pb-1.5 text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider">
+          System Administration
+        </div>
+        <ul className="flex flex-col gap-1">
           {navItems.map((item) => {
             const isActive =
               item.path === "/"
-                ? location.pathname === "/"
+                ? location.pathname === "/" || location.pathname === "/admin" || location.pathname === "/admin-console"
                 : location.pathname.startsWith(item.path);
             return (
               <li key={item.path}>
                 <NavLink
                   to={item.path}
-                  className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors ${
+                  onClick={() => onClose?.()}
+                  className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
                     isActive
-                      ? "bg-[#1e1e1e] text-white font-medium"
-                      : "text-zinc-500 hover:text-zinc-200 hover:bg-[#1a1a1a]"
+                      ? "bg-indigo-600/15 text-indigo-300 font-semibold border border-indigo-500/25"
+                      : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-hover)]"
                   }`}
                 >
-                  <span className={isActive ? "text-white" : "text-zinc-500"}>
+                  <span className={isActive ? "text-indigo-400" : "text-[var(--color-text-muted)]"}>
                     {item.icon}
                   </span>
                   {item.label}
                   {isActive && (
-                    <span className="ml-auto w-1 h-1 rounded-full bg-white opacity-70" />
+                    <span className="ml-auto w-1.5 h-1.5 rounded-full bg-indigo-400" />
                   )}
                 </NavLink>
               </li>
@@ -253,21 +284,22 @@ export function Sidebar() {
         </ul>
       </nav>
 
-      {/* Bottom */}
-      <div className="px-2 py-3 border-t border-[#1e1e1e]">
+      {/* Bottom workspace switch & profile */}
+      <div className="px-2.5 py-3 border-t border-[var(--color-border)] flex flex-col gap-1">
         {bottomItems.map((item) => {
           const isActive = location.pathname.startsWith(item.path);
           return (
             <NavLink
               key={item.path}
               to={item.path}
-              className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors ${
+              onClick={() => onClose?.()}
+              className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
                 isActive
-                  ? "bg-[#1e1e1e] text-white font-medium"
-                  : "text-zinc-500 hover:text-zinc-200 hover:bg-[#1a1a1a]"
+                  ? "bg-indigo-600/15 text-indigo-300 font-semibold border border-indigo-500/25"
+                  : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-hover)]"
               }`}
             >
-              <span className={isActive ? "text-white" : "text-zinc-500"}>
+              <span className={isActive ? "text-indigo-400" : "text-[var(--color-text-muted)]"}>
                 {item.icon}
               </span>
               {item.label}
@@ -278,36 +310,40 @@ export function Sidebar() {
         {/* Switch to Recruiter Portal */}
         <NavLink
           to="/recruiter"
-          className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-blue-400 hover:text-blue-300 hover:bg-blue-950/30 transition-colors mt-1 border border-blue-900/40"
+          onClick={() => onClose?.()}
+          className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 transition-colors mt-1 border border-blue-500/20"
         >
           <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.75" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
           </svg>
-          Recruiter Workspace ➔
+          <span>Recruiter Workspace</span>
+          <span className="ml-auto text-xs">➔</span>
         </NavLink>
 
         {/* Switch to Candidate Portal */}
         <NavLink
           to="/my-applications"
-          className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-emerald-400 hover:text-emerald-300 hover:bg-emerald-950/30 transition-colors mt-1 border border-emerald-900/40"
+          onClick={() => onClose?.()}
+          className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 transition-colors border border-emerald-500/20"
         >
           <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.75" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
           </svg>
-          Candidate Portal ➔
+          <span>Candidate Portal</span>
+          <span className="ml-auto text-xs">➔</span>
         </NavLink>
 
-        {/* User */}
-        <div className="mt-2 px-3 py-2 flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-full bg-indigo-500 flex items-center justify-center text-xs font-semibold text-white shrink-0">
+        {/* User Card */}
+        <div className="mt-2 p-2 rounded-lg bg-[var(--color-surface-hover)]/40 flex items-center gap-2.5 border border-[var(--color-border)]/50">
+          <div className="w-7 h-7 rounded-full bg-indigo-600 flex items-center justify-center text-xs font-bold text-white shrink-0">
             AJ
           </div>
           <div className="min-w-0">
-            <p className="text-xs font-medium text-white truncate">
+            <p className="text-xs font-semibold text-[var(--color-text-primary)] truncate leading-tight">
               Alex Johnson
             </p>
-            <p className="text-[10px] text-zinc-500 truncate">
-              Senior Recruiter & Admin
+            <p className="text-[10px] text-[var(--color-text-muted)] truncate">
+              Lead Admin & Architect
             </p>
           </div>
         </div>

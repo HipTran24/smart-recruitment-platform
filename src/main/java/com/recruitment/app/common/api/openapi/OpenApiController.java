@@ -43,19 +43,19 @@ public class OpenApiController {
 
     private static Map<String, Object> authPaths() {
         return Map.of(
-                "/api/v1/auth/register", postEndpoint("Register candidate account", "Auth", false, "RegistrationRequest", "201", "Created"),
-                "/api/v1/auth/login", postEndpoint("Log in with email and password", "Auth", false, "PasswordLoginRequest", "200", "Authenticated"),
-                "/api/v1/auth/refresh", postEndpoint("Rotate refresh session and issue new access token", "Auth", false, "RefreshTokenRequest", "200", "Tokens refreshed"),
+                "/api/v1/auth/register", postEndpointWithResponse("Register candidate account", "Auth", false, "RegistrationRequest", "201", "Created", "TokenResponse"),
+                "/api/v1/auth/login", postEndpointWithResponse("Log in with email and password", "Auth", false, "PasswordLoginRequest", "200", "Authenticated", "TokenResponse"),
+                "/api/v1/auth/refresh", postEndpointWithResponse("Rotate refresh session and issue new access token", "Auth", false, "RefreshTokenRequest", "200", "Tokens refreshed", "TokenResponse"),
                 "/api/v1/auth/logout", postEndpoint("Revoke refresh session", "Auth", false, "RefreshTokenRequest", "204", "Logged out"),
                 "/api/v1/auth/me", Map.of(
                         "get", Map.of(
                                 "summary", "Retrieve current authenticated account",
                                 "tags", List.of("Auth"),
                                 "security", List.of(Map.of("bearerAuth", List.of())),
-                                "responses", standardResponses("200", "Current user account")
+                                "responses", standardResponses("200", "Current user account", "AuthenticatedUserResponse")
                         )
                 ),
-                "/api/v1/auth/oauth/exchange", postEndpoint("Exchange single-use PKCE-bound OAuth handoff code", "Auth", false, "OAuthCodeExchangeRequest", "200", "Session issued")
+                "/api/v1/auth/oauth/exchange", postEndpointWithResponse("Exchange single-use PKCE-bound OAuth handoff code", "Auth", false, "OAuthCodeExchangeRequest", "200", "Session issued", "TokenResponse")
         );
     }
 
@@ -70,6 +70,11 @@ public class OpenApiController {
 
     private static Map<String, Object> postEndpoint(
             String summary, String tag, boolean authenticated, String requestSchema, String successCode, String successDesc) {
+        return postEndpointWithResponse(summary, tag, authenticated, requestSchema, successCode, successDesc, null);
+    }
+
+    private static Map<String, Object> postEndpointWithResponse(
+            String summary, String tag, boolean authenticated, String requestSchema, String successCode, String successDesc, String responseSchema) {
         Map<String, Object> operation = new LinkedHashMap<>();
         operation.put("summary", summary);
         operation.put("tags", List.of(tag));
@@ -79,17 +84,30 @@ public class OpenApiController {
         if (requestSchema != null) {
             operation.put("requestBody", Map.of("required", true, "content", jsonContent(requestSchema)));
         }
-        operation.put("responses", standardResponses(successCode, successDesc));
+        operation.put("responses", standardResponses(successCode, successDesc, responseSchema));
         return Map.of("post", operation);
     }
 
     private static Map<String, Object> standardResponses(String successCode, String successDesc) {
-        return Map.of(
-                successCode, Map.of("description", successDesc),
-                "400", Map.of("description", "Bad Request", "content", jsonContent("ApiErrorResponse")),
-                "401", Map.of("description", "Unauthorized", "content", jsonContent("ApiErrorResponse")),
-                "403", Map.of("description", "Forbidden", "content", jsonContent("ApiErrorResponse"))
-        );
+        return standardResponses(successCode, successDesc, null);
+    }
+
+    private static Map<String, Object> standardResponses(String successCode, String successDesc, String responseSchema) {
+        Map<String, Object> responses = new LinkedHashMap<>();
+        if (responseSchema != null) {
+            responses.put(successCode, Map.of("description", successDesc, "content", jsonContent(responseSchema)));
+        } else {
+            responses.put(successCode, Map.of("description", successDesc));
+        }
+        responses.put("400", Map.of("description", "Bad Request", "content", jsonContent("ApiErrorResponse")));
+        responses.put("401", Map.of("description", "Unauthorized", "content", jsonContent("ApiErrorResponse")));
+        responses.put("403", Map.of("description", "Forbidden", "content", jsonContent("ApiErrorResponse")));
+        responses.put("409", Map.of("description", "Conflict", "content", jsonContent("ApiErrorResponse")));
+        responses.put("415", Map.of("description", "Unsupported Media Type", "content", jsonContent("ApiErrorResponse")));
+        responses.put("422", Map.of("description", "Unprocessable Entity", "content", jsonContent("ApiErrorResponse")));
+        responses.put("429", Map.of("description", "Too Many Requests", "content", jsonContent("ApiErrorResponse")));
+        responses.put("500", Map.of("description", "Internal Server Error", "content", jsonContent("ApiErrorResponse")));
+        return responses;
     }
 
     private static Map<String, Object> jsonContent(String schemaRef) {
@@ -101,14 +119,29 @@ public class OpenApiController {
                 "securitySchemes", Map.of(
                         "bearerAuth", Map.of("type", "http", "scheme", "bearer", "bearerFormat", "JWT")
                 ),
-                "schemas", requestSchemas()
+                "schemas", schemas()
         );
     }
 
-    private static Map<String, Object> requestSchemas() {
+    private static Map<String, Object> schemas() {
         Map<String, Object> schemas = new LinkedHashMap<>();
         schemas.put("ApiErrorResponse", schema(List.of("code", "message", "fieldErrors", "requestId"),
                 Map.of("code", stringProp(), "message", stringProp(), "fieldErrors", objectProp(), "requestId", stringProp())));
+        schemas.put("TokenResponse", schema(List.of("accessToken", "refreshToken", "tokenType", "accessTokenExpiresAt", "refreshTokenExpiresAt"),
+                Map.of(
+                        "accessToken", stringProp(),
+                        "refreshToken", stringProp(),
+                        "tokenType", stringProp(),
+                        "accessTokenExpiresAt", stringProp(),
+                        "refreshTokenExpiresAt", stringProp()
+                )));
+        schemas.put("AuthenticatedUserResponse", schema(List.of("id", "email", "fullName", "roleCodes"),
+                Map.of(
+                        "id", integerProp(),
+                        "email", stringProp(),
+                        "fullName", stringProp(),
+                        "roleCodes", arrayProp(stringProp())
+                )));
         schemas.put("RegistrationRequest", schema(List.of("fullName", "email", "password"),
                 Map.of("fullName", stringProp(), "email", stringProp(), "password", stringProp())));
         schemas.put("PasswordLoginRequest", schema(List.of("email", "password"),
@@ -136,7 +169,15 @@ public class OpenApiController {
         return Map.of("type", "string");
     }
 
+    private static Map<String, String> integerProp() {
+        return Map.of("type", "integer");
+    }
+
     private static Map<String, String> objectProp() {
         return Map.of("type", "object");
+    }
+
+    private static Map<String, Object> arrayProp(Map<String, String> itemSchema) {
+        return Map.of("type", "array", "items", itemSchema);
     }
 }

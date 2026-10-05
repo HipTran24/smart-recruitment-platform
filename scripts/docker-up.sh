@@ -12,4 +12,13 @@ compose ps
 
 app_port="$(env_value APP_PORT)"
 app_port="${app_port:-8080}"
-printf '\nApplication: http://localhost:%s\n' "$app_port"
+frontend_port="$(env_value FRONTEND_PORT)"
+frontend_port="${frontend_port:-8443}"
+
+printf '\n===================================================\n'
+printf '🚀 SmartRecruit Containers Running Successfully:\n'
+printf '   - Frontend (SPA):      http://localhost:%s\n' "$frontend_port"
+printf '   - Backend REST API:    http://localhost:%s\n' "$app_port"
+printf '   - OpenAPI Docs:        http://localhost:%s/v3/api-docs\n' "$app_port"
+printf '   - Health Check:        http://localhost:%s/actuator/health\n' "$app_port"
+printf '===================================================\n\n'

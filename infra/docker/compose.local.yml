@@ -85,6 +85,19 @@ services:
       - source: app-jwt-public-key
         target: app-jwt-public.pem
 
+  frontend:
+    build:
+      context: ../..
+      dockerfile: infra/docker/frontend.Dockerfile
+    restart: unless-stopped
+    depends_on:
+      app:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${FRONTEND_PORT:-8443}:80"
+    networks:
+      - app-network
+
 volumes:
   mysql-data:
 

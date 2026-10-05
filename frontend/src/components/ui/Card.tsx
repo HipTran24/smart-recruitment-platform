@@ -7,7 +7,9 @@ interface CardProps {
 export function Card({ children, className = '', onClick }: CardProps) {
   return (
     <div
-      className={`bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl ${onClick ? 'cursor-pointer hover:bg-[#222] transition-colors' : ''} ${className}`}
+      className={`bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl shadow-2xs text-[var(--color-text-primary)] transition-all ${
+        onClick ? 'cursor-pointer hover:bg-[var(--color-surface-hover)] hover:shadow-xs' : ''
+      } ${className}`}
       onClick={onClick}
     >
       {children}
@@ -27,27 +29,58 @@ interface MetricCardProps {
   className?: string;
 }
 
-export function MetricCard({ label, value, change, changePositive, subtitle, badge, badgeColor, icon, className = '' }: MetricCardProps) {
+export function MetricCard({
+  label,
+  value,
+  change,
+  changePositive,
+  subtitle,
+  badge,
+  badgeColor,
+  icon,
+  className = '',
+}: MetricCardProps) {
   return (
-    <Card className={`p-5 flex flex-col gap-2 ${className}`}>
-      <div className="flex items-start justify-between">
-        <span className="text-xs text-zinc-500 font-medium uppercase tracking-wide">{label}</span>
-        {icon && <span className="text-zinc-500">{icon}</span>}
+    <Card className={`p-5 flex flex-col justify-between gap-3 ${className}`}>
+      <div className="flex items-start justify-between gap-2">
+        <span className="text-xs text-[var(--color-text-secondary)] font-medium uppercase tracking-wider">
+          {label}
+        </span>
+        {icon && <span className="text-[var(--color-text-muted)] shrink-0">{icon}</span>}
         {badge && (
-          <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${badgeColor ?? 'bg-zinc-800 text-zinc-400 border-zinc-700'}`}>
+          <span
+            className={`text-xs px-2.5 py-0.5 rounded-full font-medium shrink-0 border ${
+              badgeColor ?? 'bg-[var(--color-surface-hover)] text-[var(--color-text-secondary)] border-[var(--color-border)]'
+            }`}
+          >
             {badge}
           </span>
         )}
       </div>
-      <div className="flex items-end gap-2 flex-wrap">
-        <span className="text-3xl font-bold text-white font-['Geist',sans-serif] leading-none">{value}</span>
-        {change && (
-          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${changePositive !== false ? 'bg-green-500/15 text-green-400' : 'bg-red-500/15 text-red-400'}`}>
-            {change}
+
+      <div>
+        <div className="flex items-baseline gap-2.5 flex-wrap">
+          <span className="text-3xl font-bold tracking-tight text-[var(--color-text-primary)] tabular-nums leading-none">
+            {value}
           </span>
+          {change && (
+            <span
+              className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
+                changePositive !== false
+                  ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                  : 'bg-red-500/10 text-red-600 dark:text-red-400'
+              }`}
+            >
+              {change}
+            </span>
+          )}
+        </div>
+        {subtitle && (
+          <p className="text-xs text-[var(--color-text-muted)] mt-1.5 leading-relaxed font-normal">
+            {subtitle}
+          </p>
         )}
       </div>
-      {subtitle && <span className="text-xs text-zinc-500">{subtitle}</span>}
     </Card>
   );
 }

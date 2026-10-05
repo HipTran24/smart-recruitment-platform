@@ -220,14 +220,14 @@ class SchemaMigrationUpgradeTests {
                             "Mismatched created_by_user_id must be backfilled to valid company member");
                 }
             }
-            // Scenario B check: Zero-member company had OWNER membership synthesized for outsideUserId
+            // Scenario B check: Zero-member company had RECRUITER membership synthesized for outsideUserId
             try (PreparedStatement ps = conn.prepareStatement(
                     "SELECT role FROM company_members WHERE company_id = ? AND user_id = ?")) {
                 ps.setLong(1, zeroMemberCompanyId);
                 ps.setLong(2, outsideUserId);
                 try (ResultSet rs = ps.executeQuery()) {
                     assertTrue(rs.next(), "Synthesized membership must exist for zero-member company");
-                    assertEquals("OWNER", rs.getString("role"));
+                    assertEquals("RECRUITER", rs.getString("role"));
                 }
             }
             try (PreparedStatement ps = conn.prepareStatement("SELECT created_by_user_id FROM jobs WHERE id = ?")) {

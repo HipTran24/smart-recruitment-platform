@@ -58,6 +58,12 @@ class OpenApiControllerTests {
                 .andExpect(jsonPath("$.components.schemas.PasswordResetRequest").exists())
                 .andExpect(jsonPath("$.components.schemas.PasswordResetConfirmRequest").exists())
                 .andExpect(jsonPath("$.components.schemas.VerifyEmailRequest").exists())
-                .andExpect(jsonPath("$.components.schemas.ApiErrorResponse").exists());
+                .andExpect(jsonPath("$.components.schemas.ApiErrorResponse").exists())
+                // Verify operational error response codes exist
+                .andExpect(jsonPath("$.paths['/api/v1/auth/login'].post.responses['429']").exists())
+                .andExpect(jsonPath("$.paths['/api/v1/auth/login'].post.responses['415']").exists())
+                .andExpect(jsonPath("$.paths['/api/v1/auth/login'].post.responses['500']").exists())
+                .andExpect(jsonPath("$.paths['/api/v1/auth/register'].post.responses['409']").exists())
+                .andExpect(jsonPath("$.paths['/api/v1/auth/password/change'].post.responses['422']").exists());
     }
 }

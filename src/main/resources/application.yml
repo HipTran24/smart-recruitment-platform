@@ -26,6 +26,9 @@ spring:
 
 server:
   shutdown: graceful
+  max-http-request-header-size: 8KB
+  tomcat:
+    max-http-form-post-size: 2MB
   error:
     include-message: never
     include-stacktrace: never

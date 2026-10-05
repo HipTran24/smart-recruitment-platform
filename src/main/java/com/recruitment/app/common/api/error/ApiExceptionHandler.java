@@ -67,10 +67,16 @@ public class ApiExceptionHandler {
         ));
     }
 
+    @ExceptionHandler(HttpMediaTypeNotAcceptableException.class)
+    ResponseEntity<Void> handleNotAcceptable(HttpMediaTypeNotAcceptableException exception) {
+        log.warn("Spring MVC not acceptable media type: message={}, requestId={}",
+                exception.getMessage(), RequestContext.requestId());
+        return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).build();
+    }
+
     @ExceptionHandler({
             HttpRequestMethodNotSupportedException.class,
-            HttpMediaTypeNotSupportedException.class,
-            HttpMediaTypeNotAcceptableException.class
+            HttpMediaTypeNotSupportedException.class
     })
     ResponseEntity<ApiErrorResponse> handleSpringMvcErrors(Exception exception) {
         org.springframework.http.HttpStatusCode statusCode = (exception instanceof ErrorResponse er)
@@ -81,7 +87,6 @@ public class ApiExceptionHandler {
         String code = switch (statusCode.value()) {
             case 404 -> "NOT_FOUND";
             case 405 -> "METHOD_NOT_ALLOWED";
-            case 406 -> "NOT_ACCEPTABLE";
             case 415 -> "UNSUPPORTED_MEDIA_TYPE";
             default -> "REQUEST_REJECTED";
         };

@@ -13,13 +13,15 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import com.recruitment.app.modules.identity.application.port.out.TestNotificationInspector;
+
 /**
  * Baseline notification gateway implementation that logs security dispatch events
  * and retains recent tokens in bounded FIFO memory with TTL for test and development inspection.
  */
 @Component
 @ConditionalOnProperty(name = "app.notification.provider", havingValue = "logging", matchIfMissing = true)
-public class LoggingAccountNotificationGateway implements AccountNotificationGateway {
+public class LoggingAccountNotificationGateway implements AccountNotificationGateway, TestNotificationInspector {
 
     private static final Logger log = LoggerFactory.getLogger(LoggingAccountNotificationGateway.class);
     private static final int MAX_RETAINED_TOKENS = 200;
@@ -35,7 +37,7 @@ public class LoggingAccountNotificationGateway implements AccountNotificationGat
         if (email != null && rawToken != null) {
             latestResetTokens.put(email.strip().toLowerCase(), new TokenEntry(rawToken, Instant.now()));
         }
-        log.info("Dispatched password reset instructions for recipient: {}", email);
+        log.info("Recorded password reset instructions (in-memory test/logging provider; no external email dispatched) for recipient: {}", email);
     }
 
     @Override
@@ -43,7 +45,16 @@ public class LoggingAccountNotificationGateway implements AccountNotificationGat
         if (email != null && rawToken != null) {
             latestVerificationTokens.put(email.strip().toLowerCase(), new TokenEntry(rawToken, Instant.now()));
         }
-        log.info("Dispatched email verification instructions for recipient: {}", email);
+        log.info("Recorded email verification instructions (in-memory test/logging provider; no external email dispatched) for recipient: {}", email);
+    }
+
+    @org.springframework.context.event.EventListener(org.springframework.boot.context.event.ApplicationReadyEvent.class)
+    public void warnIfRunningInProduction(org.springframework.boot.context.event.ApplicationReadyEvent event) {
+        var env = event.getApplicationContext().getEnvironment();
+        var activeProfiles = java.util.List.of(env.getActiveProfiles());
+        if (activeProfiles.contains("prod") || activeProfiles.contains("production")) {
+            log.warn("SECURITY WARNING: Running with 'logging' notification provider in production. Plaintext tokens are retained in memory and no external email is dispatched.");
+        }
     }
 
     public Optional<String> getLatestResetToken(String email) {

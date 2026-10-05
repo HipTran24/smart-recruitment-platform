@@ -56,6 +56,7 @@ public class IdentitySecurityConfiguration {
             "/api/v1/auth/password/reset-request",
             "/api/v1/auth/password/reset-confirm",
             "/api/v1/auth/verify-email",
+            "/api/v1/test/mailbox/**",
             "/oauth2/**",
             "/login/oauth2/**"
     );

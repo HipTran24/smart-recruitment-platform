@@ -7,7 +7,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -19,7 +18,6 @@ import com.recruitment.app.modules.identity.application.JwtPrincipal;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
@@ -135,10 +133,7 @@ public final class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private static void writeInvalidToken(HttpServletResponse response) throws IOException {
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setHeader(HttpHeaders.WWW_AUTHENTICATE, "Bearer error=\"invalid_token\"");
-        response.setCharacterEncoding(StandardCharsets.UTF_8.name());
-        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         ApiErrorWriter.write(response,
                 HttpServletResponse.SC_UNAUTHORIZED, "INVALID_ACCESS_TOKEN",
                 "Access token is invalid or expired.");

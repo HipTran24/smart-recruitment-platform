@@ -93,4 +93,47 @@ class ApiExceptionHandlerTests {
                             "/error must not be blocked by deny-all with 401");
                 });
     }
+
+    @Test
+    void postWithUnsupportedAcceptHeaderReturns406WithoutBody() throws Exception {
+        mockMvc.perform(post("/api/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Accept", "application/xml")
+                        .content("{\"email\":\"test@example.com\",\"password\":\"Passw0rdSecure12\"}"))
+                .andExpect(status().isNotAcceptable())
+                .andExpect(result -> {
+                    byte[] content = result.getResponse().getContentAsByteArray();
+                    org.junit.jupiter.api.Assertions.assertEquals(0, content.length,
+                            "406 Not Acceptable response should have empty body when client rejects JSON");
+                });
+    }
+
+    @Test
+    void getErrorWithJsonAcceptHeaderReturnsApiErrorResponse() throws Exception {
+        mockMvc.perform(get("/error")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.code").value("INTERNAL_ERROR"))
+                .andExpect(jsonPath("$.message").value("An unexpected internal error occurred."))
+                .andExpect(jsonPath("$.requestId").exists());
+    }
+
+    @Test
+    void getErrorWithWildcardAcceptHeaderReturnsApiErrorResponse() throws Exception {
+        mockMvc.perform(get("/error")
+                        .header("Accept", "*/*"))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.code").value("INTERNAL_ERROR"))
+                .andExpect(jsonPath("$.message").value("An unexpected internal error occurred."))
+                .andExpect(jsonPath("$.requestId").exists());
+    }
+
+    @Test
+    void getErrorWithDefaultAcceptHeaderReturnsApiErrorResponse() throws Exception {
+        mockMvc.perform(get("/error"))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.code").value("INTERNAL_ERROR"))
+                .andExpect(jsonPath("$.message").value("An unexpected internal error occurred."))
+                .andExpect(jsonPath("$.requestId").exists());
+    }
 }

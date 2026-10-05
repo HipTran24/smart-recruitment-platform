@@ -30,14 +30,15 @@ ALTER TABLE jobs
 ALTER TABLE jobs
     DROP COLUMN created_by_member_id;
 
--- 4a. For any company that has jobs but ZERO members in company_members, synthesize an OWNER membership
+-- 4a. For any company that has jobs but ZERO members in company_members, synthesize a RECRUITER membership
 -- for the user who created the earliest job, guaranteeing a valid parent row in company_members.
+-- Note: Least-privilege principle (ADR 0003) - grants 'RECRUITER' rather than 'OWNER' to satisfy FK invariant.
 INSERT INTO company_members (version, created_at, updated_at, company_id, user_id, role, is_active)
 SELECT
     0, NOW(), NOW(),
     orphan_companies.company_id,
     orphan_companies.created_by_user_id,
-    'OWNER',
+    'RECRUITER',
     1
 FROM (
     SELECT company_id, created_by_user_id

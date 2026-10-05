@@ -9,6 +9,7 @@ import com.recruitment.app.modules.identity.application.PasswordManagementServic
 import com.recruitment.app.modules.identity.application.exception.IdentityAuthenticationException;
 import com.recruitment.app.modules.identity.application.JwtPrincipal;
 import jakarta.validation.Valid;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/v1/auth")
+@RequestMapping(value = "/api/v1/auth", produces = MediaType.APPLICATION_JSON_VALUE)
 public class AccountSecurityController {
 
     private final PasswordManagementService passwordManagement;
@@ -56,7 +57,7 @@ public class AccountSecurityController {
         passwordManagement.requestPasswordReset(request.email());
         throttling.recordPasswordResetDispatch(request.email());
         return ResponseEntity.ok(Map.of(
-                "message", "If an active account exists with this email, password reset instructions have been dispatched."
+                "message", "If an active account exists with this email, password reset instructions have been recorded."
         ));
     }
 
