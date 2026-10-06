@@ -1,4 +1,5 @@
 import { NavLink, useLocation, Link } from 'react-router-dom';
+import { RoleSwitcher } from './RoleSwitcher';
 
 interface SubItem {
   path: string;
@@ -187,43 +188,9 @@ export function RecruiterSidebar({ isOpen = false, onClose }: RecruiterSidebarPr
         })}
       </nav>
 
-      {/* Switch to Other Portals */}
-      <div className="p-3 border-t border-slate-100 bg-slate-50/70 space-y-1.5">
-        <Link
-          to="/"
-          onClick={() => onClose?.()}
-          className="flex items-center justify-center gap-2 w-full px-3 py-2 bg-zinc-900 text-white rounded-lg text-xs font-semibold hover:bg-zinc-800 transition shadow-sm"
-        >
-          <svg className="w-3.5 h-3.5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-          <span>Admin Console</span>
-        </Link>
-        <Link
-          to="/my-applications"
-          onClick={() => onClose?.()}
-          className="flex items-center justify-center gap-2 w-full px-3 py-2 bg-emerald-600 text-white rounded-lg text-xs font-semibold hover:bg-emerald-700 transition shadow-sm"
-        >
-          <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-          </svg>
-          <span>Candidate Portal</span>
-        </Link>
-      </div>
-
-      {/* Recruiter Profile Footer */}
-      <div className="border-t border-slate-200 p-3.5 flex items-center justify-between">
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div className="w-8 h-8 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center text-xs shrink-0 shadow-sm">
-            AJ
-          </div>
-          <div className="min-w-0">
-            <div className="font-semibold text-xs text-slate-800 truncate">Alex Johnson</div>
-            <div className="text-slate-400 text-[10px] truncate">Hiring Manager &amp; Recruiter</div>
-          </div>
-        </div>
-        <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="Online" />
+      {/* Switch to Other Portals & Dynamic Profile with Logout */}
+      <div className="p-3 border-t border-slate-100 bg-slate-50/70">
+        <RoleSwitcher variant="sidebar" onSwitched={() => onClose?.()} />
       </div>
     </aside>
   );

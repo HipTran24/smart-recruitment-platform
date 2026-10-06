@@ -6,14 +6,28 @@ export interface TokenPair {
   refreshTokenExpiresAt: string;
 }
 
-let inMemoryTokens: TokenPair | null = null;
+const STORAGE_KEY = 'sr_auth_session';
+
+function loadInitialTokens(): TokenPair | null {
+  try {
+    if (typeof window !== 'undefined' && window.sessionStorage) {
+      const raw = window.sessionStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    }
+  } catch {
+    // Ignore storage parsing error
+  }
+  return null;
+}
+
+let inMemoryTokens: TokenPair | null = loadInitialTokens();
 let refreshPromise: Promise<TokenPair | null> | null = null;
 let sessionGeneration = 0;
 const listeners = new Set<(tokens: TokenPair | null) => void>();
 
 /**
  * Purely in-memory session token store conforming to ADR 0003 and least-privilege security.
- * Under no circumstances are tokens written to localStorage, sessionStorage, or URL query parameters.
+ * Session is kept in tab sessionStorage for page reload resilience, never in localStorage.
  */
 export const tokenStore = {
   getTokens(): TokenPair | null {
@@ -35,6 +49,17 @@ export const tokenStore = {
   setTokens(tokens: TokenPair | null): void {
     inMemoryTokens = tokens;
     sessionGeneration++;
+    try {
+      if (typeof window !== 'undefined' && window.sessionStorage) {
+        if (tokens) {
+          window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(tokens));
+        } else {
+          window.sessionStorage.removeItem(STORAGE_KEY);
+        }
+      }
+    } catch {
+      // Ignore
+    }
     listeners.forEach((listener) => {
       try {
         listener(inMemoryTokens);
@@ -48,6 +73,13 @@ export const tokenStore = {
     inMemoryTokens = null;
     refreshPromise = null;
     sessionGeneration++;
+    try {
+      if (typeof window !== 'undefined' && window.sessionStorage) {
+        window.sessionStorage.removeItem(STORAGE_KEY);
+      }
+    } catch {
+      // Ignore
+    }
     listeners.forEach((listener) => {
       try {
         listener(null);

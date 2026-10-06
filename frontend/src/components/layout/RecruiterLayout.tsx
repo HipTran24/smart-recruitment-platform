@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Outlet, Link } from 'react-router-dom';
 import { RecruiterSidebar } from './RecruiterSidebar';
+import { RoleSwitcher } from './RoleSwitcher';
 
 export function RecruiterLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -46,14 +47,7 @@ export function RecruiterLayout() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <Link
-              to="/my-applications"
-              className="text-xs font-semibold text-emerald-600 hover:underline"
-            >
-              Candidate Portal
-            </Link>
-          </div>
+          <RoleSwitcher variant="header" />
         </header>
 
         <main className="flex-1 min-w-0 bg-[var(--color-canvas)]">

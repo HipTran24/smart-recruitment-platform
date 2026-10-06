@@ -19,6 +19,7 @@ export interface AuthContextType {
   login: (credentials: PasswordLoginRequest) => Promise<AuthenticatedUser>;
   register: (data: RegistrationRequest) => Promise<void>;
   logout: () => Promise<void>;
+  quickSwitch: (role: 'admin' | 'recruiter' | 'candidate') => Promise<string>;
   verifyEmail: (token: string) => Promise<void>;
   requestPasswordReset: (email: string) => Promise<string>;
   confirmPasswordReset: (token: string, newPass: string) => Promise<void>;
@@ -28,6 +29,28 @@ export interface AuthContextType {
   isRecruiter: boolean;
   isAdmin: boolean;
 }
+
+export const DEMO_ACCOUNTS = {
+  admin: {
+    email: 'admin@smartrecruit.local',
+    password: 'SecurePassword123!',
+    path: '/admin-console',
+    label: 'Platform Admin',
+  },
+  recruiter: {
+    email: 'recruiter@smartrecruit.local',
+    password: 'SecurePassword123!',
+    path: '/recruiter/console',
+    label: 'Recruiter Lead',
+  },
+  candidate: {
+    email: 'candidate@smartrecruit.local',
+    password: 'SecurePassword123!',
+    path: '/my-applications',
+    label: 'Job Applicant',
+  },
+} as const;
+
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
@@ -151,6 +174,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const isRecruiter = useMemo(() => hasRole('ROLE_RECRUITER'), [hasRole]);
   const isAdmin = useMemo(() => hasRole('ROLE_PLATFORM_ADMIN'), [hasRole]);
 
+  const quickSwitch = useCallback(
+    async (role: 'admin' | 'recruiter' | 'candidate'): Promise<string> => {
+      const target = DEMO_ACCOUNTS[role];
+      await login({ email: target.email, password: target.password });
+      return target.path;
+    },
+    [login]
+  );
+
   const value = useMemo<AuthContextType>(
     () => ({
       user,
@@ -159,6 +191,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       login,
       register,
       logout,
+      quickSwitch,
       verifyEmail,
       requestPasswordReset,
       confirmPasswordReset,
@@ -175,6 +208,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       login,
       register,
       logout,
+      quickSwitch,
       verifyEmail,
       requestPasswordReset,
       confirmPasswordReset,

@@ -114,7 +114,7 @@ export const applicationService = {
   },
 
   async getMyApplications(): Promise<ApplicationSummary[]> {
-    return apiClient.get<ApplicationSummary[]>('/api/v1/candidates/applications', { auth: true });
+    return apiClient.get<ApplicationSummary[]>('/api/v1/candidates/me/applications', { auth: true });
   },
 
   async getRecruiterApplications(params?: {

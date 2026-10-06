@@ -19,6 +19,43 @@ export default function Login() {
   const rawReturnTo = searchParams.get('returnTo');
   const returnTo = sanitizeReturnUrl(rawReturnTo);
 
+  const routeByRole = (user: { roleCodes: string[] }) => {
+    let userHome = '/my-applications';
+    if (user.roleCodes.includes('ROLE_PLATFORM_ADMIN')) {
+      userHome = '/admin-console';
+    } else if (user.roleCodes.includes('ROLE_RECRUITER')) {
+      userHome = '/recruiter/console';
+    }
+
+    let targetPath = userHome;
+    if (returnTo && returnTo !== '/') {
+      if (
+        user.roleCodes.includes('ROLE_PLATFORM_ADMIN') &&
+        (returnTo.startsWith('/admin') ||
+          returnTo.startsWith('/user-') ||
+          returnTo.startsWith('/skill-') ||
+          returnTo.startsWith('/audit') ||
+          returnTo.startsWith('/settings'))
+      ) {
+        targetPath = returnTo;
+      } else if (user.roleCodes.includes('ROLE_RECRUITER') && returnTo.startsWith('/recruiter')) {
+        targetPath = returnTo;
+      } else if (
+        user.roleCodes.includes('ROLE_CANDIDATE') &&
+        (returnTo.startsWith('/my-applications') ||
+          returnTo.startsWith('/explore-jobs') ||
+          returnTo.startsWith('/profile-') ||
+          returnTo.startsWith('/interviews-') ||
+          returnTo.startsWith('/settings_candidate') ||
+          returnTo.startsWith('/offers/'))
+      ) {
+        targetPath = returnTo;
+      }
+    }
+
+    navigate(targetPath, { replace: true });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
@@ -31,20 +68,25 @@ export default function Login() {
 
     try {
       const user = await login({ email, password });
-      // If no explicit returnTo was set, redirect to their role home
-      if (returnTo === '/') {
-        if (user.roleCodes.includes('ROLE_PLATFORM_ADMIN')) {
-          navigate('/admin-console', { replace: true });
-        } else if (user.roleCodes.includes('ROLE_RECRUITER')) {
-          navigate('/recruiter/console', { replace: true });
-        } else {
-          navigate('/my-applications', { replace: true });
-        }
-      } else {
-        navigate(returnTo, { replace: true });
-      }
+      routeByRole(user);
     } catch (err: any) {
       setErrorMessage(err.message || 'Email hoặc mật khẩu không chính xác.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleQuickLogin = async (demoEmail: string) => {
+    setEmail(demoEmail);
+    setPassword('SecurePassword123!');
+    setLoading(true);
+    setErrorMessage(null);
+
+    try {
+      const user = await login({ email: demoEmail, password: 'SecurePassword123!' });
+      routeByRole(user);
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Đăng nhập nhanh thất bại.');
     } finally {
       setLoading(false);
     }
@@ -61,6 +103,46 @@ export default function Login() {
           <p className="text-sm text-slate-400">
             Đăng nhập hệ thống tuyển dụng thông minh có trách nhiệm
           </p>
+        </div>
+
+        {/* Quick Demo Switcher */}
+        <div className="p-3.5 rounded-xl bg-slate-800/60 border border-slate-700/60 space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-slate-300">⚡ Đăng nhập 1-Click theo vai trò:</span>
+            <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">Demo Ready</span>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            <button
+              type="button"
+              disabled={loading}
+              onClick={() => handleQuickLogin('admin@smartrecruit.local')}
+              className="flex flex-col items-center justify-center p-2 rounded-lg bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-700/80 text-white transition-all text-center cursor-pointer group"
+            >
+              <span className="text-base group-hover:scale-110 transition-transform">🛡️</span>
+              <span className="text-[11px] font-bold mt-1 text-slate-200">Admin</span>
+              <span className="text-[9px] text-slate-400">Quản trị</span>
+            </button>
+            <button
+              type="button"
+              disabled={loading}
+              onClick={() => handleQuickLogin('recruiter@smartrecruit.local')}
+              className="flex flex-col items-center justify-center p-2 rounded-lg bg-blue-950/60 hover:bg-blue-900/70 border border-blue-700/60 text-white transition-all text-center cursor-pointer group"
+            >
+              <span className="text-base group-hover:scale-110 transition-transform">👔</span>
+              <span className="text-[11px] font-bold mt-1 text-blue-200">Recruiter</span>
+              <span className="text-[9px] text-blue-300/80">Tuyển dụng</span>
+            </button>
+            <button
+              type="button"
+              disabled={loading}
+              onClick={() => handleQuickLogin('candidate@smartrecruit.local')}
+              className="flex flex-col items-center justify-center p-2 rounded-lg bg-emerald-950/60 hover:bg-emerald-900/70 border border-emerald-700/60 text-white transition-all text-center cursor-pointer group"
+            >
+              <span className="text-base group-hover:scale-110 transition-transform">👤</span>
+              <span className="text-[11px] font-bold mt-1 text-emerald-200">Candidate</span>
+              <span className="text-[9px] text-emerald-300/80">Ứng viên</span>
+            </button>
+          </div>
         </div>
 
         {errorMessage && (
