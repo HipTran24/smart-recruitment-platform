@@ -1,5 +1,5 @@
-import { NavLink, useLocation } from "react-router-dom";
-import { RoleSwitcher } from "./RoleSwitcher";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../../auth/AuthContext";
 
 interface NavItem {
   path: string;
@@ -144,6 +144,13 @@ interface SidebarProps {
 
 export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/login", { replace: true });
+  };
 
   return (
     <aside
@@ -242,8 +249,32 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
           );
         })}
 
-        {/* 1-Click Role Switcher */}
-        <RoleSwitcher variant="sidebar" onSwitched={() => onClose?.()} />
+        {/* User Profile & Logout */}
+        <div className="mt-2 p-2 rounded-lg bg-[var(--color-surface-hover)]/40 flex items-center justify-between border border-[var(--color-border)]/50">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="w-7 h-7 rounded-full bg-indigo-600 flex items-center justify-center text-xs font-bold text-white shrink-0">
+              {user?.fullName?.charAt(0) || user?.email?.charAt(0).toUpperCase() || 'A'}
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-semibold text-[var(--color-text-primary)] truncate leading-tight">
+                {user?.fullName || 'Platform Admin'}
+              </p>
+              <p className="text-[10px] text-indigo-400 truncate">
+                {user?.email || 'admin@smartrecruit.local'}
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={handleLogout}
+            title="Đăng xuất khỏi hệ thống"
+            className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded transition cursor-pointer shrink-0"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+          </button>
+        </div>
       </div>
     </aside>
   );

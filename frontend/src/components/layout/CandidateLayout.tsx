@@ -1,12 +1,18 @@
 import { useState } from "react";
-import { Outlet, useLocation, useNavigate, Link } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { CandidateSidebar } from "./CandidateSidebar";
-import { RoleSwitcher } from "./RoleSwitcher";
+import { useAuth } from "../../auth/AuthContext";
 
 export function CandidateLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const { logout } = useAuth();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/login", { replace: true });
+  };
   const isSettingsOpen = location.pathname === "/settings_candidate";
   const from = (location.state as { from?: string } | null)?.from;
   const returnTo =
@@ -71,7 +77,16 @@ export function CandidateLayout() {
             </div>
           </div>
 
-          <RoleSwitcher variant="header" />
+          <button
+            type="button"
+            onClick={handleLogout}
+            title="Đăng xuất khỏi hệ thống"
+            className="p-1.5 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition cursor-pointer"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+          </button>
         </header>
 
         <main className="min-h-0 min-w-0 flex-1 overflow-y-auto bg-[var(--color-canvas)]">

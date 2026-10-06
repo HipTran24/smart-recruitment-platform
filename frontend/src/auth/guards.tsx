@@ -50,8 +50,7 @@ export function RequireRole({
   roles: string[];
   children?: React.ReactNode;
 }) {
-  const { user, status, quickSwitch, logout } = useAuth();
-  const [switching, setSwitching] = React.useState(false);
+  const { user, status, logout } = useAuth();
 
   if (status === 'initializing') {
     return (
@@ -92,17 +91,6 @@ export function RequireRole({
       targetEmail = 'admin@smartrecruit.local';
     }
 
-    const handleQuickSwitch = async () => {
-      try {
-        setSwitching(true);
-        const path = await quickSwitch(targetRole);
-        window.location.href = path;
-      } catch (err) {
-        console.error('Quick switch failed', err);
-        setSwitching(false);
-      }
-    };
-
     const handleLogout = async () => {
       await logout();
       window.location.href = '/login';
@@ -140,35 +128,22 @@ export function RequireRole({
             </div>
           </div>
 
-          <div className="space-y-2.5">
+          <div className="space-y-2.5 pt-2">
             <Button
               variant="primary"
-              disabled={switching}
-              className="w-full justify-center py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold flex items-center gap-2 text-sm shadow-md"
-              onClick={handleQuickSwitch}
+              className="w-full justify-center py-2.5 font-semibold text-sm shadow-md"
+              onClick={() => (window.location.href = redirectPath)}
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-              </svg>
-              {switching ? 'Đang chuyển vai trò...' : `Chuyển sang ${targetLabel} (${targetEmail})`}
+              Về Không Gian Được Ủy Quyền ({currentRoleLabel})
             </Button>
 
-            <div className="grid grid-cols-2 gap-2">
-              <Button
-                variant="outline"
-                className="w-full justify-center text-xs text-slate-700 dark:text-slate-300"
-                onClick={() => (window.location.href = redirectPath)}
-              >
-                Về Không Gian Hiện Tại
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full justify-center text-xs text-rose-600 hover:text-rose-700 border-rose-200 hover:bg-rose-50 dark:hover:bg-rose-950/30"
-                onClick={handleLogout}
-              >
-                Đăng Xuất
-              </Button>
-            </div>
+            <Button
+              variant="outline"
+              className="w-full justify-center text-xs text-rose-600 hover:text-rose-700 border-rose-200 hover:bg-rose-50 dark:hover:bg-rose-950/30"
+              onClick={handleLogout}
+            >
+              Đăng Xuất Để Đăng Nhập Tài Khoản Khác
+            </Button>
           </div>
         </Card>
       </div>

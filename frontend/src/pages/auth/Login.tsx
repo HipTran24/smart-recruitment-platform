@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 import { sanitizeReturnUrl } from '../../auth/guards';
@@ -9,7 +9,7 @@ import { Button } from '../../components/ui/Button';
 export default function Login() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { login } = useAuth();
+  const { user, status, login, logout } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -19,18 +19,17 @@ export default function Login() {
   const rawReturnTo = searchParams.get('returnTo');
   const returnTo = sanitizeReturnUrl(rawReturnTo);
 
-  const routeByRole = (user: { roleCodes: string[] }) => {
-    let userHome = '/my-applications';
-    if (user.roleCodes.includes('ROLE_PLATFORM_ADMIN')) {
-      userHome = '/admin-console';
-    } else if (user.roleCodes.includes('ROLE_RECRUITER')) {
-      userHome = '/recruiter/console';
+  const routeByRole = (authenticatedUser: { roleCodes: string[] }) => {
+    let targetPath = '/my-applications';
+    if (authenticatedUser.roleCodes.includes('ROLE_PLATFORM_ADMIN')) {
+      targetPath = '/admin-console';
+    } else if (authenticatedUser.roleCodes.includes('ROLE_RECRUITER')) {
+      targetPath = '/recruiter/console';
     }
 
-    let targetPath = userHome;
     if (returnTo && returnTo !== '/') {
       if (
-        user.roleCodes.includes('ROLE_PLATFORM_ADMIN') &&
+        authenticatedUser.roleCodes.includes('ROLE_PLATFORM_ADMIN') &&
         (returnTo.startsWith('/admin') ||
           returnTo.startsWith('/user-') ||
           returnTo.startsWith('/skill-') ||
@@ -38,10 +37,13 @@ export default function Login() {
           returnTo.startsWith('/settings'))
       ) {
         targetPath = returnTo;
-      } else if (user.roleCodes.includes('ROLE_RECRUITER') && returnTo.startsWith('/recruiter')) {
+      } else if (
+        authenticatedUser.roleCodes.includes('ROLE_RECRUITER') &&
+        returnTo.startsWith('/recruiter')
+      ) {
         targetPath = returnTo;
       } else if (
-        user.roleCodes.includes('ROLE_CANDIDATE') &&
+        authenticatedUser.roleCodes.includes('ROLE_CANDIDATE') &&
         (returnTo.startsWith('/my-applications') ||
           returnTo.startsWith('/explore-jobs') ||
           returnTo.startsWith('/profile-') ||
@@ -56,6 +58,13 @@ export default function Login() {
     navigate(targetPath, { replace: true });
   };
 
+  // If user is already authenticated, redirect them automatically to their workspace
+  useEffect(() => {
+    if (status === 'authenticated' && user) {
+      routeByRole(user);
+    }
+  }, [status, user]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
@@ -67,26 +76,10 @@ export default function Login() {
     setErrorMessage(null);
 
     try {
-      const user = await login({ email, password });
-      routeByRole(user);
+      const loggedInUser = await login({ email: email.trim(), password });
+      routeByRole(loggedInUser);
     } catch (err: any) {
       setErrorMessage(err.message || 'Email hoặc mật khẩu không chính xác.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleQuickLogin = async (demoEmail: string) => {
-    setEmail(demoEmail);
-    setPassword('SecurePassword123!');
-    setLoading(true);
-    setErrorMessage(null);
-
-    try {
-      const user = await login({ email: demoEmail, password: 'SecurePassword123!' });
-      routeByRole(user);
-    } catch (err: any) {
-      setErrorMessage(err.message || 'Đăng nhập nhanh thất bại.');
     } finally {
       setLoading(false);
     }
@@ -105,46 +98,6 @@ export default function Login() {
           </p>
         </div>
 
-        {/* Quick Demo Switcher */}
-        <div className="p-3.5 rounded-xl bg-slate-800/60 border border-slate-700/60 space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-300">⚡ Đăng nhập 1-Click theo vai trò:</span>
-            <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">Demo Ready</span>
-          </div>
-          <div className="grid grid-cols-3 gap-2">
-            <button
-              type="button"
-              disabled={loading}
-              onClick={() => handleQuickLogin('admin@smartrecruit.local')}
-              className="flex flex-col items-center justify-center p-2 rounded-lg bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-700/80 text-white transition-all text-center cursor-pointer group"
-            >
-              <span className="text-base group-hover:scale-110 transition-transform">🛡️</span>
-              <span className="text-[11px] font-bold mt-1 text-slate-200">Admin</span>
-              <span className="text-[9px] text-slate-400">Quản trị</span>
-            </button>
-            <button
-              type="button"
-              disabled={loading}
-              onClick={() => handleQuickLogin('recruiter@smartrecruit.local')}
-              className="flex flex-col items-center justify-center p-2 rounded-lg bg-blue-950/60 hover:bg-blue-900/70 border border-blue-700/60 text-white transition-all text-center cursor-pointer group"
-            >
-              <span className="text-base group-hover:scale-110 transition-transform">👔</span>
-              <span className="text-[11px] font-bold mt-1 text-blue-200">Recruiter</span>
-              <span className="text-[9px] text-blue-300/80">Tuyển dụng</span>
-            </button>
-            <button
-              type="button"
-              disabled={loading}
-              onClick={() => handleQuickLogin('candidate@smartrecruit.local')}
-              className="flex flex-col items-center justify-center p-2 rounded-lg bg-emerald-950/60 hover:bg-emerald-900/70 border border-emerald-700/60 text-white transition-all text-center cursor-pointer group"
-            >
-              <span className="text-base group-hover:scale-110 transition-transform">👤</span>
-              <span className="text-[11px] font-bold mt-1 text-emerald-200">Candidate</span>
-              <span className="text-[9px] text-emerald-300/80">Ứng viên</span>
-            </button>
-          </div>
-        </div>
-
         {errorMessage && (
           <div className="p-3 text-sm rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-300 flex items-start gap-2">
             <span className="font-bold">!</span>
@@ -159,7 +112,7 @@ export default function Login() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="ten@smartrecruit.internal"
+              placeholder="nhap-email@smartrecruit.local"
               required
               disabled={loading}
               className="bg-slate-800/80 border-slate-700 text-white placeholder-slate-500 focus:border-emerald-500"
@@ -191,13 +144,24 @@ export default function Login() {
             type="submit"
             variant="primary"
             disabled={loading}
-            className="w-full py-2.5 font-medium bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-900/30"
+            className="w-full py-2.5 font-medium bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-900/30 cursor-pointer"
           >
             {loading ? 'Đang xác thực...' : 'Đăng Nhập'}
           </Button>
         </form>
 
-        <div className="pt-4 border-t border-slate-800 text-center text-xs text-slate-400">
+        {/* Demo Accounts Reference Guide */}
+        <div className="p-3 rounded-lg bg-slate-800/40 border border-slate-700/50 text-[11px] text-slate-400 space-y-1">
+          <p className="font-semibold text-slate-300">Tài khoản kiểm thử mẫu:</p>
+          <div className="space-y-0.5 text-slate-400 font-mono text-[10px]">
+            <p>• Admin: <span className="text-indigo-300">admin@smartrecruit.local</span></p>
+            <p>• Recruiter: <span className="text-blue-300">recruiter@smartrecruit.local</span></p>
+            <p>• Ứng viên: <span className="text-emerald-300">candidate@smartrecruit.local</span></p>
+            <p className="text-slate-500 font-sans mt-0.5">Mật khẩu chung: <span className="text-slate-300 font-mono">SecurePassword123!</span></p>
+          </div>
+        </div>
+
+        <div className="pt-2 border-t border-slate-800 text-center text-xs text-slate-400">
           Chưa có tài khoản ứng viên?{' '}
           <Link
             to="/register"

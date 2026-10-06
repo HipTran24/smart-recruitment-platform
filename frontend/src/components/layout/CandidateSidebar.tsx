@@ -1,5 +1,5 @@
-import { NavLink, Link } from "react-router-dom";
-import { RoleSwitcher } from "./RoleSwitcher";
+import { NavLink, Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../auth/AuthContext";
 
 type CandidateSidebarProps = {
   isSettingsOpen: boolean;
@@ -14,6 +14,13 @@ export const CandidateSidebar = ({
   isOpen = false,
   onClose,
 }: CandidateSidebarProps) => {
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/login", { replace: true });
+  };
   return (
     <aside
       className={`fixed lg:relative inset-y-0 left-0 z-40 flex w-64 shrink-0 flex-col justify-between border-r border-slate-200 bg-white px-4 pb-4 pt-6 select-none h-full transition-transform duration-200 ease-in-out ${
@@ -127,9 +134,27 @@ export const CandidateSidebar = ({
         </nav>
       </div>
 
-      {/* Footer / Switch / User */}
-      <div className="space-y-3 pt-3 border-t border-slate-100">
-        <RoleSwitcher variant="sidebar" onSwitched={onClose} />
+      {/* Candidate Profile Footer with Logout */}
+      <div className="border-t border-slate-200 p-2 pt-3 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-8 h-8 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center text-xs shrink-0 shadow-sm">
+            {user?.fullName?.charAt(0) || user?.email?.charAt(0).toUpperCase() || 'C'}
+          </div>
+          <div className="min-w-0">
+            <div className="font-semibold text-xs text-slate-800 truncate">{user?.fullName || 'Ứng Viên'}</div>
+            <div className="text-emerald-600 text-[10px] font-medium truncate">{user?.email || 'candidate@smartrecruit.local'}</div>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={handleLogout}
+          title="Đăng xuất khỏi hệ thống"
+          className="p-1.5 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition cursor-pointer shrink-0"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+        </button>
       </div>
     </aside>
   );

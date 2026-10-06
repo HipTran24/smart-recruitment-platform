@@ -1,6 +1,6 @@
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../auth/AuthContext';
 import { SearchInput } from '../ui/Input';
-import { RoleSwitcher } from './RoleSwitcher';
 
 const routeLabels: Record<string, { breadcrumbs: string[]; title: string }> = {
   '/': { breadcrumbs: ['Workspace', 'Admin Console', 'Overview'], title: 'Overview' },
@@ -21,7 +21,14 @@ interface HeaderProps {
 
 export function Header({ onToggleSidebar }: HeaderProps) {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const info = routeLabels[location.pathname] ?? { breadcrumbs: ['Workspace'], title: location.pathname.slice(1) };
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login', { replace: true });
+  };
 
   return (
     <header className="fixed top-0 left-0 lg:left-[220px] right-0 h-12 bg-[var(--color-surface)] border-b border-[var(--color-border)] flex items-center justify-between px-4 sm:px-6 z-30 shadow-2xs">
@@ -52,13 +59,36 @@ export function Header({ onToggleSidebar }: HeaderProps) {
         </nav>
       </div>
 
-      {/* Right side */}
+      {/* Right side: Search + Live Status + User & Logout */}
       <div className="flex items-center gap-3 shrink-0">
-        <RoleSwitcher variant="header" />
-        <div className="hidden sm:flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/25 rounded-full px-2.5 py-1">
+        <SearchInput
+          placeholder="Search logs, trace IDs..."
+          className="hidden md:flex w-40 lg:w-48 text-xs"
+        />
+
+        <div className="hidden sm:flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/25 rounded-full px-2.5 py-0.5">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-          <span className="text-xs text-emerald-500 dark:text-emerald-400 font-semibold">Live Sync</span>
+          <span className="text-[11px] text-emerald-500 dark:text-emerald-400 font-semibold">Live</span>
         </div>
+
+        {/* User email badge */}
+        <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-indigo-950/40 border border-indigo-800/40 text-xs">
+          <span className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
+          <span className="text-slate-300 font-medium truncate max-w-[160px]">{user?.email || 'admin@smartrecruit.local'}</span>
+        </div>
+
+        {/* Logout button */}
+        <button
+          type="button"
+          onClick={handleLogout}
+          title="Đăng xuất khỏi hệ thống"
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium text-slate-300 hover:text-rose-400 hover:bg-rose-500/10 border border-slate-700/60 transition cursor-pointer"
+        >
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+          <span className="hidden sm:inline">Đăng xuất</span>
+        </button>
       </div>
     </header>
   );
