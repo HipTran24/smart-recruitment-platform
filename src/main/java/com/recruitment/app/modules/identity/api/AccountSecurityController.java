@@ -45,6 +45,7 @@ public class AccountSecurityController {
         if (authentication == null || !(authentication.getPrincipal() instanceof JwtPrincipal principal)) {
             throw new IdentityAuthenticationException();
         }
+        throttling.reserveSensitiveRequest(com.recruitment.app.modules.identity.application.AuthenticationThrottlingService.SensitiveAction.PASSWORD_CHANGE);
         passwordManagement.changePassword(principal.userId(), request.currentPassword(), request.newPassword());
         return ResponseEntity.noContent().build();
     }
@@ -53,9 +54,8 @@ public class AccountSecurityController {
     public ResponseEntity<Map<String, String>> requestPasswordReset(
             @Valid @RequestBody PasswordResetRequest request
     ) {
-        throttling.checkPasswordResetThrottled(request.email());
+        throttling.reservePasswordReset(request.email());
         passwordManagement.requestPasswordReset(request.email());
-        throttling.recordPasswordResetDispatch(request.email());
         return ResponseEntity.ok(Map.of(
                 "message", "If an active account exists with this email, password reset instructions have been recorded."
         ));
@@ -65,6 +65,7 @@ public class AccountSecurityController {
     public ResponseEntity<Void> confirmPasswordReset(
             @Valid @RequestBody PasswordResetConfirmRequest request
     ) {
+        throttling.reserveSensitiveRequest(com.recruitment.app.modules.identity.application.AuthenticationThrottlingService.SensitiveAction.RESET_CONFIRM);
         passwordManagement.confirmPasswordReset(request.token(), request.newPassword());
         return ResponseEntity.noContent().build();
     }
@@ -73,12 +74,11 @@ public class AccountSecurityController {
     public ResponseEntity<Void> verifyEmail(
             @Valid @RequestBody VerifyEmailRequest request
     ) {
-        throttling.checkEmailVerificationThrottled();
+        throttling.reserveSensitiveRequest(com.recruitment.app.modules.identity.application.AuthenticationThrottlingService.SensitiveAction.VERIFY);
         try {
             emailVerification.verifyEmail(request.token());
             return ResponseEntity.noContent().build();
         } catch (RuntimeException e) {
-            throttling.recordEmailVerificationFailure();
             throw e;
         }
     }

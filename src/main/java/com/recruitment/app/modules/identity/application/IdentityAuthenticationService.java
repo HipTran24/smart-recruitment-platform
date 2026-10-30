@@ -77,11 +77,10 @@ public class IdentityAuthenticationService {
         String email = normalizeEmail(command == null ? null : command.email());
         String password = command == null ? null : command.password();
 
-        throttling.checkThrottled(email);
+        throttling.reserveLoginAttempt(email);
 
         AccountSnapshot user = accounts.findByEmail(email).orElse(null);
         if (user == null || !user.active() || password == null || !passwordEncoder.matches(password, user.passwordHash())) {
-            throttling.recordFailure(email);
             throw new IdentityAuthenticationException();
         }
 

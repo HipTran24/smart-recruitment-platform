@@ -17,13 +17,27 @@ public class AuditEventService {
         this.auditStore = Objects.requireNonNull(auditStore, "auditStore must not be null");
     }
 
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.REQUIRES_NEW)
+    public void recordSecurityEvent(AuditEventSnapshot event) {
+        recordEvent(event);
+    }
+
     @Transactional
     public void recordEvent(AuditEventSnapshot event) {
-        auditStore.recordEvent(event);
+                Objects.requireNonNull(event, "event");
+        if (event.action() == null || !event.action().matches("[A-Z_]{1,64}") ||
+                event.resourceType() == null || !event.resourceType().matches("[A-Z_]{1,50}")) {
+            throw new IllegalArgumentException("Invalid audit classification");
+        }
+        String id = event.resourceId();
+        if (id == null || !id.matches("[0-9]{1,20}")) id = "0";
+        auditStore.recordEvent(new AuditEventSnapshot(null, java.time.Instant.now(), event.actorUserId(),
+                event.action(), event.resourceType(), id, AuditMetadataSanitizer.sanitize(event.metadataJson()), null));
     }
 
     @Transactional(readOnly = true)
     public List<AuditEventSnapshot> searchEvents(Long actorUserId, String action, String resourceType, int page, int size) {
+        if (page < 0 || size < 1 || size > 100) throw new IllegalArgumentException("Invalid audit page");
         return auditStore.searchEvents(actorUserId, action, resourceType, page, size);
     }
 

@@ -88,6 +88,7 @@ public final class JwtAuthenticationFilter extends OncePerRequestFilter {
             SecurityContext context = SecurityContextHolder.createEmptyContext();
             context.setAuthentication(authentication);
             SecurityContextHolder.setContext(context);
+            request.setAttribute("smartrecruit.authenticatedUserId", principal.userId());
             filterChain.doFilter(request, response);
         } catch (InvalidAccessTokenException exception) {
             SecurityContextHolder.clearContext();
