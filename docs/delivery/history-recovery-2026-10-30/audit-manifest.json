@@ -1,0 +1,49 @@
+{
+  "audit_date": "2026-10-30",
+  "timezone": "Asia/Ho_Chi_Minh",
+  "repository": "https://github.com/HipTran24/smart-recruitment-platform",
+  "baseline_main_sha": "ad9ef2b12dd05efcacac91ad975c9858ead94a23",
+  "original_remote_heads": {
+    "main": "ad9ef2b12dd05efcacac91ad975c9858ead94a23",
+    "Candidates": "7706a11a547729bbfdc4cffee55649a05968bc4c",
+    "Recruiter": "9559eb7757fa1b0c8523a9d6088f4c88ba36e923"
+  },
+  "recovered_heads": {
+    "codex/recovery/stash-20261003-001259": "afbfda5d3a0c9ae0a140102d5be1c4229bd652c5",
+    "codex/recovery/stash-20261003-001645": "66e908c7ea4c5e23820fb3fb9ee755bf35064cc3"
+  },
+  "original_remote_commit_count": 28,
+  "original_main_commit_count": 27,
+  "recovered_commit_count": 4,
+  "historical_commit_count_after_recovery": 32,
+  "existing_historical_pr_count": 0,
+  "historical_ci_runs_count": 11,
+  "historical_ci_conclusions": {
+    "success": 9,
+    "failure": 2
+  },
+  "jira_project_issue_count": 92,
+  "hiep_issue_count": 36,
+  "hiep_status_counts": {
+    "Done": 34,
+    "To Do": 2
+  },
+  "hiep_evidence_class_counts": {
+    "B": 29,
+    "C": 7
+  },
+  "historical_commits_with_issue_keys": 0,
+  "hiep_jira_comments_read": 0,
+  "hiep_jira_remote_links_read": 0,
+  "backup_relative_path": ".git/recovery-audit/original-and-recovered.bundle",
+  "backup_sha256": "9c83d33af9d2048f623919e3ea2334d798248d43f71312ac4e8171c8219180e7",
+  "scope": "Original branch tips and recoverable stash objects available in this checkout. Other members' machines, deleted server objects, attachments and external systems are not certified complete.",
+  "verification_results": {
+    "bundle_verify": "passed",
+    "fresh_mirror_restore_32_original_commits": "passed",
+    "commit_metadata_match": "passed",
+    "original_and_recovered_remote_heads_match": "passed",
+    "traceability_csv_integrity": "passed",
+    "git_fsck": "passed"
+  }
+}
