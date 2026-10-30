@@ -55,7 +55,7 @@ export default function Register() {
         </div>
 
         {errorMessage && (
-          <div className="p-3 text-sm rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-300 flex items-start gap-2">
+          <div role="alert" className="p-3 text-sm rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-300 flex items-start gap-2">
             <span className="font-bold">!</span>
             <span>{errorMessage}</span>
           </div>
@@ -63,8 +63,9 @@ export default function Register() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-300">Họ và Tên</label>
+            <label htmlFor="register-fullName" className="text-xs font-semibold text-slate-300">Họ và Tên</label>
             <Input
+              id="register-fullName"
               type="text"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
@@ -76,8 +77,9 @@ export default function Register() {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-300">Địa chỉ Email</label>
+            <label htmlFor="register-email" className="text-xs font-semibold text-slate-300">Địa chỉ Email</label>
             <Input
+              id="register-email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -89,10 +91,11 @@ export default function Register() {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-300">
+            <label htmlFor="register-password" className="text-xs font-semibold text-slate-300">
               Mật khẩu (tối thiểu 8 ký tự)
             </label>
             <Input
+              id="register-password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}

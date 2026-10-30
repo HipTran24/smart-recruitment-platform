@@ -99,7 +99,7 @@ export default function Login() {
         </div>
 
         {errorMessage && (
-          <div className="p-3 text-sm rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-300 flex items-start gap-2">
+          <div role="alert" className="p-3 text-sm rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-300 flex items-start gap-2">
             <span className="font-bold">!</span>
             <span>{errorMessage}</span>
           </div>
@@ -107,8 +107,9 @@ export default function Login() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-300">Địa chỉ Email</label>
+            <label htmlFor="login-email" className="text-xs font-semibold text-slate-300">Địa chỉ Email</label>
             <Input
+              id="login-email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -121,7 +122,7 @@ export default function Login() {
 
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-semibold text-slate-300">Mật khẩu</label>
+              <label htmlFor="login-password" className="text-xs font-semibold text-slate-300">Mật khẩu</label>
               <Link
                 to="/forgot-password"
                 className="text-xs text-emerald-400 hover:text-emerald-300 transition-colors"
@@ -130,6 +131,7 @@ export default function Login() {
               </Link>
             </div>
             <Input
+              id="login-password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}

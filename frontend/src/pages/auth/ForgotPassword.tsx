@@ -48,7 +48,7 @@ export default function ForgotPassword() {
         </div>
 
         {message && (
-          <div className="p-3 text-sm rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 space-y-2">
+          <div role="status" className="p-3 text-sm rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 space-y-2">
             <div>{message}</div>
             <div className="pt-2">
               <Button
@@ -64,7 +64,7 @@ export default function ForgotPassword() {
         )}
 
         {errorMessage && (
-          <div className="p-3 text-sm rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-300">
+          <div role="alert" className="p-3 text-sm rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-300">
             {errorMessage}
           </div>
         )}
@@ -72,9 +72,10 @@ export default function ForgotPassword() {
         {!message && (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-300">Địa chỉ Email</label>
+              <label htmlFor="forgotpassword-email" className="text-xs font-semibold text-slate-300">Địa chỉ Email</label>
               <Input
-                type="email"
+                id="forgotpassword-email"
+              type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="ten@smartrecruit.internal"

@@ -84,14 +84,14 @@ export default function VerifyEmail() {
         </div>
 
         {successMessage && (
-          <div className="p-3 text-sm rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 flex items-start gap-2">
+          <div role="status" className="p-3 text-sm rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 flex items-start gap-2">
             <span className="font-bold">✓</span>
             <span>{successMessage}</span>
           </div>
         )}
 
         {errorMessage && (
-          <div className="p-3 text-sm rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-300 flex items-start gap-2">
+          <div role="alert" className="p-3 text-sm rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-300 flex items-start gap-2">
             <span className="font-bold">!</span>
             <span>{errorMessage}</span>
           </div>
@@ -100,9 +100,10 @@ export default function VerifyEmail() {
         {!successMessage ? (
           <form onSubmit={handleVerify} className="space-y-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-300">Email đã đăng ký</label>
+              <label htmlFor="verifyemail-email" className="text-xs font-semibold text-slate-300">Email đã đăng ký</label>
               <Input
-                type="email"
+                id="verifyemail-email"
+              type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="ungvien@example.com"
@@ -113,7 +114,7 @@ export default function VerifyEmail() {
 
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold text-slate-300">Mã Token Xác Minh</label>
+                <label htmlFor="verifyemail-token" className="text-xs font-semibold text-slate-300">Mã Token Xác Minh</label>
                 {email && (
                   <button
                     type="button"
@@ -126,7 +127,8 @@ export default function VerifyEmail() {
                 )}
               </div>
               <Input
-                type="text"
+                id="verifyemail-token"
+              type="text"
                 value={token}
                 onChange={(e) => setToken(e.target.value)}
                 placeholder="Nhập mã token từ email hoặc test mailbox"

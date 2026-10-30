@@ -89,7 +89,7 @@ export default function ResetPassword() {
 
         {success ? (
           <div className="space-y-4">
-            <div className="p-3 text-sm rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-300">
+            <div role="status" className="p-3 text-sm rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-300">
               Đặt lại mật khẩu thành công! Vui lòng đăng nhập lại với mật khẩu mới.
             </div>
             <Button
@@ -103,15 +103,16 @@ export default function ResetPassword() {
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             {errorMessage && (
-              <div className="p-3 text-sm rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-300">
+              <div role="alert" className="p-3 text-sm rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-300">
                 {errorMessage}
               </div>
             )}
 
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-300">Email tài khoản</label>
+              <label htmlFor="resetpassword-email" className="text-xs font-semibold text-slate-300">Email tài khoản</label>
               <Input
-                type="email"
+                id="resetpassword-email"
+              type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="ungvien@example.com"
@@ -122,7 +123,7 @@ export default function ResetPassword() {
 
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold text-slate-300">Token Đặt Lại</label>
+                <label htmlFor="resetpassword-token" className="text-xs font-semibold text-slate-300">Token Đặt Lại</label>
                 {email && (
                   <button
                     type="button"
@@ -135,7 +136,8 @@ export default function ResetPassword() {
                 )}
               </div>
               <Input
-                type="text"
+                id="resetpassword-token"
+              type="text"
                 value={token}
                 onChange={(e) => setToken(e.target.value)}
                 placeholder="Nhập mã token từ thông báo"
@@ -146,9 +148,10 @@ export default function ResetPassword() {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-300">Mật khẩu mới</label>
+              <label htmlFor="resetpassword-newPassword" className="text-xs font-semibold text-slate-300">Mật khẩu mới</label>
               <Input
-                type="password"
+                id="resetpassword-newPassword"
+              type="password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 placeholder="••••••••••••"
@@ -159,9 +162,10 @@ export default function ResetPassword() {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-300">Xác nhận mật khẩu mới</label>
+              <label htmlFor="resetpassword-confirmPassword" className="text-xs font-semibold text-slate-300">Xác nhận mật khẩu mới</label>
               <Input
-                type="password"
+                id="resetpassword-confirmPassword"
+              type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="••••••••••••"
