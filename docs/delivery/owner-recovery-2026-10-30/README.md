@@ -1,6 +1,6 @@
 # Báo cáo phần việc Trần Thanh Hiệp — Recovery Jira–GitHub
 
-**Có đủ gói code và bằng chứng CI để tổ chức review kỹ thuật cho 8 issue. Chưa đủ điều kiện xác nhận merge hàng loạt.** 4 incident GitGuardian metadata đã được phân loại chính xác là false positive. Chưa có review độc lập và chưa xác minh được required branch checks bằng quyền connector hiện có.
+**Có đủ gói code và bằng chứng CI để tổ chức review kỹ thuật cho 8 issue. Chưa đủ điều kiện xác nhận merge hàng loạt.** 4 incident GitGuardian metadata đã được phân loại chính xác là false positive. Chưa có review độc lập. Giao diện GitHub xác nhận chưa có branch protection rule; việc áp dụng policy thuộc quyết định owner/admin.
 
 Snapshot: **2026-10-30 15:35:39 UTC**. Phạm vi được chủ dự án chốt là CI; không yêu cầu triển khai hay gửi cảnh báo thật. Báo cáo này đóng băng bằng chứng trước commit hồ sơ SCRUM-50 cuối cùng. SHA của chính commit đó và check mới xem tại PR1; không tự nhúng một SHA chưa tồn tại vào nội dung commit.
 
@@ -61,13 +61,13 @@ Các PR còn lại đang OPEN tại snapshot, đa số DRAFT. Snapshot main là 
 | Giữ mọi PR chưa merge đến cuối đợt | FAIL do trạng thái ngoài phiên | PR2 đã merge bởi account HipTran24; các PR khác xem snapshot/live |
 | GitGuardian disposition PR1 | PASS | 4 incident đã xác minh trạng thái Ignored / Not a secret (false positive); [proof](gitguardian-metadata-proof.json). CI trên head mới được kiểm tra riêng sau publication |
 | Review độc lập | BLOCKED | API trả 0 submitted review cho cả 8 PR tại thời điểm kiểm tra; không giả reviewer/approval |
-| Merge tự động bị required checks chặn | BLOCKED, chưa xác minh | Ruleset list rỗng; GET legacy protection trả403 Resource not accessible by integration; không suy ra legacy protection chắc chắn vắng |
+| Merge bị required checks chặn | FAIL cấu hình / BLOCKED admin | UI Settings→Branches không có rule; API ruleset list rỗng. Connector đọc legacy protection trả403; đã dùng UI để đối chiếu thay vì suy đoán từ403 |
 | Nghiệm thu/biên bản SCRUM-50 | BLOCKED ký xác nhận | Hồ sơ chuẩn bị xong; chưa tổ chức họp hoặc tạo chữ ký/nghiệm thu giả |
 | Production deployment / paging thật | N/A theo phạm vi CI | Không dùng thiếu môi trường làm lý do bỏ phần code/CI độc lập |
 
 GitGuardian cảnh báo các dòng18/36/37/48 của file-evidence.csv trong commit3834a1b. Từng chuỗi 40hex đều được git cat-file xác nhận là commit, không phải credential. Toàn bộ 62 dòng CSV chỉ gồm metadata; cả 11 giá trị 40hex khác nhau đều là commit. Đã dùng lựa chọn Not a secret (false positive) trên đúng 4 incident và xác minh status/reason được lưu. CSV lịch sử và cấu hình scanner được giữ nguyên. [Check FAIL lịch sử trước triage](https://github.com/HipTran24/smart-recruitment-platform/runs/123982781668); kết quả mới của commit hồ sơ xem PR1.
 
-[batch-required-checks.json](batch-required-checks.json) là đề xuất cụ thể cho owner/admin sau khi các workflow được chấp nhận: 8 checks, branch up-to-date, một review độc lập, giải quyết conversation, cấm force-push/delete. Không mô tả JSON đề xuất như setting đã được bật.
+[batch-required-checks.json](batch-required-checks.json) là đề xuất cụ thể cho owner/admin sau khi các workflow được chấp nhận: 8 checks, branch up-to-date, một review độc lập, giải quyết conversation, cấm force-push/delete. Không mô tả JSON đề xuất như setting đã được bật. Plan recovery jira to github, mục17, giao admin cấu hình branch protection/required checks; coding agent không mặc nhiên có quyền thay đổi cấu hình quản trị. Các bước code/CI đã hoàn tất trước khi bàn giao quyết định policy này. Riêng SCRUM-82 vẫn còn AC merge enforcement thuộc phần admin này.
 
 Để tổ chức review: dùng các SHA/code tree đã nêu, hoàn tất independent review và xác minh CI trên head mới sau triage GitGuardian; owner/admin xác minh/enforce merge policy; phối hợp một luồng thao tác để tránh head thay đổi giữa review và merge. Theo dependency hiện tại, các PR còn lại đi từ #4→#5→#6→#7→#8→#9, PR1 chốt hồ sơ với base là nhánh PR9. Sau khi PR9 được owner merge, retarget PR1 sang main và kiểm tra lại theo quy trình. Việc retarget hồ sơ xử lý add/add workflow conflict với main hiện tại mà không tạo merge commit hoặc sửa lịch sử. Không tự thực hiện thứ tự merge này.
 

@@ -77,7 +77,9 @@
             "completedAt": "2026-10-30T15:30:37Z"
           }
         ]
-      }
+      },
+      "technicalReviewPreparation": "PASS",
+      "remainingAcceptance": "Independent review/integration acceptance; CI-only delivery scope"
     },
     {
       "key": "SCRUM-82",
@@ -140,7 +142,9 @@
             "completedAt": "2026-10-30T15:09:24Z"
           }
         ]
-      }
+      },
+      "technicalReviewPreparation": "PASS",
+      "remainingAcceptance": "Owner/admin must apply merge enforcement after workflow adoption; independent review pending"
     },
     {
       "key": "SCRUM-85",
@@ -182,7 +186,9 @@
             "completedAt": "2026-10-30T14:20:22Z"
           }
         ]
-      }
+      },
+      "technicalReviewPreparation": "PASS",
+      "remainingAcceptance": "Independent review/integration acceptance; CI-only delivery scope"
     },
     {
       "key": "SCRUM-86",
@@ -231,7 +237,9 @@
             "completedAt": "2026-10-30T14:42:48Z"
           }
         ]
-      }
+      },
+      "technicalReviewPreparation": "PASS",
+      "remainingAcceptance": "Independent review/integration acceptance; CI-only delivery scope"
     },
     {
       "key": "SCRUM-88",
@@ -308,7 +316,9 @@
             "completedAt": "2026-10-30T15:20:28Z"
           }
         ]
-      }
+      },
+      "technicalReviewPreparation": "PASS",
+      "remainingAcceptance": "Independent review/integration acceptance; CI-only delivery scope"
     },
     {
       "key": "SCRUM-89",
@@ -350,7 +360,9 @@
             "completedAt": "2026-10-30T14:28:00Z"
           }
         ]
-      }
+      },
+      "technicalReviewPreparation": "PASS",
+      "remainingAcceptance": "Independent review/integration acceptance; CI-only delivery scope"
     },
     {
       "key": "SCRUM-21",
@@ -392,7 +404,9 @@
             "completedAt": "2026-10-30T14:06:42Z"
           }
         ]
-      }
+      },
+      "technicalReviewPreparation": "PASS",
+      "remainingAcceptance": "Independent review/integration acceptance; CI-only delivery scope"
     },
     {
       "key": "SCRUM-50",
@@ -434,7 +448,9 @@
             "completedAt": "2026-10-30T09:12:24Z"
           }
         ]
-      }
+      },
+      "technicalReviewPreparation": "PASS",
+      "remainingAcceptance": "Independent review and owner acceptance; no meeting/signature fabricated"
     }
   ],
   "jira": [
@@ -577,10 +593,11 @@
     },
     {
       "condition": "Main merge enforcement",
-      "result": "BLOCKED_UNVERIFIED",
+      "result": "FAIL_NOT_CONFIGURED_UI_VERIFIED",
       "rulesetListCount": 0,
       "legacyProtectionRead": "403 Resource not accessible by integration",
-      "settingsChanged": false
+      "settingsChanged": false,
+      "adminAction": "BLOCKED pending explicit owner/admin policy decision"
     }
   ],
   "limitations": [
@@ -627,5 +644,12 @@
     "base": "codex/SCRUM-88-release-ci",
     "reason": "Dossier depends on the verified complete owner tree; avoid current main add/add workflow conflict without merging branches or rewriting history",
     "mergePerformed": false
+  },
+  "mergeEnforcementUiUpdate": {
+    "result": "FAIL_NOT_CONFIGURED",
+    "source": "Authenticated GitHub Settings / Branches; branch protection list has no entries and only Add branch ruleset / Add classic branch protection rule controls. Connected API ruleset list is empty.",
+    "connectorLegacyProtectionRead": "403 Resource not accessible by integration",
+    "settingsChangedByAgent": false,
+    "requiredOwnerDecision": "Plan section 17 assigns branch protection/required checks to admin; review the concrete eight-check/one-independent-review proposal and adoption timing."
   }
 }
