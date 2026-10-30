@@ -14,3 +14,5 @@ scripts
 data
 logs
 uploads
+**/node_modules
+**/dist
