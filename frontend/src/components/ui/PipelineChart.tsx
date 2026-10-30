@@ -3,7 +3,7 @@ import { useEffect, useRef } from "react"
 export function PipelineChart({
   counts,
 }: {
-  counts: { status: string count: number }[]
+  counts: { status: string; count: number }[]
 }) {
   const canvas = useRef<HTMLCanvasElement>(null)
   useEffect(() => {

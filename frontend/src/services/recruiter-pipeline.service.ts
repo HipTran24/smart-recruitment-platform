@@ -14,7 +14,7 @@ export interface PipelineApplication {
   screeningSummary: string | null
   matchedCriteria: string | null
   missingCriteria: string | null
-  histories: { fromStatus: string | null toStatus: string createdAt: string }[]
+  histories: { fromStatus: string | null; toStatus: string; createdAt: string }[]
 }
 export const pipelineStatuses = [
   "SUBMITTED",
@@ -41,7 +41,7 @@ export function criteriaList(value: string | null): string[] {
 }
 export const recruiterPipelineService = {
   async list(
-    params: { jobId?: number status?: string page?: number size?: number } = {},
+    params: { jobId?: number; status?: string; page?: number; size?: number } = {},
     signal?: AbortSignal,
   ) {
     const result = await apiClient.get<PageResponse<PipelineApplication>>(
@@ -83,7 +83,7 @@ export const recruiterPipelineService = {
   },
   async all(
     signal: AbortSignal,
-    filters: { jobId?: number status?: string } = {},
+    filters: { jobId?: number; status?: string } = {},
   ): Promise<PipelineApplication[]> {
     const first = await this.list({ ...filters, page: 0, size: 100 }, signal)
     if (first.totalPages > 100)
