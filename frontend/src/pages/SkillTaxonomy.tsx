@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { MetricCard } from '../components/ui/Card';
 import { DataTable } from '../components/ui/DataTable';
 import { StatusBadge } from '../components/ui/StatusBadge';
@@ -8,6 +8,7 @@ import { Select } from '../components/ui/Select';
 import { Modal } from '../components/ui/Modal';
 import { mockSkills } from '../data/mock';
 import type { Skill, SkillCategory } from '../types';
+import { adminService } from '../services/admin.service';
 
 const categoryColors: Record<SkillCategory, string> = {
   Frontend: 'bg-blue-500/20 text-blue-300 border border-blue-500/30',
@@ -39,8 +40,46 @@ export default function SkillTaxonomy() {
   const [category, setCategory] = useState('All Categories');
   const [status, setStatus] = useState('All Statuses');
   const [addModalOpen, setAddModalOpen] = useState(false);
+  const [newSkillName, setNewSkillName] = useState('');
+  const [newSkillCategory, setNewSkillCategory] = useState('Backend');
+  const [skills, setSkills] = useState<Skill[]>(mockSkills);
 
-  const filtered = mockSkills.filter(s => {
+  const fetchSkills = async () => {
+    try {
+      const list = await adminService.getSkills();
+      if (list && list.length > 0) {
+        const mapped: Skill[] = list.map((s, idx) => ({
+          id: String(s.id),
+          name: s.name,
+          category: (s.category as SkillCategory) || 'Backend',
+          status: 'Active',
+          synonyms: [s.name.toLowerCase()],
+          usageCount: 10 + idx,
+        }));
+        setSkills(mapped);
+      }
+    } catch {
+      // Fallback
+    }
+  };
+
+  useEffect(() => {
+    fetchSkills();
+  }, []);
+
+  const handleAddSkill = async () => {
+    if (!newSkillName.trim()) return;
+    try {
+      await adminService.createSkill({ name: newSkillName.trim(), category: newSkillCategory });
+      setNewSkillName('');
+      setAddModalOpen(false);
+      fetchSkills();
+    } catch {
+      setAddModalOpen(false);
+    }
+  };
+
+  const filtered = skills.filter(s => {
     const matchSearch = !search || s.name.toLowerCase().includes(search.toLowerCase()) || s.synonyms.some(syn => syn.toLowerCase().includes(search.toLowerCase()));
     const matchCat = category === 'All Categories' || s.category === category;
     const matchStatus = status === 'All Statuses' || s.status === status;
@@ -128,21 +167,26 @@ export default function SkillTaxonomy() {
         <div className="flex flex-col gap-4">
           <div>
             <label className="text-xs text-zinc-400 font-medium block mb-1.5">Skill Name</label>
-            <input className="w-full bg-zinc-900 border border-zinc-700 text-white rounded-lg px-3 py-2 text-sm outline-none focus:border-zinc-500" placeholder="e.g. TypeScript" />
+            <input
+              className="w-full bg-zinc-900 border border-zinc-700 text-white rounded-lg px-3 py-2 text-sm outline-none focus:border-zinc-500"
+              placeholder="e.g. TypeScript"
+              value={newSkillName}
+              onChange={e => setNewSkillName(e.target.value)}
+            />
           </div>
           <div>
             <label className="text-xs text-zinc-400 font-medium block mb-1.5">Category</label>
-            <select className="w-full bg-zinc-900 border border-zinc-700 text-white rounded-lg px-3 py-2 text-sm outline-none">
-              {categoryOptions.slice(1).map(opt => <option key={opt.value}>{opt.label}</option>)}
+            <select
+              className="w-full bg-zinc-900 border border-zinc-700 text-white rounded-lg px-3 py-2 text-sm outline-none"
+              value={newSkillCategory}
+              onChange={e => setNewSkillCategory(e.target.value)}
+            >
+              {categoryOptions.slice(1).map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
             </select>
-          </div>
-          <div>
-            <label className="text-xs text-zinc-400 font-medium block mb-1.5">Synonyms (comma separated)</label>
-            <input className="w-full bg-zinc-900 border border-zinc-700 text-white rounded-lg px-3 py-2 text-sm outline-none focus:border-zinc-500" placeholder="ts, typescript5" />
           </div>
           <div className="flex justify-end gap-2 mt-2">
             <Button variant="secondary" onClick={() => setAddModalOpen(false)}>Cancel</Button>
-            <Button>Add Skill</Button>
+            <Button onClick={handleAddSkill}>Add Skill</Button>
           </div>
         </div>
       </Modal>

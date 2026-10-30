@@ -39,8 +39,15 @@ Không thay đổi ý nghĩa của endpoint đã public theo cách phá vỡ cli
 | `POST /api/v1/auth/logout` | `refreshToken` | `204`; idempotent |
 | `POST /api/v1/auth/oauth/exchange` | `code`, `codeVerifier`, `transactionId` của cùng OAuth transaction | `200` và token pair |
 | `GET /api/v1/auth/me` | Bearer access token | `200` và identity/roles hiện hành |
+| `POST /api/v1/auth/password/change` | `currentPassword`, `newPassword` (Bearer token) | `204` |
+| `POST /api/v1/auth/password/reset-request` | `email` | `200` ("If an active account exists...") |
+| `POST /api/v1/auth/password/reset-confirm` | `token`, `newPassword` | `204` |
+| `POST /api/v1/auth/verify-email` | `token` | `204` |
 
-Response có token luôn đặt `Cache-Control: no-store` và `Pragma: no-cache`. Refresh token là credential opaque, không phải JWT; client không được đưa access/refresh token vào URL, local storage không được bảo vệ, log hay analytics.
+Response có token luôn đặt `Cache-Control: no-store` và `Pragma: no-cache`. Refresh token là credential opaque, không phải JWT; client không được đưa access/refresh token vào URL, local storage không được bảo vệ, log hay analytics. Các endpoint nhạy cảm được bảo vệ bởi cơ chế Rate Limiting trượt đa chiều theo từng namespace riêng biệt (login lockout, registration limit, password reset dispatch, email verification, token refresh). Khoá IP mặc định phân giải an toàn từ kết nối socket TCP (`RemoteAddr`); header `X-Forwarded-For` chỉ được tin cậy khi bật `app.security.client-ip.trust-forwarded-header: true` sau reverse proxy đã cấu hình strip client header. Khi vượt ngưỡng hệ thống trả `429 TOO_MANY_REQUESTS` kèm header `Retry-After`. Thông báo tài khoản trong baseline MVP sử dụng `app.notification.provider: logging` (lưu token in-memory tối đa 200 bản ghi, TTL 15 phút phục vụ kiểm thử và phát triển). Môi trường production thực tế yêu cầu cấu hình nhà cung cấp gửi thư hợp lệ (ví dụ AWS SES qua `APP_NOTIFICATION_PROVIDER=ses`), nếu thiếu bean tương ứng ứng dụng sẽ kích hoạt cơ chế Fail-Fast từ chối khởi động.
+
+**Đánh đổi bảo mật được chấp nhận (Accepted Risk):** `POST /api/v1/auth/register` trả `409 CONFLICT` khi email đã tồn tại trong hệ thống. Đây là đánh đổi có chủ đích để tối ưu trải nghiệm người dùng (UX) khi đăng ký tài khoản. Rủi ro dò quét tài khoản (Account Enumeration) được giảm thiểu chủ động bằng Rate Limiter theo địa chỉ IP (tối đa 20 yêu cầu / IP / 15 phút). Trái lại, luồng khôi phục mật khẩu (`POST /api/v1/auth/password/reset-request`) được bảo vệ bằng thông điệp trung lập tuyệt đối ("If an active account exists...") để ngăn chặn triệt để nguy cơ trích xuất danh sách người dùng.
+
 
 ## Request và response
 
@@ -56,9 +63,16 @@ Mẫu lỗi hiện hành:
 {
   "code": "VALIDATION_ERROR",
   "message": "The request is invalid.",
-  "fieldErrors": {}
+  "fieldErrors": {},
+  "requestId": "server-generated-uuid"
 }
 ```
+
+### Phân định phạm vi lỗi ứng dụng vs hạ tầng Container (Tomcat Connector)
+
+- **Lỗi tầng Servlet / Ứng dụng:** Mọi lỗi được xử lý qua Servlet container (bao gồm validation DTO, lỗi nghiệp vụ, phân quyền, 404 Not Found, 405 Method Not Allowed, 406 Not Acceptable, 415 Unsupported Media Type, 422 Unprocessable Entity, 429 Too Many Requests và trang lỗi nội bộ `/error`) đều tuân thủ chặt chẽ JSON contract `ApiErrorResponse` (`code`, `message`, `fieldErrors`, `requestId`). Riêng lỗi đàm phán nội dung `406 Not Acceptable` khi client từ chối nhận JSON sẽ trả HTTP 406 với body rỗng để tuân thủ RFC.
+- **Lỗi tầng Container / Connector (Pre-Servlet):** Các yêu cầu vi phạm giao thức nghiêm trọng ở tầng socket trước khi chuyển giao vào Spring DispatcherServlet (như URI vượt quá giới hạn cấu hình `server.max-http-request-header-size: 8KB`, URI chứa byte điều khiển/null `%00`, hoặc HTTP method token chứa ký tự đặc biệt theo RFC 7230) sẽ bị Tomcat connector từ chối ở tầng mạng với mã 400/414/431 (trả về trang HTML tối giản của container hoặc body rỗng). Toàn bộ cấu hình máy chủ (`server.error.include-stacktrace: never`, `server.error.include-message: never`, `server.error.include-exception: false`) đảm bảo không rò rỉ phiên bản phần mềm máy chủ hay stack trace.
+
 
 ## Pagination, filter và sort
 
@@ -75,7 +89,7 @@ GET /api/v1/jobs?page=0&size=20&sort=createdAt,desc
 
 ## Authorization
 
-JWT access token mang `roles` và Spring Security map chúng thành authorities `ROLE_*`. Endpoint tuyển dụng tương lai phải khai báo policy nghiệp vụ ở endpoint/use case (ví dụ owner, company membership, hoặc role), không chỉ tin `userId` từ request. `GET /me` luôn đọc lại account active từ database.
+JWT access token mang `roles` và Spring Security map chúng thành authorities `ROLE_*`. Endpoint tuyển dụng tương lai phải khai báo policy nghiệp vụ ở endpoint/use case (ví dụ owner hoặc role; Recruiter dùng chung dữ liệu của đội), không chỉ tin `userId` từ request. `GET /me` luôn đọc lại account active từ database.
 
 ## Contract và tài liệu
 

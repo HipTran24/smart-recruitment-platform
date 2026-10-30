@@ -44,6 +44,12 @@ public class CandidateProfile extends BaseEntity {
     @Column(columnDefinition = "TEXT")
     private String bio;
 
+    @Column(name = "ai_processing_consented", nullable = false)
+    private boolean aiProcessingConsented = true;
+
+    @Column(name = "consented_at")
+    private java.time.Instant consentedAt;
+
     @OneToMany(
             mappedBy = "candidateProfile",
             fetch = FetchType.LAZY,
@@ -87,6 +93,11 @@ public class CandidateProfile extends BaseEntity {
         this.headline = headline;
         this.city = city;
         this.bio = bio;
+    }
+
+    public void updateConsent(boolean consented, java.time.Instant now) {
+        this.aiProcessingConsented = consented;
+        this.consentedAt = now;
     }
 
     public List<CandidateEducation> getEducations() {

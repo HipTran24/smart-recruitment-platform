@@ -15,6 +15,13 @@ Migration hiện có:
 ```text
 V001__initial_schema.sql
 V002__create_recruitment_domain_schema.sql
+V003__add_identity_authentication_schema.sql
+V004__bind_oauth_handoff_codes_to_pkce.sql
+V005__add_application_screening_audit_data.sql
+V006__bind_oauth_handoff_codes_to_transactions.sql
+V007__convert_job_creator_membership_to_user_references.sql
+V008__add_identity_credential_version_and_verification.sql
+V009__harden_schema_integrity_and_precision.sql
 ```
 
 Một migration đã chạy ở môi trường chung là bất biến. Nếu cần đổi schema, thêm migration mới; không sửa file cũ.
@@ -55,3 +62,6 @@ Xóa mềm chỉ được dùng khi có yêu cầu nghiệp vụ rõ ràng. Nế
 - A candidate has at most one primary resume, enforced with a generated nullable key and unique constraint.
 - Numeric ranges, date ordering, salary range and screening score have database checks in addition to entity validation.
 - Flyway migration is exercised against an empty MySQL Testcontainer in CI before Hibernate validates the mapping.
+- All foreign keys intentionally enforce `ON DELETE RESTRICT` (default MySQL behavior) to prevent accidental cascading data loss of compliance records and candidate submissions; automated data retention purging will be executed via a dedicated application service in Sprint 8.
+- In V009 migration, when synthesizing parent company memberships for zero-member companies with jobs, the least-privilege role 'RECRUITER' is granted (rather than 'OWNER') to satisfy the compound FK invariant without granting administrative privileges.
+- The column 'attempt' in application_screenings tracks sequential screening runs for a candidate job application (enforced by uk_application_screenings_application_attempt). Transient network retries during a screening execution are handled within a single lease in CvScreeningWorkflow, whereas re-evaluations (e.g. after CV resubmission) increment the attempt counter.

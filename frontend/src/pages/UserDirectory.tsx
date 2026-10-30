@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { MetricCard } from '../components/ui/Card';
 import { DataTable } from '../components/ui/DataTable';
 import { Avatar } from '../components/ui/Avatar';
@@ -7,8 +7,9 @@ import { Button } from '../components/ui/Button';
 import { Pagination } from '../components/ui/Pagination';
 import { mockUsers } from '../data/mock';
 import type { User } from '../types';
+import { adminService } from '../services/admin.service';
 
-const tabs = ['All (1,248)', 'Admins (4)', 'Recruiters (68)', 'Suspended (56)'];
+const tabs = ['All', 'Admins', 'Recruiters', 'Suspended'];
 
 const roleColors: Record<string, string> = {
   'System Admin': 'bg-red-500/20 text-red-300 border border-red-500/30',
@@ -29,6 +30,46 @@ const roleDistribution = [
 export default function UserDirectory() {
   const [activeTab, setActiveTab] = useState(tabs[0]);
   const [page, setPage] = useState(1);
+  const [users, setUsers] = useState<User[]>(mockUsers);
+  const [totalCount, setTotalCount] = useState<number>(mockUsers.length);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadUsers() {
+      try {
+        setLoading(true);
+        const res = await adminService.getUsers({ page: page - 1, size: 20 });
+        if (!cancelled && res.items && res.items.length > 0) {
+          const mapped: User[] = res.items.map(u => ({
+            id: String(u.id),
+            name: u.fullName,
+            email: u.email,
+            role: u.roles.includes('ROLE_PLATFORM_ADMIN')
+              ? 'Admin'
+              : u.roles.includes('ROLE_RECRUITER')
+              ? 'Recruiter'
+              : 'Candidate',
+            status: u.active ? 'Active' : 'Suspended',
+            avatarInitials: u.fullName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'U',
+            avatarColor: '#6366f1',
+            authProvider: 'Password + MFA',
+            lastLogin: 'Today',
+            lastActivity: 'Active',
+            createdAt: u.createdAt,
+          }));
+          setUsers(mapped);
+          setTotalCount(res.total);
+        }
+      } catch {
+        // Fallback retained
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    loadUsers();
+    return () => { cancelled = true; };
+  }, [page]);
 
   const columns = [
     {
@@ -190,14 +231,14 @@ export default function UserDirectory() {
           </div>
         </div>
 
-        <DataTable columns={columns} data={mockUsers.slice(0, 5)} keyFn={r => r.id} />
+        <DataTable columns={columns} data={users.slice(0, 10)} keyFn={r => r.id} />
         <Pagination
           currentPage={page}
-          totalPages={250}
-          totalItems={1248}
-          pageSize={5}
+          totalPages={Math.ceil(totalCount / 10) || 1}
+          totalItems={totalCount}
+          pageSize={10}
           onPageChange={setPage}
-          label={`Showing 1–5 of 1,248 directory records`}
+          label={`Showing ${users.length > 0 ? (page - 1) * 10 + 1 : 0}–${Math.min(page * 10, totalCount)} of ${totalCount} directory records`}
         />
       </div>
     </div>

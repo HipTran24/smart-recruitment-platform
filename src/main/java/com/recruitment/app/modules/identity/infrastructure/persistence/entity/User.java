@@ -42,6 +42,12 @@ public class User extends BaseEntity {
     @Column(name = "is_active", nullable = false)
     private boolean active = true;
 
+    @Column(name = "credential_version", nullable = false)
+    private int credentialVersion = 1;
+
+    @Column(name = "email_verified", nullable = false)
+    private boolean emailVerified = false;
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "user_roles",
@@ -57,11 +63,26 @@ public class User extends BaseEntity {
     }
 
     public void addRole(Role role) {
-        roles.add(Objects.requireNonNull(role, "role must not be null"));
+        Objects.requireNonNull(role, "role must not be null");
+        if ("ROLE_RECRUITER".equals(role.getCode()) && hasRole("ROLE_PLATFORM_ADMIN")) {
+            throw new IllegalStateException("Platform Administrator cannot hold Recruiter role");
+        }
+        if ("ROLE_PLATFORM_ADMIN".equals(role.getCode()) && hasRole("ROLE_RECRUITER")) {
+            throw new IllegalStateException("Platform Administrator cannot hold Recruiter role");
+        }
+        if (roles.add(role) && getId() != null) {
+            incrementCredentialVersion();
+        }
+    }
+
+    public boolean hasRole(String roleCode) {
+        return roles.stream().anyMatch(r -> roleCode.equals(r.getCode()));
     }
 
     public void removeRole(Role role) {
-        roles.remove(Objects.requireNonNull(role, "role must not be null"));
+        if (roles.remove(Objects.requireNonNull(role, "role must not be null"))) {
+            incrementCredentialVersion();
+        }
     }
 
     public Set<Role> getRoles() {
@@ -74,10 +95,20 @@ public class User extends BaseEntity {
 
     public void changePassword(String passwordHash) {
         this.passwordHash = requireText(passwordHash, "password hash");
+        incrementCredentialVersion();
+    }
+
+    public void incrementCredentialVersion() {
+        this.credentialVersion++;
+    }
+
+    public void verifyEmail() {
+        this.emailVerified = true;
     }
 
     public void deactivate() {
-        active = false;
+        this.active = false;
+        incrementCredentialVersion();
     }
 
     public void activate() {

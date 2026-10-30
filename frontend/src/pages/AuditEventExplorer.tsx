@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Avatar } from '../components/ui/Avatar';
 import { SearchInput } from '../components/ui/Input';
 import { Pagination } from '../components/ui/Pagination';
 import { mockAuditEvents } from '../data/mock';
 import type { AuditEvent } from '../types';
+import { adminService } from '../services/admin.service';
 
 const eventTabs = [
   { label: 'All Events', count: 48291 },
@@ -22,6 +23,38 @@ export default function AuditEventExplorer() {
   const [activeTab, setActiveTab] = useState(0);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
+  const [events, setEvents] = useState<AuditEvent[]>(mockAuditEvents);
+  const [totalCount, setTotalCount] = useState<number>(mockAuditEvents.length);
+
+  useEffect(() => {
+    async function loadEvents() {
+      try {
+        const res = await adminService.getAuditEvents({ page: page - 1, size: 25 });
+        if (res.items && res.items.length > 0) {
+          const mapped: AuditEvent[] = res.items.map(e => ({
+            id: String(e.id),
+            timestamp: new Date(e.createdAt).toISOString().replace('T', ' ').slice(0, 19),
+            latency: '12ms',
+            severity: (e.action.includes('DEACTIVATE') ? 'WARN' : 'INFO') as 'WARN' | 'INFO',
+            action: e.action,
+            actorName: e.actorUserId ? `User #${e.actorUserId}` : 'System Agent',
+            actorEmail: e.actorUserId ? `user-${e.actorUserId}@platform.local` : 'system@platform.local',
+            actorIp: e.ipAddress || '127.0.0.1',
+            actorInitials: 'AU',
+            targetResource: `${e.resourceType}:${e.resourceId}`,
+            justification: e.metadataJson || 'Governance audit event',
+            traceId: `trc-${e.id}`,
+            payloadActions: ['Inspect'],
+          }));
+          setEvents(mapped);
+          setTotalCount(res.total);
+        }
+      } catch {
+        // Fallback
+      }
+    }
+    loadEvents();
+  }, [page]);
 
   const columns = [
     { label: 'Timestamp (UTC)' },
@@ -164,7 +197,7 @@ export default function AuditEventExplorer() {
             </tr>
           </thead>
           <tbody>
-            {mockAuditEvents.filter(e => !search || e.action.toLowerCase().includes(search.toLowerCase()) || e.actorName.toLowerCase().includes(search.toLowerCase())).map((event: AuditEvent) => {
+            {events.filter(e => !search || e.action.toLowerCase().includes(search.toLowerCase()) || e.actorName.toLowerCase().includes(search.toLowerCase())).map((event: AuditEvent) => {
               const sev = severityConfig[event.severity];
               return (
                 <tr key={event.id} className="border-b border-[#1e1e1e] hover:bg-[#1e1e1e] transition-colors">

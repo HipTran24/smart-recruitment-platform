@@ -11,7 +11,7 @@ services:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Copy .env.example to .env and set MYSQL_ROOT_PASSWORD}
     command:
       - --character-set-server=utf8mb4
-      - --collation-server=utf8mb4_unicode_ci
+      - --collation-server=utf8mb4_0900_ai_ci
       - --default-time-zone=+00:00
     ports:
       - "127.0.0.1:${MYSQL_PORT:-3306}:3306"
@@ -35,14 +35,16 @@ services:
       mysql:
         condition: service_healthy
     environment:
-      SPRING_PROFILES_ACTIVE: local
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-default}
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE}?useSSL=false&allowPublicKeyRetrieval=true&connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true
       SPRING_DATASOURCE_USERNAME: ${MYSQL_USER}
       SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
       SPRING_JPA_HIBERNATE_DDL_AUTO: validate
+      LOGGING_LEVEL_ORG_HIBERNATE_SQL: warn
       SERVER_SESSION_COOKIE_SECURE: ${SERVER_SESSION_COOKIE_SECURE:-false}
       SERVER_FORWARD_HEADERS_STRATEGY: ${SERVER_FORWARD_HEADERS_STRATEGY:-none}
       APP_WEB_CORS_ALLOWED_ORIGINS: ${APP_WEB_CORS_ALLOWED_ORIGINS:-}
+      APP_TEST_MAILBOX_ENABLED: ${APP_TEST_MAILBOX_ENABLED:-true}
       APP_SECURITY_JWT_ISSUER: ${APP_SECURITY_JWT_ISSUER:?Set APP_SECURITY_JWT_ISSUER in .env}
       APP_SECURITY_JWT_AUDIENCE: ${APP_SECURITY_JWT_AUDIENCE:?Set APP_SECURITY_JWT_AUDIENCE in .env}
       APP_SECURITY_JWT_KEY_ID: ${APP_SECURITY_JWT_KEY_ID:?Set APP_SECURITY_JWT_KEY_ID in .env}
@@ -83,6 +85,19 @@ services:
         target: app-jwt-private.pem
       - source: app-jwt-public-key
         target: app-jwt-public.pem
+
+  frontend:
+    build:
+      context: ../..
+      dockerfile: infra/docker/frontend.Dockerfile
+    restart: unless-stopped
+    depends_on:
+      app:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${FRONTEND_PORT:-8443}:80"
+    networks:
+      - app-network
 
 volumes:
   mysql-data:

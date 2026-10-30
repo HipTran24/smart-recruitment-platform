@@ -4,12 +4,12 @@
 
 ## Điều kiện cần
 
-- JDK đúng phiên bản được khai báo trong `pom.xml` (hiện là Java 26).
+- JDK đúng phiên bản được khai báo trong `pom.xml` (hiện là Java 25).
 - Maven cài sẵn hoặc Maven tích hợp trong IntelliJ.
 - MySQL đang chạy và có database/user cho môi trường local.
 - IntelliJ đã mở đúng thư mục repository root.
 
-Repository hiện chưa có thư mục `.mvn/wrapper` hoàn chỉnh. Script local tự tìm JDK đúng major version trên macOS trước khi gọi Maven; IntelliJ vẫn phải cấu hình Maven Runner dùng JDK 26.
+Repository có Maven Wrapper tại `.mvn/wrapper`. Script local tự tìm JDK đúng major version trên macOS trước khi gọi Maven; IntelliJ vẫn phải cấu hình Maven Runner dùng JDK 25.
 
 ## Cấu hình local
 
@@ -56,3 +56,18 @@ Trong IntelliJ, thêm các biến này tại **Run → Edit Configurations → E
 - Schema được tạo bằng Flyway migration, không phụ thuộc thao tác thủ công chưa được ghi lại.
 - Chạy `./scripts/verify.sh` dùng MySQL Testcontainers; không cần và không được trỏ test vào database local. Docker daemon phải đang chạy.
 - Google OAuth và Gemini đều mặc định tắt. Chỉ bật sau khi cấu hình secret local theo [runbook xác thực & AI](authentication-and-ai.md).
+
+## Isolated verification output
+
+After changing the JDK major version, run a clean build. Set both the IDE project
+SDK and Maven runner to Java 25; Java 26 class files cannot run on Java 25.
+If another build process writes to `target/`, use a separate output directory:
+
+```sh
+JAVA_HOME=/path/to/jdk25 ./mvnw -B -ntp \
+  -Dsmartrecruit.build.directory=/tmp/smartrecruit-build25 verify
+```
+
+The default remains `target/`, including CI and Docker builds. `JAVA_HOME`, when
+set, must match `pom.xml`; scripts reject mismatched installations instead of
+silently falling back to another JDK.

@@ -15,6 +15,7 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Locale;
+import java.util.regex.Pattern;
 
 @Getter
 @Entity
@@ -29,11 +30,14 @@ import java.util.Locale;
 )
 public class Job extends BaseEntity {
 
+    private static final Pattern SLUG_PATTERN = Pattern.compile("^[a-z0-9]+(?:-[a-z0-9]+)*$");
+    private static final Pattern CURRENCY_PATTERN = Pattern.compile("^[A-Z]{3}$");
+
     @Column(name = "company_id", nullable = false)
     private Long companyId;
 
-    @Column(name = "created_by_member_id", nullable = false)
-    private Long createdByMemberId;
+    @Column(name = "created_by_user_id", nullable = false)
+    private Long createdByUserId;
 
     @Column(nullable = false, length = 200)
     private String title;
@@ -85,7 +89,7 @@ public class Job extends BaseEntity {
 
     public Job(
             Long companyId,
-            Long createdByMemberId,
+            Long createdByUserId,
             String title,
             String slug,
             String description,
@@ -93,7 +97,7 @@ public class Job extends BaseEntity {
             WorkplaceType workplaceType
     ) {
         this.companyId = requireId(companyId, "company id");
-        this.createdByMemberId = requireId(createdByMemberId, "company member id");
+        this.createdByUserId = requireId(createdByUserId, "created by user id");
         this.title = requireText(title, "job title");
         this.slug = normalizeSlug(slug);
         this.description = requireText(description, "job description");
@@ -182,7 +186,7 @@ public class Job extends BaseEntity {
                 || salaryMin != null && salaryMax != null && salaryMin.compareTo(salaryMax) > 0) {
             throw new IllegalArgumentException("salary range is invalid");
         }
-        if (salaryCurrency == null || !salaryCurrency.matches("[A-Z]{3}")) {
+        if (salaryCurrency == null || !CURRENCY_PATTERN.matcher(salaryCurrency).matches()) {
             throw new IllegalArgumentException("salary currency must be an ISO 4217 code");
         }
         if (headcount == null || headcount < 1) {
@@ -199,7 +203,7 @@ public class Job extends BaseEntity {
 
     private static String normalizeSlug(String value) {
         String slug = requireText(value, "job slug").toLowerCase(Locale.ROOT);
-        if (!slug.matches("[a-z0-9]+(?:-[a-z0-9]+)*")) {
+        if (!SLUG_PATTERN.matcher(slug).matches()) {
             throw new IllegalArgumentException("job slug must use lower kebab-case");
         }
         return slug;

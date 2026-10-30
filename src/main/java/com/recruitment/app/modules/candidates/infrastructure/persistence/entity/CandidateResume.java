@@ -50,12 +50,29 @@ public class CandidateResume extends BaseEntity {
     @Column(name = "is_primary", nullable = false)
     private boolean primaryResume;
 
+    @Column(name = "scan_status", nullable = false, length = 20)
+    private String scanStatus = "CLEAN";
+
+    @Column(name = "parsed_text", columnDefinition = "MEDIUMTEXT")
+    private String parsedText;
+
     public CandidateResume(
             CandidateProfile candidateProfile,
             String originalFileName,
             String storageKey,
             String contentType,
             Long fileSizeBytes
+    ) {
+        this(candidateProfile, originalFileName, storageKey, contentType, fileSizeBytes, null);
+    }
+
+    public CandidateResume(
+            CandidateProfile candidateProfile,
+            String originalFileName,
+            String storageKey,
+            String contentType,
+            Long fileSizeBytes,
+            String parsedText
     ) {
         if (candidateProfile == null) {
             throw new IllegalArgumentException("candidate profile must not be null");

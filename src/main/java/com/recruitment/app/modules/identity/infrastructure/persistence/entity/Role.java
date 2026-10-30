@@ -34,7 +34,7 @@ public class Role extends BaseEntity {
     }
 
     private static String normalizeCode(String code) {
-        if (code == null || !code.matches("ROLE_[A-Z0-9_]{1,45}")) {
+        if (code == null || !com.recruitment.app.common.security.TokenDigest.ROLE_CODE_PATTERN.matcher(code).matches()) {
             throw new IllegalArgumentException("role code must use the ROLE_<UPPER_SNAKE_CASE> format");
         }
         return code;

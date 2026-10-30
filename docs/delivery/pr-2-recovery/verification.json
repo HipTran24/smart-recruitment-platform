@@ -1,0 +1,95 @@
+{
+  "audit_date": "2026-10-30",
+  "timezone": "Asia/Ho_Chi_Minh",
+  "pull_request": "https://github.com/HipTran24/smart-recruitment-platform/pull/2",
+  "jira_primary": "https://tranthanhhiep.atlassian.net/browse/SCRUM-21",
+  "jira_related": [
+    "SCRUM-27",
+    "SCRUM-63",
+    "SCRUM-39",
+    "SCRUM-89"
+  ],
+  "approved_scope": "Preserve PR #2 and reconcile the archived snapshot with main; documentation/evidence only.",
+  "original_commits": [
+    {
+      "sha": "1c9a425ff6fe5cf6b75839eb9d6a43f3b8c3f92b",
+      "parents": "48e561b0272cbfbc910b4f45f834b209a0490696",
+      "author_date": "2026-10-03T00:16:45+07:00",
+      "committer_date": "2026-10-03T00:16:45+07:00",
+      "author_name": "myproject",
+      "committer_name": "myproject",
+      "subject": "index on main: 48e561b refactor: update recruiter layout, dashboard and reorganize recruiter pages"
+    },
+    {
+      "sha": "66e908c7ea4c5e23820fb3fb9ee755bf35064cc3",
+      "parents": "48e561b0272cbfbc910b4f45f834b209a0490696 1c9a425ff6fe5cf6b75839eb9d6a43f3b8c3f92b",
+      "author_date": "2026-10-03T00:16:45+07:00",
+      "committer_date": "2026-10-03T00:16:45+07:00",
+      "author_name": "myproject",
+      "committer_name": "myproject",
+      "subject": "WIP on main: 48e561b refactor: update recruiter layout, dashboard and reorganize recruiter pages"
+    }
+  ],
+  "base_sha": "ad9ef2b12dd05efcacac91ad975c9858ead94a23",
+  "historical_integration_sha": "1ad6141993d3952999dae5e6e2a28ea42468d9c0",
+  "original_changed_files": 22,
+  "original_conflict_count": 13,
+  "source_tree_after_conflict_resolution": "e07e43d353c41e5af8a87051dc1e8264e5025b13",
+  "source_tree_equals_main": true,
+  "validation": {
+    "frontend_build": {
+      "command": "npm --prefix frontend run build",
+      "status": "PASS",
+      "note": "Existing large-chunk warning."
+    },
+    "frontend_typecheck": {
+      "command": "npm --prefix frontend run typecheck",
+      "status": "PASS"
+    },
+    "frontend_tests": {
+      "command": "npm --prefix frontend test",
+      "status": "PASS",
+      "test_files": 3,
+      "tests": 22,
+      "scope": "Includes mocked Recruiter route/access and Hiring Operations Dashboard rendering."
+    },
+    "backend_verify": {
+      "command": "./mvnw -B -ntp -Dsmartrecruit.build.directory=<isolated-output> clean verify",
+      "environment": "JDK 25; DOCKER_HOST points to the active Docker Desktop Unix socket. MySQL Testcontainers use isolated test data.",
+      "status": "PASS",
+      "tests": 109,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "log_sha256": "7d328baa2ddb225b6d4755e84bc813abf70d7e0029650a0a9ce043e6730592d3"
+    },
+    "git_diff_check": {
+      "status": "PASS"
+    },
+    "lint": {
+      "status": "NOT_CONFIGURED"
+    },
+    "live_browser_backend_e2e": {
+      "status": "NOT_RUN",
+      "note": "No frontend/src/test/e2e directory; jsdom regression is not live end-to-end testing."
+    },
+    "original_head_gitguardian": {
+      "status": "PASS",
+      "url": "https://github.com/HipTran24/smart-recruitment-platform/runs/123962554153"
+    },
+    "npm_audit": {
+      "status": "FAIL_BASELINE",
+      "high_findings": 3,
+      "development_dependencies_only": true,
+      "packages": [
+        "source-map-js",
+        "undici",
+        "vite"
+      ],
+      "source_package_lock_sha256": "8cfcf25fe4605b93dc6e0fdab61e79017fc32aa9d7b7b32575ce2aca99ca600a",
+      "note": "Pre-existing on main. Dependency changes are outside the approved documentation recovery scope."
+    }
+  },
+  "remote_verification": "See the current PR body and Checks tab for the pushed head, CI and Jira synchronization result. This file records local source verification before the recovery documentation commit.",
+  "jira_sync_acceptance": "UNVERIFIED until native Jira Development Panel displays this PR with the correct repository/URL; a Jira key or an empty Development field alone does not prove synchronization."
+}

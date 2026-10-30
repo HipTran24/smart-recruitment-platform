@@ -17,26 +17,28 @@ require_command() {
 }
 
 require_project_java() {
-  require_command java
+  project_java_home >/dev/null || fail "No JDK matching pom.xml was found. Set JAVA_HOME to a Java 25 installation."
+}
 
-  local expected actual
-  expected="$(sed -n -E 's#.*<java.version>([0-9]+)</java.version>.*#\1#p' "$REPO_ROOT/pom.xml" | head -n 1)"
-  actual="$(java -version 2>&1 | sed -n -E '1s/.*"([0-9]+)(\.[0-9]+)?.*/\1/p')"
-
-  [[ -n "$expected" ]] || fail "Could not determine java.version from pom.xml."
-  [[ "$actual" == "$expected" ]] || fail "Project requires Java $expected, but the current java command reports Java ${actual:-unknown}."
+java_major() {
+  "$1/bin/java" -version 2>&1 | sed -n -E '1s/.*"([0-9]+)(\.[0-9]+)?.*/\1/p'
 }
 
 project_java_home() {
-  local expected
+  local expected candidate
   expected="$(sed -n -E 's#.*<java.version>([0-9]+)</java.version>.*#\1#p' "$REPO_ROOT/pom.xml" | head -n 1)"
-
-  if [[ -x /usr/libexec/java_home ]]; then
-    /usr/libexec/java_home -v "$expected" 2>/dev/null && return
-  fi
+  [[ -n "$expected" ]] || return 1
 
   if [[ -n "${JAVA_HOME:-}" && -x "${JAVA_HOME}/bin/java" ]]; then
+    [[ "$(java_major "$JAVA_HOME")" == "$expected" ]] || return 1
     printf '%s\n' "$JAVA_HOME"
+    return
+  fi
+
+  if [[ -x /usr/libexec/java_home ]]; then
+    candidate="$(/usr/libexec/java_home -v "$expected" 2>/dev/null)" || return 1
+    [[ "$(java_major "$candidate")" == "$expected" ]] || return 1
+    printf '%s\n' "$candidate"
     return
   fi
 

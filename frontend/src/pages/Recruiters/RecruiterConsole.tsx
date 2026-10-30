@@ -1,282 +1,422 @@
 import { useMemo, useState } from "react";
-
-type Stat = {
-  label: string;
-  value: string;
-  detail: string;
-  detailClass: string;
-};
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/Button";
+import { SearchInput } from "@/components/ui/Input";
+import { StatusBadge, aiMatchBadge } from "@/components/ui/StatusBadge";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 type FunnelStage = {
   label: string;
-  count: string;
+  count: number;
   percentage: string;
-  width: string;
+  barWidth: string;
 };
 
 type ActionItem = {
+  id: string;
   title: string;
-  description: string;
-  accentClass: string;
+  reason: string;
+  urgency: "high" | "medium";
+  count: number;
+  actionText: string;
+  link: string;
 };
 
-type Candidate = {
+type PriorityCandidate = {
+  id: string;
   initials: string;
   name: string;
   role: string;
-  match: string;
-  matchClass: string;
+  matchScore: number;
   stage: string;
-  feedback: string;
-  feedbackColor: string;
+  reviewStatus: "Ready" | "Approved" | "Needs Review";
   action: string;
-  actionClass: string;
+  link: string;
 };
 
-const stats: Stat[] = [
-  { label: "OPEN REQUISITIONS", value: "12", detail: "+2 this week", detailClass: "text-green-600" },
-  { label: "TOTAL APPLICANTS", value: "184", detail: "142 AI-Screened", detailClass: "text-blue-600" },
-  { label: "PENDING APPROVALS", value: "9", detail: "Feedback drafts & rubrics", detailClass: "text-amber-600" },
-  { label: "AVG TIME TO HIRE", value: "14.2 days", detail: "-1.6d vs target", detailClass: "text-green-600" },
-];
-
 const funnelStages: FunnelStage[] = [
-  { label: "Applied", count: "124", percentage: "100%", width: "w-80" },
-  { label: "AI-Screened", count: "62", percentage: "50%", width: "w-40" },
-  { label: "Interview", count: "28", percentage: "23%", width: "w-[74px]" },
-  { label: "Offer Extended", count: "6", percentage: "5%", width: "w-4" },
+  { label: "Applied Candidates", count: 184, percentage: "100%", barWidth: "w-full" },
+  { label: "AI Screened (>70%)", count: 142, percentage: "77.1%", barWidth: "w-[77%]" },
+  { label: "Technical Interview", count: 28, percentage: "15.2%", barWidth: "w-[15%]" },
+  { label: "Offer Extended", count: 6, percentage: "3.2%", barWidth: "w-[8%]" },
 ];
 
-const actionItems: ActionItem[] = [
-  { title: "Approve AI Feedback Drafts (3 pending)", description: "Review auto-generated technical evaluation summaries", accentClass: "border-blue-600" },
-  { title: "CV Extraction Review (2 files)", description: "Verify parsed candidate profiles with manual match checks", accentClass: "border-amber-500" },
-  { title: "Interview Rubric Overdue", description: "Provide structured evaluation standards for active positions", accentClass: "border-amber-500" },
-];
-
-const candidates: Candidate[] = [
+const initialActionItems: ActionItem[] = [
   {
+    id: "act-1",
+    title: "Approve AI Feedback Drafts",
+    reason: "3 drafts awaiting human review before transmission to candidates",
+    urgency: "high",
+    count: 3,
+    actionText: "Review Drafts",
+    link: "/recruiter/evaluations/ai-feedback",
+  },
+  {
+    id: "act-2",
+    title: "CV Extraction Verification",
+    reason: "2 PDF resumes need human check on rare domain taxonomy",
+    urgency: "medium",
+    count: 2,
+    actionText: "Verify Profiles",
+    link: "/recruiter/candidates/screening",
+  },
+  {
+    id: "act-3",
+    title: "Panel Interview Schedule Confirmation",
+    reason: "2 candidates requested morning slot confirmations for Thursday",
+    urgency: "medium",
+    count: 2,
+    actionText: "Open Calendar",
+    link: "/recruiter/calendar",
+  },
+];
+
+const priorityCandidates: PriorityCandidate[] = [
+  {
+    id: "cand-1",
     initials: "HL",
     name: "Harriet Lawrence",
     role: "Lead UX Researcher",
-    match: "92% Match",
-    matchClass: "bg-blue-50 border-blue-200 text-blue-700",
+    matchScore: 92,
     stage: "Interviewing",
-    feedback: "Draft: Ready",
-    feedbackColor: "bg-blue-600",
+    reviewStatus: "Ready",
     action: "Approve & Send",
-    actionClass: "bg-blue-600 text-white border-blue-600",
+    link: "/recruiter/candidates/detail",
   },
   {
+    id: "cand-2",
     initials: "MB",
     name: "Marcus Broadus",
     role: "Senior Backend Dev",
-    match: "86% Match",
-    matchClass: "bg-blue-50 border-blue-200 text-blue-700",
+    matchScore: 88,
     stage: "Offer Stage",
-    feedback: "Approved",
-    feedbackColor: "bg-green-600",
+    reviewStatus: "Approved",
     action: "View Dossier",
-    actionClass: "bg-white text-slate-900 border-slate-200",
+    link: "/recruiter/candidates/detail",
   },
   {
+    id: "cand-3",
     initials: "SK",
     name: "Sonia Khavis",
     role: "Product Marketing Lead",
-    match: "78% Match",
-    matchClass: "bg-orange-50 border-orange-200 text-amber-600",
+    matchScore: 81,
     stage: "Screened",
-    feedback: "Needs Review",
-    feedbackColor: "bg-amber-600",
+    reviewStatus: "Needs Review",
     action: "Evaluate",
-    actionClass: "bg-white text-slate-900 border-slate-200",
+    link: "/recruiter/candidates/detail",
+  },
+  {
+    id: "cand-4",
+    initials: "EN",
+    name: "Elena Novak",
+    role: "Lead Data Scientist",
+    matchScore: 91,
+    stage: "Interviewing",
+    reviewStatus: "Ready",
+    action: "View Dossier",
+    link: "/recruiter/candidates/detail",
   },
 ];
 
-// Component Sidebar điều hướng Recruiter
-export const RecruitmentNavigationSection = () => {
-  const [activeItem, setActiveItem] = useState("Overview");
-  const navItems = ["Overview", "Jobs", "Candidates", "Evaluations & Feedback", "Interview Calendar", "Hiring Analytics", "Notifications & Audit Log"];
-
-  return (
-    <aside className="relative self-stretch w-60 bg-white border-r border-slate-200 flex flex-col justify-between p-4 min-h-screen">
-      <div className="flex flex-col gap-6">
-        <div className="flex items-center gap-2.5 px-2">
-          <div className="flex w-7 h-7 items-center justify-center bg-blue-50 rounded-md text-blue-700 font-bold text-xs">S</div>
-          <span className="font-bold text-slate-900 text-lg">SmartRecruit</span>
-        </div>
-        <nav className="flex flex-col gap-1">
-          {navItems.map((item) => {
-            const isActive = activeItem === item;
-            return (
-              <button
-                key={item}
-                type="button"
-                onClick={() => setActiveItem(item)}
-                className={`flex items-center justify-between w-full px-3 py-2.5 rounded-lg text-sm font-medium transition ${
-                  isActive ? "bg-blue-50 text-blue-700 font-semibold border-l-4 border-blue-700" : "text-slate-600 hover:bg-slate-50"
-                }`}
-              >
-                <span>{item}</span>
-                {isActive && <div className="w-1 h-5 bg-blue-600 rounded-full" />}
-              </button>
-            );
-          })}
-        </nav>
-      </div>
-      <div className="border-t border-slate-200 pt-4 flex items-center gap-3">
-        <div className="w-9 h-9 rounded-full bg-blue-50 text-blue-700 font-bold flex items-center justify-center text-xs">AJ</div>
-        <div>
-          <div className="font-semibold text-slate-900 text-sm">Alex Johnson</div>
-          <div className="text-slate-500 text-xs">Hiring Manager</div>
-        </div>
-      </div>
-    </aside>
-  );
-};
-
-// Component nội dung chính Dashboard
-export const HiringOperationsDashboardSection = () => {
+export default function RecruiterConsole() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [resolvedActions, setResolvedActions] = useState<string[]>([]);
+  const [actionItems, setActionItems] = useState(initialActionItems);
   const [notice, setNotice] = useState("");
-
-  const filteredCandidates = useMemo(() => {
-    const query = searchTerm.trim().toLowerCase();
-    if (!query) return candidates;
-    return candidates.filter((c) => [c.name, c.role, c.stage, c.feedback].join(" ").toLowerCase().includes(query));
-  }, [searchTerm]);
 
   const showNotice = (msg: string) => {
     setNotice(msg);
-    window.setTimeout(() => setNotice(""), 2500);
+    setTimeout(() => setNotice(""), 3000);
   };
 
-  const handleResolve = (title: string) => {
-    setResolvedActions((curr) => (curr.includes(title) ? curr : [...curr, title]));
-    showNotice(`${title} resolved`);
+  const handleResolveAction = (id: string, title: string) => {
+    setActionItems((items) => items.filter((item) => item.id !== id));
+    showNotice(`Resolved: ${title}`);
   };
+
+  const filteredCandidates = useMemo(() => {
+    const q = searchTerm.trim().toLowerCase();
+    if (!q) return priorityCandidates;
+    return priorityCandidates.filter(
+      (c) =>
+        c.name.toLowerCase().includes(q) ||
+        c.role.toLowerCase().includes(q)
+    );
+  }, [searchTerm]);
 
   return (
-    <main className="relative flex flex-1 grow flex-col items-start bg-slate-50 min-h-screen">
-      <header className="flex w-full items-center justify-between border-b border-slate-200 bg-white px-8 py-4">
-        <p className="text-sm font-medium text-slate-500">Workspace / <span className="text-slate-900">Manager</span></p>
-        <div className="flex items-center gap-4">
-          <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-green-600">• Live Sync</span>
-          <input
-            type="search"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search applicants..."
-            className="w-60 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-      </header>
-      <div className="flex w-full flex-col gap-6 p-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900">Hiring Operations Dashboard</h1>
-            <p className="text-sm text-slate-500">Manage requisitions, AI candidate matching, and feedback approvals</p>
+    <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
+      {/* Page Header */}
+      <PageHeader
+        breadcrumbs={[
+          { label: "Workspace", href: "/recruiter/console" },
+          { label: "Recruiter Console", href: "/recruiter/console" },
+        ]}
+        title="Hiring Operations Dashboard"
+        description="Monitor active requisitions, evaluate deterministic Gemini 2.5 applicant scores, and approve feedback drafts."
+        actions={
+          <div className="flex items-center gap-2.5">
+            <Link to="/recruiter/jobs/create">
+              <Button
+                variant="primary"
+                size="md"
+                icon={
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                }
+              >
+                Post New Job
+              </Button>
+            </Link>
           </div>
-          <button onClick={() => showNotice("New job posting started")} className="rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700">
-            + Post New Job
-          </button>
+        }
+      />
+
+      {/* KPI Stats Strip */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs flex flex-col justify-between">
+          <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">
+            Open Requisitions
+          </span>
+          <div className="flex items-baseline gap-2 mt-2">
+            <span className="text-3xl font-bold text-slate-900 tabular-nums leading-none">12</span>
+            <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">+2 this week</span>
+          </div>
+          <p className="text-xs text-slate-400 mt-2">Across 4 engineering and design squads</p>
         </div>
 
-        {/* Stats Grid */}
-        <section className="grid grid-cols-4 gap-4 w-full">
-          {stats.map((stat) => (
-            <article key={stat.label} className="rounded-xl border border-slate-200 bg-white p-4 flex flex-col justify-between shadow-sm">
-              <h2 className="text-[11px] font-bold text-slate-500">{stat.label}</h2>
-              <div className="flex flex-col gap-1 mt-2">
-                <p className="text-2xl font-bold text-slate-900">{stat.value}</p>
-                <p className={`text-xs font-medium ${stat.detailClass}`}>{stat.detail}</p>
-              </div>
-            </article>
-          ))}
-        </section>
+        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs flex flex-col justify-between">
+          <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">
+            Total Applicants
+          </span>
+          <div className="flex items-baseline gap-2 mt-2">
+            <span className="text-3xl font-bold text-slate-900 tabular-nums leading-none">184</span>
+            <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">142 Screened</span>
+          </div>
+          <p className="text-xs text-slate-400 mt-2">77.1% qualify above minimum threshold</p>
+        </div>
 
-        {/* Funnel & Action Center */}
-        <div className="grid grid-cols-3 gap-5 w-full">
-          <section className="col-span-2 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <h2 className="text-base font-bold text-slate-900 mb-4">Hiring Funnel</h2>
-            <div className="flex flex-col gap-3">
+        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs flex flex-col justify-between">
+          <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">
+            Pending Human Approvals
+          </span>
+          <div className="flex items-baseline gap-2 mt-2">
+            <span className="text-3xl font-bold text-slate-900 tabular-nums leading-none">{actionItems.length}</span>
+            <span className="text-xs font-semibold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">Requires Recruiter</span>
+          </div>
+          <p className="text-xs text-slate-400 mt-2">Feedback drafts and rubric calibrations</p>
+        </div>
+
+        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs flex flex-col justify-between">
+          <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">
+            Avg Time to Hire
+          </span>
+          <div className="flex items-baseline gap-2 mt-2">
+            <span className="text-3xl font-bold text-slate-900 tabular-nums leading-none">14.2d</span>
+            <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">-1.6d vs Target</span>
+          </div>
+          <p className="text-xs text-slate-400 mt-2">Sprint 8 velocity baseline</p>
+        </div>
+      </div>
+
+      {/* 2-Column: Funnel & Manager Action Center */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left: Hiring Pipeline Funnel (2 Cols) */}
+        <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 p-6 shadow-2xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div>
+                <h2 className="text-base font-bold text-slate-900">
+                  Active Hiring Funnel Conversion
+                </h2>
+                <p className="text-xs text-slate-500">Real-time candidate transition through Sprint stages</p>
+              </div>
+              <span className="text-xs font-semibold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-full">
+                Sprint 8 Live
+              </span>
+            </div>
+
+            <div className="flex flex-col gap-4 mt-5">
               {funnelStages.map((stage) => (
-                <div key={stage.label} className="flex flex-col gap-1">
-                  <div className="flex justify-between items-center text-sm font-semibold">
+                <div key={stage.label} className="flex flex-col gap-1.5">
+                  <div className="flex justify-between items-center text-xs font-semibold text-slate-700">
                     <span>{stage.label}</span>
-                    <span className="text-blue-600">{stage.count} <span className="text-slate-400 text-xs font-medium">({stage.percentage})</span></span>
+                    <span className="tabular-nums">
+                      <strong className="text-slate-900">{stage.count}</strong>{" "}
+                      <span className="text-slate-400 font-normal">({stage.percentage})</span>
+                    </span>
                   </div>
-                  <div className="h-2 w-full overflow-hidden rounded bg-slate-100">
-                    <div className={`h-full rounded bg-blue-600 ${stage.width}`} />
+                  <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                    <div
+                      className={`h-full rounded-full bg-blue-600 ${stage.barWidth} transition-all duration-500`}
+                    />
                   </div>
                 </div>
               ))}
             </div>
-          </section>
+          </div>
 
-          <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <h2 className="text-base font-bold text-slate-900 mb-4">Manager Action Center</h2>
-            <div className="flex flex-col gap-2.5">
-              {actionItems.map((item) => {
-                const isResolved = resolvedActions.includes(item.title);
-                return (
-                  <article key={item.title} className={`flex items-center justify-between rounded-lg border border-slate-200 border-l-4 p-3 bg-white ${item.accentClass} ${isResolved ? "opacity-50" : ""}`}>
-                    <div>
-                      <h3 className="text-xs font-semibold text-slate-900">{item.title}</h3>
-                      <p className="text-[11px] text-slate-500">{item.description}</p>
-                    </div>
-                    <button disabled={isResolved} onClick={() => handleResolve(item.title)} className="rounded bg-blue-50 border border-blue-200 px-2 py-1 text-[11px] font-semibold text-blue-700">
-                      {isResolved ? "Resolved" : "Resolve"}
-                    </button>
-                  </article>
-                );
-              })}
-            </div>
-          </section>
+          <div className="pt-4 mt-4 border-t border-slate-100 text-xs text-slate-500 flex items-center justify-between">
+            <span>Overall Conversion Efficiency: <strong className="text-slate-800">3.2% to Offer</strong></span>
+            <Link to="/recruiter/candidates" className="text-blue-600 hover:underline font-semibold">
+              Explore Candidate Pipeline →
+            </Link>
+          </div>
         </div>
 
-        {/* Candidates Table */}
-        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base font-bold text-slate-900">Candidate Pipeline & AI Match Matrix</h2>
-            <span className="rounded-md bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700">Active Requisitions Only</span>
-          </div>
-          <div className="grid grid-cols-6 text-[11px] font-bold text-slate-500 pb-2 border-b border-slate-200 bg-slate-50 px-3 py-2 rounded-lg">
-            <div>CANDIDATE</div>
-            <div>APPLIED ROLE</div>
-            <div>AI MATCH</div>
-            <div>PIPELINE STAGE</div>
-            <div>FEEDBACK/APPROVAL</div>
-            <div className="text-right">ACTION</div>
-          </div>
-          {filteredCandidates.map((c) => (
-            <div key={c.name} className="grid grid-cols-6 items-center px-3 py-3.5 border-b border-slate-100 text-sm">
-              <div className="flex items-center gap-2.5">
-                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-50 text-xs font-bold text-blue-700">{c.initials}</div>
-                <span className="font-semibold text-slate-900">{c.name}</span>
-              </div>
-              <div className="text-slate-500 text-xs">{c.role}</div>
-              <div><span className={`rounded-md border px-2 py-1 text-xs font-bold ${c.matchClass}`}>{c.match}</span></div>
-              <div className="font-medium text-slate-800 text-xs">{c.stage}</div>
-              <div className="flex items-center gap-1.5 text-xs">
-                <span className={`h-1.5 w-1.5 rounded-full ${c.feedbackColor}`} />
-                <span>{c.feedback}</span>
-              </div>
-              <div className="text-right">
-                <button onClick={() => showNotice(`Action selected for ${c.name}`)} className={`rounded-md border px-3 py-1.5 text-xs font-semibold ${c.actionClass}`}>
-                  {c.action}
-                </button>
-              </div>
+        {/* Right: Urgent Action Center (1 Col) */}
+        <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-2xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <h2 className="text-base font-bold text-slate-900">
+                Action Items Needed
+              </h2>
+              <span className="text-xs bg-amber-50 text-amber-800 border border-amber-200 font-bold px-2 py-0.5 rounded-full">
+                {actionItems.length} Pending
+              </span>
             </div>
-          ))}
-        </section>
-      </div>
-      {notice && <div className="fixed bottom-5 right-5 rounded-lg bg-slate-900 px-4 py-3 text-sm text-white shadow-lg">{notice}</div>}
-    </main>
-  );
-};
 
-// Component chính export ra ngoài
-export default function RecruiterConsole() {
-  return <HiringOperationsDashboardSection />;
+            <div className="flex flex-col gap-3 mt-4">
+              {actionItems.length === 0 ? (
+                <div className="p-6 text-center text-xs text-slate-500 bg-slate-50 rounded-xl">
+                  ✓ All recruiter action items cleared!
+                </div>
+              ) : (
+                actionItems.map((item) => (
+                  <div
+                    key={item.id}
+                    className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/50 flex flex-col gap-2 hover:bg-slate-50 transition"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <h3 className="text-xs font-bold text-slate-900 leading-snug">
+                        {item.title}
+                      </h3>
+                      <span
+                        className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                          item.urgency === "high"
+                            ? "bg-red-50 text-red-700 border border-red-200"
+                            : "bg-amber-50 text-amber-700 border border-amber-200"
+                        }`}
+                      >
+                        {item.count} items
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      {item.reason}
+                    </p>
+                    <div className="flex items-center justify-between pt-1">
+                      <Link to={item.link}>
+                        <Button variant="primary" size="sm">
+                          {item.actionText}
+                        </Button>
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => handleResolveAction(item.id, item.title)}
+                        className="text-xs text-slate-500 hover:text-slate-800 underline cursor-pointer"
+                      >
+                        Mark Handled
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Priority Candidates Table */}
+      <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-2xs flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 className="text-base font-bold text-slate-900">
+              High Priority Candidate Dossiers
+            </h2>
+            <p className="text-xs text-slate-500">Shortlisted applicants with verified AI scores above 80%</p>
+          </div>
+          <div className="w-full sm:w-64">
+            <SearchInput
+              placeholder="Filter list by candidate..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm border-collapse">
+            <thead>
+              <tr className="border-b border-slate-200 bg-slate-50/70 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                <th className="py-3 px-4">Candidate</th>
+                <th className="py-3 px-4">Applied Position</th>
+                <th className="py-3 px-4">AI Match</th>
+                <th className="py-3 px-4">Stage</th>
+                <th className="py-3 px-4">Evaluation</th>
+                <th className="py-3 px-4 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {filteredCandidates.map((cand) => (
+                <tr key={cand.id} className="hover:bg-slate-50/70 transition-colors">
+                  <td className="py-3.5 px-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center text-xs shrink-0">
+                        {cand.initials}
+                      </div>
+                      <span className="font-semibold text-slate-900">{cand.name}</span>
+                    </div>
+                  </td>
+                  <td className="py-3.5 px-4 text-xs text-slate-600">
+                    {cand.role}
+                  </td>
+                  <td className="py-3.5 px-4">
+                    {aiMatchBadge(cand.matchScore)}
+                  </td>
+                  <td className="py-3.5 px-4">
+                    <StatusBadge
+                      variant={cand.stage === "Interviewing" ? "interviewing" : cand.stage === "Offer Stage" ? "offer" : "screened"}
+                      label={cand.stage}
+                      dot
+                    />
+                  </td>
+                  <td className="py-3.5 px-4">
+                    <span
+                      className={`text-xs font-semibold ${
+                        cand.reviewStatus === "Approved"
+                          ? "text-emerald-600"
+                          : cand.reviewStatus === "Ready"
+                          ? "text-blue-600"
+                          : "text-amber-600"
+                      }`}
+                    >
+                      {cand.reviewStatus}
+                    </span>
+                  </td>
+                  <td className="py-3.5 px-4 text-right">
+                    <Link to={cand.link}>
+                      <Button variant="secondary" size="sm">
+                        {cand.action} ›
+                      </Button>
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Toast Notice */}
+      {notice && (
+        <div
+          role="status"
+          className="fixed bottom-6 right-6 z-50 rounded-xl bg-slate-900 text-white px-4 py-3 text-xs font-medium shadow-xl flex items-center gap-2 animate-in fade-in duration-150"
+        >
+          <span className="w-2 h-2 rounded-full bg-emerald-400" />
+          <span>{notice}</span>
+        </div>
+      )}
+    </div>
+  );
 }

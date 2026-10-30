@@ -10,6 +10,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.Locale;
+import java.util.regex.Pattern;
 
 @Getter
 @Entity
@@ -19,6 +20,8 @@ import java.util.Locale;
         uniqueConstraints = @UniqueConstraint(name = "uk_companies_slug", columnNames = "slug")
 )
 public class Company extends BaseEntity {
+
+    private static final Pattern SLUG_PATTERN = Pattern.compile("^[a-z0-9]+(?:-[a-z0-9]+)*$");
 
     @Column(nullable = false, length = 200)
     private String name;
@@ -76,7 +79,7 @@ public class Company extends BaseEntity {
 
     private static String normalizeSlug(String value) {
         String slug = requireText(value, "company slug").toLowerCase(Locale.ROOT);
-        if (!slug.matches("[a-z0-9]+(?:-[a-z0-9]+)*")) {
+        if (!SLUG_PATTERN.matcher(slug).matches()) {
             throw new IllegalArgumentException("company slug must use lower kebab-case");
         }
         return slug;
