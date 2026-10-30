@@ -1,22 +1,38 @@
-import { useState } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
-import { RecruiterSidebar } from './RecruiterSidebar';
-import { useAuth } from '../../auth/AuthContext';
+import { useState } from "react"
+
+import { Outlet, useNavigate } from "react-router-dom"
+
+import { RecruiterSidebar } from "./RecruiterSidebar"
+
+import { useAuth } from "../../auth/AuthContext"
+
+import { useFocusScope } from "../ui/useFocusScope"
+
+import { useDesktop } from "../ui/useDesktop"
 
 export function RecruiterLayout() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const navigate = useNavigate();
-  const { logout } = useAuth();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  const navigate = useNavigate()
+
+  const { logout } = useAuth()
+
+  const desktop = useDesktop()
+
+  const drawerOpen = mobileMenuOpen && !desktop
+
+  const drawer = useFocusScope(drawerOpen, () => setMobileMenuOpen(false))
 
   const handleLogout = async () => {
-    await logout();
-    navigate('/login', { replace: true });
-  };
+    await logout()
+
+    navigate("/login", { replace: true })
+  }
 
   return (
     <div className="theme-recruiter min-h-screen bg-[var(--color-canvas)] text-[var(--color-text-primary)] flex">
       {/* Mobile Backdrop */}
-      {mobileMenuOpen && (
+      {drawerOpen && (
         <div
           className="fixed inset-0 bg-slate-900/50 z-30 lg:hidden backdrop-blur-xs"
           onClick={() => setMobileMenuOpen(false)}
@@ -25,13 +41,18 @@ export function RecruiterLayout() {
       )}
 
       {/* Recruiter Sidebar with responsive drawer */}
-      <RecruiterSidebar
-        isOpen={mobileMenuOpen}
-        onClose={() => setMobileMenuOpen(false)}
-      />
+      <div ref={drawer} tabIndex={-1}>
+        <RecruiterSidebar
+          isOpen={mobileMenuOpen}
+          onClose={() => setMobileMenuOpen(false)}
+        />
+      </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 min-w-0 lg:ml-64 flex flex-col min-h-screen bg-[var(--color-canvas)]">
+      <div
+        inert={drawerOpen}
+        className="flex-1 min-w-0 lg:ml-64 flex flex-col min-h-screen bg-[var(--color-canvas)]"
+      >
         {/* Mobile Topbar */}
         <header className="lg:hidden sticky top-0 z-20 h-14 bg-white border-b border-slate-200 px-4 flex items-center justify-between shadow-2xs">
           <div className="flex items-center gap-3">
@@ -39,18 +60,34 @@ export function RecruiterLayout() {
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-label="Toggle navigation menu"
+              aria-expanded={drawerOpen}
+              aria-controls="recruiter-navigation"
               className="p-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 cursor-pointer"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
               </svg>
             </button>
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold text-xs shadow-xs">
                 S
               </div>
-              <span className="font-bold text-sm text-slate-900">SmartRecruit</span>
-              <span className="text-[10px] font-semibold text-blue-600 px-1.5 py-0.5 bg-blue-50 rounded">Recruiter</span>
+              <span className="font-bold text-sm text-slate-900">
+                SmartRecruit
+              </span>
+              <span className="text-[10px] font-semibold text-blue-600 px-1.5 py-0.5 bg-blue-50 rounded">
+                Recruiter
+              </span>
             </div>
           </div>
 
@@ -60,8 +97,18 @@ export function RecruiterLayout() {
             title="Đăng xuất khỏi hệ thống"
             className="p-1.5 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition cursor-pointer"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+              />
             </svg>
           </button>
         </header>
@@ -71,5 +118,5 @@ export function RecruiterLayout() {
         </main>
       </div>
     </div>
-  );
+  )
 }

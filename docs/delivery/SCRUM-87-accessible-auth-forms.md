@@ -35,4 +35,10 @@ SCRUM-87 remains only partially verified: browser keyboard order, focus visibili
 
 ## Other tasks assigned to Trần Gia Bảo
 
+## Follow-up: keyboard, contrast and mobile defects
+
+The follow-up adds unique/error-linked Select IDs, modal focus containment and focus restoration, Escape dismissal, scroll locking, mobile drawer inert state and keyboard containment, global focus-visible outlines, darker auth submit buttons and sidebar caption contrast. Button becomes a positioning container so its visually hidden accessible name does not overflow the viewport from a horizontally scrolling table.
+
+Real Chromium tests on the combined frontend verification branch passed for auth screens and recruiter ranking/analytics/notifications. WCAG 2 A/AA and 2.1 A/AA axe scans returned zero violations on those tested views, including open dialog/drawer. 360/768/1440 viewport screenshots and no-document-overflow assertions are included. This is automated evidence on synthetic API fixtures, not live-backend UAT or certification of all repository screens. See `docs/delivery/bao-frontend-verification.md` for the consolidated report and remaining dependencies.
+
 Source inspection at the base revision found static metric/funnel arrays in HiringAnalyticsRecruiter.tsx (SCRUM-37/81) and static candidate/ranking fixtures in CandidateManagement.tsx (SCRUM-78). These are not live API evidence. API contract/owner coordination and integration tests are required before claiming completion. SCRUM-42 responsive and SCRUM-45 UI fixes need reproducible viewport/defect evidence. This PR addresses the concrete auth accessibility defects under SCRUM-87 only; it does not claim credit for those other issues.

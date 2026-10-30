@@ -1,38 +1,51 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../auth/AuthContext';
-import { Card } from '../../components/ui/Card';
-import { Input } from '../../components/ui/Input';
-import { Button } from '../../components/ui/Button';
+import React, { useState } from "react"
+
+import { Link, useNavigate } from "react-router-dom"
+
+import { useAuth } from "../../auth/AuthContext"
+
+import { Card } from "../../components/ui/Card"
+
+import { Input } from "../../components/ui/Input"
+
+import { Button } from "../../components/ui/Button"
 
 export default function ForgotPassword() {
-  const navigate = useNavigate();
-  const { requestPasswordReset } = useAuth();
+  const navigate = useNavigate()
 
-  const [email, setEmail] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const { requestPasswordReset } = useAuth()
+
+  const [email, setEmail] = useState("")
+
+  const [loading, setLoading] = useState(false)
+
+  const [message, setMessage] = useState<string | null>(null)
+
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
+
     if (!email) {
-      setErrorMessage('Vui lòng nhập email.');
-      return;
+      setErrorMessage("Vui lòng nhập email.")
+
+      return
     }
 
-    setLoading(true);
-    setErrorMessage(null);
+    setLoading(true)
+
+    setErrorMessage(null)
 
     try {
-      const msg = await requestPasswordReset(email);
-      setMessage(msg || 'Hướng dẫn đặt lại mật khẩu đã được gửi/ghi nhận.');
+      const msg = await requestPasswordReset(email)
+
+      setMessage(msg || "Hướng dẫn đặt lại mật khẩu đã được gửi/ghi nhận.")
     } catch (err: any) {
-      setErrorMessage(err.message || 'Yêu cầu không thành công.');
+      setErrorMessage(err.message || "Yêu cầu không thành công.")
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-950 text-slate-100">
@@ -41,21 +54,28 @@ export default function ForgotPassword() {
           <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-400 font-black text-2xl mb-1 ring-1 ring-emerald-500/40">
             ?
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-white">Quên Mật Khẩu</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-white">
+            Quên Mật Khẩu
+          </h1>
           <p className="text-sm text-slate-400">
             Nhập email tài khoản để nhận token thiết lập lại mật khẩu
           </p>
         </div>
 
         {message && (
-          <div role="status" className="p-3 text-sm rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 space-y-2">
+          <div
+            role="status"
+            className="p-3 text-sm rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 space-y-2"
+          >
             <div>{message}</div>
             <div className="pt-2">
               <Button
                 variant="secondary"
                 size="sm"
                 className="w-full text-xs"
-                onClick={() => navigate(`/reset-password?email=${encodeURIComponent(email)}`)}
+                onClick={() =>
+                  navigate(`/reset-password?email=${encodeURIComponent(email)}`)
+                }
               >
                 Chuyển Đến Màn Hình Đặt Lại Mật Khẩu
               </Button>
@@ -64,7 +84,10 @@ export default function ForgotPassword() {
         )}
 
         {errorMessage && (
-          <div role="alert" className="p-3 text-sm rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-300">
+          <div
+            role="alert"
+            className="p-3 text-sm rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-300"
+          >
             {errorMessage}
           </div>
         )}
@@ -72,10 +95,15 @@ export default function ForgotPassword() {
         {!message && (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
-              <label htmlFor="forgotpassword-email" className="text-xs font-semibold text-slate-300">Địa chỉ Email</label>
+              <label
+                htmlFor="forgotpassword-email"
+                className="text-xs font-semibold text-slate-300"
+              >
+                Địa chỉ Email
+              </label>
               <Input
                 id="forgotpassword-email"
-              type="email"
+                type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="ten@smartrecruit.internal"
@@ -89,15 +117,15 @@ export default function ForgotPassword() {
               type="submit"
               variant="primary"
               disabled={loading}
-              className="w-full py-2.5 font-medium bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-900/30"
+              className="w-full py-2.5 font-medium bg-emerald-700 hover:bg-emerald-800 text-white shadow-lg shadow-emerald-900/30"
             >
-              {loading ? 'Đang gửi yêu cầu...' : 'Gửi Yêu Cầu Thiết Lập'}
+              {loading ? "Đang gửi yêu cầu..." : "Gửi Yêu Cầu Thiết Lập"}
             </Button>
           </form>
         )}
 
         <div className="pt-4 border-t border-slate-800 text-center text-xs text-slate-400">
-          Nhớ mật khẩu?{' '}
+          Nhớ mật khẩu?{" "}
           <Link
             to="/login"
             className="font-semibold text-emerald-400 hover:text-emerald-300 transition-colors"
@@ -107,5 +135,5 @@ export default function ForgotPassword() {
         </div>
       </Card>
     </div>
-  );
+  )
 }
