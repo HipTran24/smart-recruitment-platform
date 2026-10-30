@@ -91,5 +91,7 @@
     }
   },
   "remote_verification": "See the current PR body and Checks tab for the pushed head, CI and Jira synchronization result. This file records local source verification before the recovery documentation commit.",
-  "jira_sync_acceptance": "UNVERIFIED until native Jira Development Panel displays this PR with the correct repository/URL; a Jira key or an empty Development field alone does not prove synchronization."
+  "jira_sync_acceptance": "UNVERIFIED until native Jira Development Panel displays this PR with the correct repository/URL; a Jira key or an empty Development field alone does not prove synchronization.",
+  "snapshot_phase": "Original recovery validation before the explicitly requested security follow-up.",
+  "security_follow_up": "../security-recovery-2026-10-30/evidence.json"
 }

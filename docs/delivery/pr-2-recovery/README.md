@@ -2,6 +2,10 @@
 
 PR: [https://github.com/HipTran24/smart-recruitment-platform/pull/2](https://github.com/HipTran24/smart-recruitment-platform/pull/2). Jira chính: [SCRUM-21 — Authentication/Authorization với Spring Security và JWT](https://tranthanhhiep.atlassian.net/browse/SCRUM-21).
 
+## Cập nhật security theo yêu cầu tiếp tục
+
+Sau commit recovery `de6d605`, người dùng yêu cầu xử lý finding bảo mật thực tế và xác minh cả hai PR. Phần diff hiện bổ sung bản vá dependency, hai lockfile và CI frontend. [Hồ sơ security/CI/Jira](../security-recovery-2026-10-30/README.md) ghi kết quả mới; mô tả recovery ban đầu dưới đây áp dụng tại commit `de6d605`.
+
 ## Kết quả và phạm vi được duyệt
 
 Người dùng đã chọn giữ PR #2 và chuyển phần diff sang hồ sơ recovery. Nhánh `codex/recovery/stash-20261003-001645` giữ nguyên hai commit stash/index gốc; cập nhật mới tích hợp main vào nhánh bằng merge có hai parent. Phần thay đổi so với main chỉ gồm hồ sơ kiểm toán này, bảng đối chiếu file và kết quả kiểm thử.
@@ -66,11 +70,11 @@ Từng file conflict được đối chiếu với phiên bản đã tích hợp
 | Lint | Chưa có script lint |
 | Browser/backend E2E thật | Chưa chạy; thư mục mà script test:e2e tham chiếu không tồn tại |
 | GitGuardian trên head gốc | PASS; kết quả head mới xem Checks của PR |
-| npm audit | 3 finding high ở dependency phát triển đã có trên main: source-map-js, undici, vite |
+| npm audit | Baseline có 3 finding high; follow-up security đã vá và audit còn 0 finding, xem hồ sơ mới |
 
 Lần verify trước bị lỗi môi trường Docker. Sau khi daemon hoạt động và đặt DOCKER_HOST tới socket của Docker Desktop, clean verify đạt toàn bộ 109 test. Không skip test hoặc sửa expected result để đạt kết quả này.
 
-Kết quả frontend chứng minh bộ regression hiện có; không thay thế kiểm thử E2E với backend thật. Các finding npm vẫn cần được sửa hoặc được owner đánh giá trong hạng mục dependency/security riêng. PR này không thay đổi dependency hay lockfile.
+Kết quả frontend chứng minh bộ regression hiện có; không thay thế kiểm thử E2E với backend thật. Các finding npm của baseline đã được sửa trong follow-up được người dùng yêu cầu; dependency và lockfile hiện có thay đổi được ghi trong hồ sơ security.
 
 ## Jira và bằng chứng đồng bộ
 
@@ -92,6 +96,6 @@ Title/description của PR mới chứa SCRUM-21 và URL issue. Điều đó chu
 - [ ] Reviewer độc lập xác nhận hồ sơ và phạm vi Jira.
 - [ ] Xem kết quả CI/GitGuardian cho head mới trong Checks.
 - [ ] Xác minh PR #2 trong Jira Development Panel.
-- [ ] Owner xử lý/chấp nhận finding dependency theo quy trình dự án.
+- [x] Follow-up đã xử lý 3 finding dependency; audit sau vá còn 0 finding.
 
 Bộ bằng chứng gồm `file-lineage.csv` (22 file, blob SHA, trạng thái, conflict và quyết định) và `verification.json` (baseline, metadata commit gốc, lệnh và kết quả kiểm thử).

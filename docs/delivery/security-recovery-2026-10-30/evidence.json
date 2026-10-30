@@ -1,0 +1,149 @@
+{
+  "date": "2026-10-30",
+  "timezone": "Asia/Ho_Chi_Minh",
+  "repository": "https://github.com/HipTran24/smart-recruitment-platform",
+  "scope": "Patch the three reproduced frontend tooling dependency findings on PR #1 and PR #2; add a frontend CI gate; verify review and native Jira links.",
+  "before_heads": {
+    "1": "3834a1b84e842328fbb7ad730020dbe26f7ace6c",
+    "2": "de6d605cc73babb2bafcdc0112d6aa8c271948e9"
+  },
+  "packages": [
+    {
+      "name": "vite",
+      "before": "8.3.1",
+      "after": "8.3.3",
+      "development_dependency": true,
+      "advisories": [
+        "https://github.com/advisories/GHSA-698v-4r3x-3vcv",
+        "https://github.com/advisories/GHSA-r825-w8mm-5pxw",
+        "https://github.com/advisories/GHSA-587h-7wmj-h5pm",
+        "https://github.com/advisories/GHSA-9jrq-w75r-8gcw",
+        "https://github.com/advisories/GHSA-rq7h-c2jc-7f22",
+        "https://github.com/advisories/GHSA-vfpm-58rq-9qcg"
+      ]
+    },
+    {
+      "name": "source-map-js",
+      "before": "1.2.1",
+      "after": "1.2.2",
+      "development_dependency": true,
+      "advisories": [
+        "https://github.com/advisories/GHSA-68fv-2mgg-jv7q"
+      ]
+    },
+    {
+      "name": "undici",
+      "before": "8.11.2",
+      "after": "8.12.3",
+      "development_dependency": true,
+      "advisories": [
+        "https://github.com/advisories/GHSA-4qv8-2p9j-2685",
+        "https://github.com/advisories/GHSA-f72v-6w45-q472",
+        "https://github.com/advisories/GHSA-xjj6-f33q-929c",
+        "https://github.com/advisories/GHSA-4w7w-5xrc-9h26",
+        "https://github.com/advisories/GHSA-2m5v-pch6-74hx",
+        "https://github.com/advisories/GHSA-qrxm-fqhp-jwvm",
+        "https://github.com/advisories/GHSA-9fm3-97px-rjf6",
+        "https://github.com/advisories/GHSA-55wc-3pg8-jfw6"
+      ]
+    }
+  ],
+  "audit": {
+    "before": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 3,
+      "critical": 0,
+      "total": 3
+    },
+    "after_all_dependencies": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 0,
+      "critical": 0,
+      "total": 0
+    },
+    "after_production": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 0,
+      "critical": 0,
+      "total": 0
+    },
+    "before_raw_sha256": "f65c8fe63a658090aaa6ea3d4ef51cf1337c9c9b8d5efa988b6ee4b4e0939063",
+    "after_raw_sha256": "24289a4557132095e60adf7687b714712ed5061ff44fb6a4683fdc278babdb32",
+    "production_raw_sha256": "24289a4557132095e60adf7687b714712ed5061ff44fb6a4683fdc278babdb32"
+  },
+  "local_checks": {
+    "npm_ci": "PASS",
+    "npm_audit_json": "PASS, exit 0",
+    "npm_audit_omit_dev_json": "PASS, exit 0",
+    "npm_run_build": "PASS, existing large-chunk warning",
+    "npm_run_typecheck": "PASS",
+    "npm_test": {
+      "status": "PASS",
+      "test_files": 3,
+      "tests": 22
+    },
+    "pnpm_10_34_3_frozen_lockfile_check": "PASS",
+    "git_diff_check": "PASS"
+  },
+  "ci_gate": {
+    "workflow": ".github/workflows/frontend-ci.yml",
+    "node_major": 22,
+    "steps": [
+      "npm ci",
+      "npm audit --audit-level=high",
+      "npm run typecheck",
+      "npm test",
+      "npm run build"
+    ],
+    "permissions": "contents: read",
+    "note": "Current head results must be read from each PR Checks tab. Backend CI remains separate. Required-branch-check configuration is not modified by adding a workflow."
+  },
+  "jira_native_links": [
+    {
+      "issue": "SCRUM-50",
+      "issue_url": "https://tranthanhhiep.atlassian.net/browse/SCRUM-50",
+      "pr": 1,
+      "pr_url": "https://github.com/HipTran24/smart-recruitment-platform/pull/1",
+      "state_observed": "DRAFT",
+      "verified_fields": [
+        "Development details Pull requests table",
+        "repository",
+        "PR ID",
+        "PR URL",
+        "source branch",
+        "target main"
+      ]
+    },
+    {
+      "issue": "SCRUM-21",
+      "issue_url": "https://tranthanhhiep.atlassian.net/browse/SCRUM-21",
+      "pr": 2,
+      "pr_url": "https://github.com/HipTran24/smart-recruitment-platform/pull/2",
+      "state_observed": "OPEN",
+      "verified_fields": [
+        "Development details Pull requests table",
+        "repository",
+        "PR ID",
+        "PR URL",
+        "source branch",
+        "target main"
+      ]
+    }
+  ],
+  "review_snapshot": {
+    "pr1_submitted_reviews": 0,
+    "pr2_submitted_reviews": 0,
+    "status": "BLOCKED: independent review is still required; no review or approval is fabricated."
+  },
+  "limitations": [
+    "The audit result covers known npm advisories at verification time; it is not a claim that the entire application has no security defects.",
+    "PR/Jira linkage is verified; this does not certify automatic import of every historical commit.",
+    "The previous recovery results remain historical snapshots. This follow-up adds dependency and CI changes as explicitly requested."
+  ]
+}
