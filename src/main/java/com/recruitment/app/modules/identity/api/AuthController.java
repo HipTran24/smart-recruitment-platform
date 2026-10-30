@@ -48,13 +48,12 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<TokenResponse> register(@Valid @RequestBody RegistrationRequest request) {
-        throttling.checkRegistrationThrottled();
+        throttling.reserveSensitiveRequest(com.recruitment.app.modules.identity.application.AuthenticationThrottlingService.SensitiveAction.REGISTER);
         IssuedTokenPair tokens = identities.register(new RegisterAccountCommand(
                 request.fullName(),
                 request.email(),
                 request.password()
         ));
-        throttling.recordRegistrationDispatch();
         return tokenResponse(tokens, HttpStatus.CREATED);
     }
 
@@ -68,24 +67,24 @@ public class AuthController {
 
     @PostMapping("/refresh")
     public ResponseEntity<TokenResponse> refresh(@Valid @RequestBody RefreshTokenRequest request) {
-        throttling.checkRefreshThrottled();
+        throttling.reserveSensitiveRequest(com.recruitment.app.modules.identity.application.AuthenticationThrottlingService.SensitiveAction.REFRESH);
         try {
             return tokenResponse(identities.refresh(request.refreshToken()), HttpStatus.OK);
         } catch (RuntimeException e) {
-            throttling.recordRefreshFailure();
             throw e;
         }
     }
 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(@Valid @RequestBody RefreshTokenRequest request) {
+        throttling.reserveSensitiveRequest(com.recruitment.app.modules.identity.application.AuthenticationThrottlingService.SensitiveAction.LOGOUT);
         identities.logout(request.refreshToken());
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/oauth/exchange")
     public ResponseEntity<TokenResponse> exchangeGoogleAuthorizationCode(@Valid @RequestBody OAuthCodeExchangeRequest request) {
-        throttling.checkOAuthExchangeThrottled();
+        throttling.reserveSensitiveRequest(com.recruitment.app.modules.identity.application.AuthenticationThrottlingService.SensitiveAction.OAUTH);
         GoogleOAuthCodeExchangeService exchange = googleOAuthCodeExchange.getIfAvailable();
         if (exchange == null) {
             throw new OAuthFeatureUnavailableException();
@@ -93,7 +92,6 @@ public class AuthController {
         try {
             return tokenResponse(exchange.exchange(request.code(), request.codeVerifier(), request.transactionId()), HttpStatus.OK);
         } catch (RuntimeException e) {
-            throttling.recordOAuthExchangeFailure();
             throw e;
         }
     }

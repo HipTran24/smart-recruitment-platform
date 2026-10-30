@@ -37,7 +37,7 @@ public class LoggingAccountNotificationGateway implements AccountNotificationGat
         if (email != null && rawToken != null) {
             latestResetTokens.put(email.strip().toLowerCase(), new TokenEntry(rawToken, Instant.now()));
         }
-        log.info("Recorded password reset instructions (in-memory test/logging provider; no external email dispatched) for recipient: {}", email);
+        log.info("Recorded password reset instructions (in-memory test/logging provider; no external email dispatched)");
     }
 
     @Override
@@ -45,7 +45,7 @@ public class LoggingAccountNotificationGateway implements AccountNotificationGat
         if (email != null && rawToken != null) {
             latestVerificationTokens.put(email.strip().toLowerCase(), new TokenEntry(rawToken, Instant.now()));
         }
-        log.info("Recorded email verification instructions (in-memory test/logging provider; no external email dispatched) for recipient: {}", email);
+        log.info("Recorded email verification instructions (in-memory test/logging provider; no external email dispatched)");
     }
 
     @org.springframework.context.event.EventListener(org.springframework.boot.context.event.ApplicationReadyEvent.class)
