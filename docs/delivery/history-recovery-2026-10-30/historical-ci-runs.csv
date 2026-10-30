@@ -1,0 +1,12 @@
+id,head_sha,status,conclusion,url,created_at,updated_at,event,name
+37417507888,ad9ef2b12dd05efcacac91ad975c9858ead94a23,completed,success,https://github.com/HipTran24/smart-recruitment-platform/actions/runs/37417507888,2026-10-06T05:13:59Z,2026-10-06T05:15:39Z,push,Smart-recruitment CI
+37416727669,e3c6ebe9ad39f800cb17009e3b0dce15d5be27fd,completed,success,https://github.com/HipTran24/smart-recruitment-platform/actions/runs/37416727669,2026-10-06T05:04:28Z,2026-10-06T05:06:11Z,push,Smart-recruitment CI
+37361288714,779dc0bcfef574c1f6473c7612afa33d4d5df758,completed,success,https://github.com/HipTran24/smart-recruitment-platform/actions/runs/37361288714,2026-10-05T19:08:53Z,2026-10-05T19:10:39Z,push,Smart-recruitment CI
+37358736597,10544d7a3a571cd9637925b3bc4cca9a29e096ae,completed,failure,https://github.com/HipTran24/smart-recruitment-platform/actions/runs/37358736597,2026-10-05T18:48:29Z,2026-10-05T18:55:14Z,push,Smart-recruitment CI
+37347437207,2db284347e761fbf444461183c9606f1a548ab16,completed,success,https://github.com/HipTran24/smart-recruitment-platform/actions/runs/37347437207,2026-10-05T17:18:27Z,2026-10-05T17:20:22Z,push,Smart-recruitment CI
+37116477817,d31cc26c103d475a06c870c882a2f24fe137878f,completed,success,https://github.com/HipTran24/smart-recruitment-platform/actions/runs/37116477817,2026-10-03T10:27:25Z,2026-10-03T10:29:21Z,push,Smart-recruitment CI
+37105233410,e07e7f7f4618d9111fc2ac25ad846ade217736bf,completed,success,https://github.com/HipTran24/smart-recruitment-platform/actions/runs/37105233410,2026-10-03T07:06:14Z,2026-10-03T07:07:50Z,push,Smart-recruitment CI
+36437604364,9a9bd165fdc0ece5ec6347ca1163327f7c4a3171,completed,success,https://github.com/HipTran24/smart-recruitment-platform/actions/runs/36437604364,2026-09-28T14:39:18Z,2026-09-28T14:40:05Z,push,Smart-recruitment CI
+36433398780,8c5a05576df31dd568958f6497924c8bfb9eb2fa,completed,success,https://github.com/HipTran24/smart-recruitment-platform/actions/runs/36433398780,2026-09-28T14:05:55Z,2026-09-28T14:07:28Z,push,Smart-recruitment CI
+36182964127,873074f036b95ca13b3cf4271a21a22b3943147c,completed,failure,https://github.com/HipTran24/smart-recruitment-platform/actions/runs/36182964127,2026-09-25T19:59:02Z,2026-09-25T20:00:08Z,push,Smart-recruitment CI
+35903419515,c807af420cdaba8e570d91e7eb11e0c4e5f3c1c9,completed,success,https://github.com/HipTran24/smart-recruitment-platform/actions/runs/35903419515,2026-09-23T18:34:33Z,2026-09-23T18:35:47Z,push,Smart-recruitment CI
