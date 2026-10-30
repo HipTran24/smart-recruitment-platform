@@ -55,8 +55,8 @@ public class ApplicationService {
 
     @Transactional(readOnly = true)
     public List<ApplicationSnapshot> getCandidateApplications(Long userId) {
-        Long profileId = getCandidateProfileId(userId);
-        return applicationStore.findByCandidateProfileId(profileId);
+        List<Long> profiles = jdbcTemplate.queryForList("SELECT id FROM candidate_profiles WHERE user_id = ?", Long.class, userId);
+        return profiles.isEmpty() ? List.of() : applicationStore.findByCandidateProfileId(profiles.getFirst());
     }
 
     @Transactional(readOnly = true)

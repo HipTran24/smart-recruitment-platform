@@ -21,12 +21,22 @@ class GateTests(unittest.TestCase):
     def test_high_and_error_findings_block_but_warnings_stay_in_report(self):
         run = {'tool': {'driver': {'name': 'CodeQL', 'rules': [
             {'id': 'synthetic-high', 'properties': {'security-severity': '7.0'}},
-            {'id': 'synthetic-medium', 'properties': {'security-severity': '5.0'}}]}},
+            {'id': 'synthetic-medium', 'properties': {'security-severity': '5.0'}}, {'id': 'synthetic-error'}]}},
             'results': [{'ruleId': 'synthetic-high'}, {'ruleId': 'synthetic-medium'}, {'ruleId': 'synthetic-error', 'level': 'error'}]}
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / 'fixture.sarif'
             path.write_text(json.dumps({'version': '2.1.0', 'runs': [run]}))
             self.assertEqual([True, False, True], [item['blocking'] for item in sarif_gate.inspect([path])])
+
+    def test_codeql_extension_rule_severity_is_enforced(self):
+        run={'tool':{'driver':{'name':'CodeQL'},'extensions':[{'rules':[{'id':'synthetic-extension','properties':{'tags':['security'],'security-severity':'8.8'}}]}]},'results':[{'ruleId':'synthetic-extension'}]}
+        with tempfile.TemporaryDirectory() as directory:
+            path=Path(directory)/'extension.sarif'
+            path.write_text(json.dumps({'version':'2.1.0','runs':[run]}))
+            self.assertTrue(sarif_gate.inspect([path])[0]['blocking'])
+            run['tool']['extensions']=[]
+            path.write_text(json.dumps({'version':'2.1.0','runs':[run]}))
+            with self.assertRaises(ValueError): sarif_gate.inspect([path])
 
     def test_empty_dependency_inventory_cannot_pass(self):
         with self.assertRaises(ValueError):

@@ -64,7 +64,7 @@ class KpiIntegrationTests extends RecoveryDatabaseTest {
     void capturesExplicitAttributionWithoutInventingHistoricalSource() throws Exception {
         long candidate = createUser();
         long job = job(createUser());
-        mvc.perform(post("/api/v1/jobs/"+job+"/applications").with(user(Long.toString(candidate)).roles("CANDIDATE"))
+        mvc.perform(post("/api/v1/jobs/"+job+"/applications").with(user(Long.toString(candidate)).roles("CANDIDATE")).with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf())
                 .contentType("application/json").content("{\"source\":\"referral\"}"))
                 .andExpect(status().isCreated());
         assertEquals("REFERRAL",jdbc.queryForObject("SELECT source FROM job_applications WHERE job_id=?",String.class,job));

@@ -20,10 +20,16 @@ def inspect(paths):
                 raise ValueError('Expected CodeQL analysis')
             if any(not invocation.get('executionSuccessful', False) for invocation in run.get('invocations', [])):
                 raise ValueError('Analysis invocation did not succeed')
-            rules = {rule['id']: rule for rule in driver.get('rules', [])}
+            components = [driver, *run.get('tool', {}).get('extensions', [])]
+            rules = {rule['id']: rule for component in components for rule in component.get('rules', [])}
             for result in run.get('results', []):
                 rule_id = result.get('ruleId', '')
-                rule = rules.get(rule_id, {})
+                rule = rules.get(rule_id)
+                if rule is None:
+                    raise ValueError('Missing rule metadata: ' + rule_id)
+                properties = rule.get('properties', {})
+                if 'security' in properties.get('tags', []) and 'security-severity' not in properties:
+                    raise ValueError('Missing security severity: ' + rule_id)
                 score = float(rule.get('properties', {}).get('security-severity', 0))
                 level = result.get('level', rule.get('defaultConfiguration', {}).get('level', 'warning'))
                 locations = result.get('locations', [])

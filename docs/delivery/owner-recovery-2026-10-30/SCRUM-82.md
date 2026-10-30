@@ -24,3 +24,11 @@ Primary release reference: https://github.com/spring-projects/spring-boot/releas
 ## Merge enforcement remains an administrative gate
 
 Repository ruleset list returned empty. Legacy main branch-protection GET returned **403 Resource not accessible by integration**. This does not prove legacy protection absent; its actual configuration is unverified. No admin setting was changed. `proposed-required-checks.json` is a concrete reviewable proposal, not applied state. Independent review remains required; no reviewer is fabricated. Earlier stacked PR heads have their own basic CI results; complete new gates are validated on this combined descendant tree and future PRs after the workflow is adopted.
+
+## SAST triage and corrected gate
+
+The first remote Java analysis produced two CSRF results. Its initial gate incorrectly read only driver rules and gave missing extension metadata a zero severity. That earlier PASS is **superseded**, not final security evidence. GitHub query help rates both `java/spring-disabled-csrf-protection` and `java/csrf-unprotected-request-type` at 8.8. The parser now reads driver and extension rules and fails on unresolved/missing security metadata. A fifth synthetic regression test proves an extension rule with severity 8.8 blocks and missing metadata fails.
+
+Remediation enables Spring CSRF protection with narrow exemptions for explicit API Bearer credentials (still independently validated by JWT/live-account authorization) and the exact public JSON auth routes. Simple form requests and cookie-style protected mutations remain CSRF-protected. Request-attribute security context prevents OAuth sessions from becoming application credentials. Candidate application GET now reads existing profiles only; it never creates a profile or consent.
+
+Full Maven clean verify after this correction **PASS: 133 tests, 0 failures/errors/skips**, all published coverage checks met. New tests verify read-only GET, rejected simple form/missing-CSRF mutation, and preserve owner/foreign-resource behavior. The existing 415 converter test retains its expected result and supplies a valid CSRF precondition; a separate security test covers rejection before conversion. No scanner suppression or expected-result relaxation. Remote CodeQL is being rerun on this correction and must be verified in the final report.
