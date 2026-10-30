@@ -2,6 +2,10 @@
 
 Repository: https://github.com/HipTran24/smart-recruitment-platform. Chủ phạm vi Jira: **Thanh Hiệp Trần** (người dùng xác nhận Trần Thanh Hiệp).
 
+## Follow-up bảo mật và Jira
+
+Theo yêu cầu tiếp tục recovery, PR #1 hiện bổ sung bản vá frontend dependency và CI audit bên cạnh hồ sơ lịch sử. [Bằng chứng security/CI/Jira](../security-recovery-2026-10-30/README.md) ghi kết quả sau vá (0 finding npm), đồ thị npm/pnpm khớp 177 phiên bản và liên kết native SCRUM-50 → PR #1. Các thống kê 32 commit/11 CI run ở phần dưới là snapshot lịch sử gốc, không bao gồm commit follow-up mới.
+
 ## Kết quả thực hiện
 
 - Đã đọc toàn bộ 92 issue của dự án SCRUM; 36 issue giao cho Hiệp gồm 34 Done và 2 To Do (SCRUM-50, SCRUM-70).
