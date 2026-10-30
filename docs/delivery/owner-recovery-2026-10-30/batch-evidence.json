@@ -1,0 +1,599 @@
+{
+  "capturedAtUtc": "2026-10-30 15:35:39 UTC",
+  "snapshotStage": "Before publication of final SCRUM-50 dossier commit; PR1 record is the observed parent head, not the self-referential new commit.",
+  "scope": "CI-only per owner clarification; no deployment or real notification setup",
+  "repository": "HipTran24/smart-recruitment-platform",
+  "sourceIntegratedReviewHead": "34bf50cdab55b377c4d723d951121fde486bc6f1",
+  "readiness": {
+    "technicalReviewPreparation": "PASS",
+    "batchMerge": "BLOCKED",
+    "allPRsRemainUnmerged": "FAIL_EXTERNAL_STATE_CHANGE"
+  },
+  "mainObserved": "3ed79703940915571fd8ae41104f971d705c1f77",
+  "externalEvents": [
+    {
+      "event": "PR2 merged by account HipTran24",
+      "atUtc": "2026-10-30T15:18:40Z",
+      "mergeCommit": "3ed79703940915571fd8ae41104f971d705c1f77",
+      "parents": [
+        "ad9ef2b12dd05efcacac91ad975c9858ead94a23",
+        "bde4fbbdbd9d5f9e46fb525acee1ff1d5643eb24"
+      ],
+      "agentInitiated": false
+    },
+    {
+      "event": "Shared checkout switched to SCRUM-79; integration commit 3a2dde9 and PR4 retargeted to main outside this session",
+      "agentInitiated": false,
+      "response": "SCRUM-50 dossier isolated in a separate worktree; existing work preserved"
+    }
+  ],
+  "history": {
+    "originalCommitObjectsReachable": 32,
+    "bundleSha256": "9c83d33af9d2048f623919e3ea2334d798248d43f71312ac4e8171c8219180e7",
+    "bundleVerified": true,
+    "originalCommitShaAuthorDatesPreserved": true,
+    "forcePushesByAgent": 0,
+    "prMergesByAgent": 0,
+    "emptyCommitsCreated": 0
+  },
+  "issues": [
+    {
+      "key": "SCRUM-79",
+      "purpose": "KPI theo ngày/múi giờ/job/source",
+      "implementationSha": "f34ff4b58a1499fa72d3d162e2a327b76dae920d",
+      "pullRequest": {
+        "pr": 4,
+        "title": "SCRUM-79 feat(kpi): add validated recruiter cohort aggregates",
+        "url": "https://github.com/HipTran24/smart-recruitment-platform/pull/4",
+        "branch": "codex/SCRUM-79-filtered-kpi",
+        "headSha": "3a2dde9095bacd263018371d68e8883b4ead335a",
+        "base": "main",
+        "state": "open",
+        "merged": false,
+        "mergedAt": null,
+        "mergedBy": null,
+        "draft": true,
+        "reviews": 0,
+        "checks": [
+          {
+            "name": "GitGuardian Security Checks",
+            "status": "completed",
+            "conclusion": "success",
+            "url": "https://github.com/HipTran24/smart-recruitment-platform/runs/124153144899",
+            "completedAt": "2026-10-30T15:34:43Z"
+          },
+          {
+            "name": "Frontend quality and security",
+            "status": "completed",
+            "conclusion": "success",
+            "url": "https://github.com/HipTran24/smart-recruitment-platform/actions/runs/41081055682/job/124149978040",
+            "completedAt": "2026-10-30T15:29:02Z"
+          },
+          {
+            "name": "Build and Test",
+            "status": "completed",
+            "conclusion": "success",
+            "url": "https://github.com/HipTran24/smart-recruitment-platform/actions/runs/41081055672/job/124149976976",
+            "completedAt": "2026-10-30T15:30:37Z"
+          }
+        ]
+      }
+    },
+    {
+      "key": "SCRUM-82",
+      "purpose": "Coverage, SAST, dependency audit và bản vá",
+      "implementationSha": "92e4e496309d35354f51c5fa8a18e81b00f14a96",
+      "pullRequest": {
+        "pr": 8,
+        "title": "SCRUM-82 ci(quality): enforce coverage SAST and patch backend dependencies",
+        "url": "https://github.com/HipTran24/smart-recruitment-platform/pull/8",
+        "branch": "codex/SCRUM-82-ci-quality-gates",
+        "headSha": "92e4e496309d35354f51c5fa8a18e81b00f14a96",
+        "base": "codex/SCRUM-86-observability",
+        "state": "open",
+        "merged": false,
+        "mergedAt": null,
+        "mergedBy": null,
+        "draft": true,
+        "reviews": 0,
+        "checks": [
+          {
+            "name": "GitGuardian Security Checks",
+            "status": "completed",
+            "conclusion": "success",
+            "url": "https://github.com/HipTran24/smart-recruitment-platform/runs/124140807305",
+            "completedAt": "2026-10-30T15:15:11Z"
+          },
+          {
+            "name": "SAST (javascript-typescript)",
+            "status": "completed",
+            "conclusion": "success",
+            "url": "https://github.com/HipTran24/smart-recruitment-platform/actions/runs/41078019268/job/124139328494",
+            "completedAt": "2026-10-30T15:10:12Z"
+          },
+          {
+            "name": "Observability rules",
+            "status": "completed",
+            "conclusion": "success",
+            "url": "https://github.com/HipTran24/smart-recruitment-platform/actions/runs/41078019690/job/124139328425",
+            "completedAt": "2026-10-30T15:09:13Z"
+          },
+          {
+            "name": "Build and Test",
+            "status": "completed",
+            "conclusion": "success",
+            "url": "https://github.com/HipTran24/smart-recruitment-platform/actions/runs/41078019617/job/124139328391",
+            "completedAt": "2026-10-30T15:11:22Z"
+          },
+          {
+            "name": "SAST (java-kotlin)",
+            "status": "completed",
+            "conclusion": "success",
+            "url": "https://github.com/HipTran24/smart-recruitment-platform/actions/runs/41078019268/job/124139327209",
+            "completedAt": "2026-10-30T15:12:52Z"
+          },
+          {
+            "name": "Frontend quality and security",
+            "status": "completed",
+            "conclusion": "success",
+            "url": "https://github.com/HipTran24/smart-recruitment-platform/actions/runs/41078019442/job/124139326861",
+            "completedAt": "2026-10-30T15:09:24Z"
+          }
+        ]
+      }
+    },
+    {
+      "key": "SCRUM-85",
+      "purpose": "Atomic rate limit, audit và redaction",
+      "implementationSha": "b81bbb287b7fa4f123f149d137afc0ae2b499813",
+      "pullRequest": {
+        "pr": 5,
+        "title": "SCRUM-85 fix(security): make rate reservations atomic and audit safe metadata",
+        "url": "https://github.com/HipTran24/smart-recruitment-platform/pull/5",
+        "branch": "codex/SCRUM-85-security-audit",
+        "headSha": "b81bbb287b7fa4f123f149d137afc0ae2b499813",
+        "base": "codex/SCRUM-79-filtered-kpi",
+        "state": "open",
+        "merged": false,
+        "mergedAt": null,
+        "mergedBy": null,
+        "draft": true,
+        "reviews": 0,
+        "checks": [
+          {
+            "name": "Frontend quality and security",
+            "status": "completed",
+            "conclusion": "success",
+            "url": "https://github.com/HipTran24/smart-recruitment-platform/actions/runs/41070899975/job/124114396965",
+            "completedAt": "2026-10-30T14:20:03Z"
+          },
+          {
+            "name": "Build and Test",
+            "status": "completed",
+            "conclusion": "success",
+            "url": "https://github.com/HipTran24/smart-recruitment-platform/actions/runs/41070899482/job/124114395033",
+            "completedAt": "2026-10-30T14:21:55Z"
+          },
+          {
+            "name": "GitGuardian Security Checks",
+            "status": "completed",
+            "conclusion": "success",
+            "url": "https://github.com/HipTran24/smart-recruitment-platform/runs/124114388516",
+            "completedAt": "2026-10-30T14:20:22Z"
+          }
+        ]
+      }
+    },
+    {
+      "key": "SCRUM-86",
+      "purpose": "Metrics, tracing, dashboard và alert tests",
+      "implementationSha": "4be88afca487a5309f72c82ed280f65fca5a7da5",
+      "pullRequest": {
+        "pr": 7,
+        "title": "SCRUM-86 feat(observability): add private metrics traces and tested alert rules",
+        "url": "https://github.com/HipTran24/smart-recruitment-platform/pull/7",
+        "branch": "codex/SCRUM-86-observability",
+        "headSha": "4be88afca487a5309f72c82ed280f65fca5a7da5",
+        "base": "codex/SCRUM-89-production-configuration",
+        "state": "open",
+        "merged": false,
+        "mergedAt": null,
+        "mergedBy": null,
+        "draft": true,
+        "reviews": 0,
+        "checks": [
+          {
+            "name": "GitGuardian Security Checks",
+            "status": "completed",
+            "conclusion": "success",
+            "url": "https://github.com/HipTran24/smart-recruitment-platform/runs/124124276082",
+            "completedAt": "2026-10-30T14:41:26Z"
+          },
+          {
+            "name": "Observability rules",
+            "status": "completed",
+            "conclusion": "success",
+            "url": "https://github.com/HipTran24/smart-recruitment-platform/actions/runs/41073714625/job/124124187561",
+            "completedAt": "2026-10-30T14:40:45Z"
+          },
+          {
+            "name": "Frontend quality and security",
+            "status": "completed",
+            "conclusion": "success",
+            "url": "https://github.com/HipTran24/smart-recruitment-platform/actions/runs/41073714350/job/124124187487",
+            "completedAt": "2026-10-30T14:40:55Z"
+          },
+          {
+            "name": "Build and Test",
+            "status": "completed",
+            "conclusion": "success",
+            "url": "https://github.com/HipTran24/smart-recruitment-platform/actions/runs/41073714359/job/124124187312",
+            "completedAt": "2026-10-30T14:42:48Z"
+          }
+        ]
+      }
+    },
+    {
+      "key": "SCRUM-88",
+      "purpose": "Versioned CI candidate và rollback protocol",
+      "implementationSha": "34bf50cdab55b377c4d723d951121fde486bc6f1",
+      "pullRequest": {
+        "pr": 9,
+        "title": "SCRUM-88 ci(release): package verified versioned candidates and rollback artifacts",
+        "url": "https://github.com/HipTran24/smart-recruitment-platform/pull/9",
+        "branch": "codex/SCRUM-88-release-ci",
+        "headSha": "34bf50cdab55b377c4d723d951121fde486bc6f1",
+        "base": "codex/SCRUM-82-ci-quality-gates",
+        "state": "open",
+        "merged": false,
+        "mergedAt": null,
+        "mergedBy": null,
+        "draft": true,
+        "reviews": 0,
+        "checks": [
+          {
+            "name": "GitGuardian Security Checks",
+            "status": "completed",
+            "conclusion": "success",
+            "url": "https://github.com/HipTran24/smart-recruitment-platform/runs/124146584773",
+            "completedAt": "2026-10-30T15:27:48Z"
+          },
+          {
+            "name": "SAST (python)",
+            "status": "completed",
+            "conclusion": "success",
+            "url": "https://github.com/HipTran24/smart-recruitment-platform/actions/runs/41079361618/job/124144030580",
+            "completedAt": "2026-10-30T15:18:32Z"
+          },
+          {
+            "name": "SAST (java-kotlin)",
+            "status": "completed",
+            "conclusion": "success",
+            "url": "https://github.com/HipTran24/smart-recruitment-platform/actions/runs/41079361618/job/124144030393",
+            "completedAt": "2026-10-30T15:21:04Z"
+          },
+          {
+            "name": "Frontend quality and security",
+            "status": "completed",
+            "conclusion": "success",
+            "url": "https://github.com/HipTran24/smart-recruitment-platform/actions/runs/41079361577/job/124144029964",
+            "completedAt": "2026-10-30T15:18:03Z"
+          },
+          {
+            "name": "SAST (javascript-typescript)",
+            "status": "completed",
+            "conclusion": "success",
+            "url": "https://github.com/HipTran24/smart-recruitment-platform/actions/runs/41079361618/job/124144029945",
+            "completedAt": "2026-10-30T15:18:49Z"
+          },
+          {
+            "name": "Build and Test",
+            "status": "completed",
+            "conclusion": "success",
+            "url": "https://github.com/HipTran24/smart-recruitment-platform/actions/runs/41079361498/job/124144029934",
+            "completedAt": "2026-10-30T15:20:06Z"
+          },
+          {
+            "name": "Observability rules",
+            "status": "completed",
+            "conclusion": "success",
+            "url": "https://github.com/HipTran24/smart-recruitment-platform/actions/runs/41079361688/job/124144029922",
+            "completedAt": "2026-10-30T15:17:54Z"
+          },
+          {
+            "name": "Release candidate",
+            "status": "completed",
+            "conclusion": "success",
+            "url": "https://github.com/HipTran24/smart-recruitment-platform/actions/runs/41079361553/job/124144029657",
+            "completedAt": "2026-10-30T15:20:28Z"
+          }
+        ]
+      }
+    },
+    {
+      "key": "SCRUM-89",
+      "purpose": "Production profile và guard trước DB",
+      "implementationSha": "6d6ce1cf04ce276cd9a9d764419667b9cb30f2fb",
+      "pullRequest": {
+        "pr": 6,
+        "title": "SCRUM-89 feat(config): validate production settings in CI",
+        "url": "https://github.com/HipTran24/smart-recruitment-platform/pull/6",
+        "branch": "codex/SCRUM-89-production-configuration",
+        "headSha": "6d6ce1cf04ce276cd9a9d764419667b9cb30f2fb",
+        "base": "codex/SCRUM-85-security-audit",
+        "state": "open",
+        "merged": false,
+        "mergedAt": null,
+        "mergedBy": null,
+        "draft": true,
+        "reviews": 0,
+        "checks": [
+          {
+            "name": "Build and Test",
+            "status": "completed",
+            "conclusion": "success",
+            "url": "https://github.com/HipTran24/smart-recruitment-platform/actions/runs/41071675581/job/124117152067",
+            "completedAt": "2026-10-30T14:29:44Z"
+          },
+          {
+            "name": "Frontend quality and security",
+            "status": "completed",
+            "conclusion": "success",
+            "url": "https://github.com/HipTran24/smart-recruitment-platform/actions/runs/41071675458/job/124117113360",
+            "completedAt": "2026-10-30T14:28:07Z"
+          },
+          {
+            "name": "GitGuardian Security Checks",
+            "status": "completed",
+            "conclusion": "success",
+            "url": "https://github.com/HipTran24/smart-recruitment-platform/runs/124117103954",
+            "completedAt": "2026-10-30T14:28:00Z"
+          }
+        ]
+      }
+    },
+    {
+      "key": "SCRUM-21",
+      "purpose": "Ownership, consent và auth hardening",
+      "implementationSha": "bde4fbbdbd9d5f9e46fb525acee1ff1d5643eb24",
+      "pullRequest": {
+        "pr": 2,
+        "title": "SCRUM-21 fix(auth): enforce ownership and preserve recovery evidence",
+        "url": "https://github.com/HipTran24/smart-recruitment-platform/pull/2",
+        "branch": "codex/recovery/stash-20261003-001645",
+        "headSha": "bde4fbbdbd9d5f9e46fb525acee1ff1d5643eb24",
+        "base": "main",
+        "state": "closed",
+        "merged": true,
+        "mergedAt": "2026-10-30T15:18:40Z",
+        "mergedBy": "HipTran24",
+        "draft": false,
+        "reviews": 0,
+        "checks": [
+          {
+            "name": "GitGuardian Security Checks",
+            "status": "completed",
+            "conclusion": "success",
+            "url": "https://github.com/HipTran24/smart-recruitment-platform/runs/124107498540",
+            "completedAt": "2026-10-30T14:06:25Z"
+          },
+          {
+            "name": "Build and Test",
+            "status": "completed",
+            "conclusion": "success",
+            "url": "https://github.com/HipTran24/smart-recruitment-platform/actions/runs/41068900794/job/124107481083",
+            "completedAt": "2026-10-30T14:07:53Z"
+          },
+          {
+            "name": "Frontend quality and security",
+            "status": "completed",
+            "conclusion": "success",
+            "url": "https://github.com/HipTran24/smart-recruitment-platform/actions/runs/41068900667/job/124107480669",
+            "completedAt": "2026-10-30T14:06:42Z"
+          }
+        ]
+      }
+    },
+    {
+      "key": "SCRUM-50",
+      "purpose": "Recovery và hồ sơ nghiệm thu",
+      "implementationSha": null,
+      "pullRequest": {
+        "pr": 1,
+        "title": "SCRUM-50 fix(security): patch tooling and verify recovery evidence",
+        "url": "https://github.com/HipTran24/smart-recruitment-platform/pull/1",
+        "branch": "codex/SCRUM-50-history-recovery-20261030",
+        "headSha": "c9d9a49db5ca47ef3057f602e31fb51f88f26de1",
+        "base": "main",
+        "state": "open",
+        "merged": false,
+        "mergedAt": null,
+        "mergedBy": null,
+        "draft": true,
+        "reviews": 0,
+        "checks": [
+          {
+            "name": "Build and Test",
+            "status": "completed",
+            "conclusion": "success",
+            "url": "https://github.com/HipTran24/smart-recruitment-platform/actions/runs/41031728183/job/123982800188",
+            "completedAt": "2026-10-30T09:13:50Z"
+          },
+          {
+            "name": "Frontend quality and security",
+            "status": "completed",
+            "conclusion": "success",
+            "url": "https://github.com/HipTran24/smart-recruitment-platform/actions/runs/41031728184/job/123982799745",
+            "completedAt": "2026-10-30T09:12:47Z"
+          },
+          {
+            "name": "GitGuardian Security Checks",
+            "status": "completed",
+            "conclusion": "failure",
+            "url": "https://github.com/HipTran24/smart-recruitment-platform/runs/123982781668",
+            "completedAt": "2026-10-30T09:12:24Z"
+          }
+        ]
+      }
+    }
+  ],
+  "jira": [
+    {
+      "issue": "SCRUM-79",
+      "pr": 4,
+      "url": "https://github.com/HipTran24/smart-recruitment-platform/pull/4",
+      "result": "PASS",
+      "method": "Native Jira Development / Pull requests: exact repository and PR href visible",
+      "verifiedOn": "2026-10-30",
+      "issueStatusChangedByAgent": false
+    },
+    {
+      "issue": "SCRUM-82",
+      "pr": 8,
+      "url": "https://github.com/HipTran24/smart-recruitment-platform/pull/8",
+      "result": "PASS",
+      "method": "Native Jira Development / Pull requests: exact repository and PR href visible",
+      "verifiedOn": "2026-10-30",
+      "issueStatusChangedByAgent": false
+    },
+    {
+      "issue": "SCRUM-85",
+      "pr": 5,
+      "url": "https://github.com/HipTran24/smart-recruitment-platform/pull/5",
+      "result": "PASS",
+      "method": "Native Jira Development / Pull requests: exact repository and PR href visible",
+      "verifiedOn": "2026-10-30",
+      "issueStatusChangedByAgent": false
+    },
+    {
+      "issue": "SCRUM-86",
+      "pr": 7,
+      "url": "https://github.com/HipTran24/smart-recruitment-platform/pull/7",
+      "result": "PASS",
+      "method": "Native Jira Development / Pull requests: exact repository and PR href visible",
+      "verifiedOn": "2026-10-30",
+      "issueStatusChangedByAgent": false
+    },
+    {
+      "issue": "SCRUM-88",
+      "pr": 9,
+      "url": "https://github.com/HipTran24/smart-recruitment-platform/pull/9",
+      "result": "PASS",
+      "method": "Native Jira Development / Pull requests: exact repository and PR href visible",
+      "verifiedOn": "2026-10-30",
+      "issueStatusChangedByAgent": false
+    },
+    {
+      "issue": "SCRUM-89",
+      "pr": 6,
+      "url": "https://github.com/HipTran24/smart-recruitment-platform/pull/6",
+      "result": "PASS",
+      "method": "Native Jira Development / Pull requests: exact repository and PR href visible",
+      "verifiedOn": "2026-10-30",
+      "issueStatusChangedByAgent": false
+    },
+    {
+      "issue": "SCRUM-21",
+      "pr": 2,
+      "url": "https://github.com/HipTran24/smart-recruitment-platform/pull/2",
+      "result": "PASS",
+      "method": "Native Jira Development / Pull requests: exact repository and PR href visible",
+      "verifiedOn": "2026-10-30",
+      "issueStatusChangedByAgent": false
+    },
+    {
+      "issue": "SCRUM-50",
+      "pr": 1,
+      "url": "https://github.com/HipTran24/smart-recruitment-platform/pull/1",
+      "result": "PASS",
+      "method": "Native Jira Development / Pull requests: exact repository and PR href visible",
+      "verifiedOn": "2026-10-30",
+      "issueStatusChangedByAgent": false
+    }
+  ],
+  "validation": {
+    "backend": {
+      "tests": 133,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "jdk": 25,
+      "mysql": "8.4.11",
+      "ci": "https://github.com/HipTran24/smart-recruitment-platform/actions/runs/41079361498"
+    },
+    "frontend": {
+      "tests": 22,
+      "typecheck": "PASS",
+      "build": "PASS",
+      "auditFindings": 0
+    },
+    "sast": {
+      "java": 0,
+      "javascriptTypescript": 0,
+      "python": 0,
+      "complete": true,
+      "ci": "https://github.com/HipTran24/smart-recruitment-platform/actions/runs/41079361618",
+      "initialIncorrectSarifGate": "Superseded; fixed extension metadata and both CSRF findings; final clean analysis verified"
+    },
+    "dependencyAudit": {
+      "resolvedCoordinates": 205,
+      "activeAdvisoryMatches": 0,
+      "beforeAdvisoryOccurrences": 16,
+      "beforeAffectedPackages": 5,
+      "scannedAtUtc": "2026-10-30T15:20:00.433790+00:00"
+    },
+    "qualityGateNegativeControls": 5,
+    "releaseFixtureTests": 6,
+    "alertAssertions": 14,
+    "kpiLocalBenchmark": {
+      "applications": 10000,
+      "histories": 10000,
+      "warmup": 5,
+      "samples": 20,
+      "p95Milliseconds": 17.558,
+      "excludes": "HTTP/TLS/network; not a production SLA"
+    }
+  },
+  "release": {
+    "version": "0.0.0-ci.2",
+    "sourceTestMergeCommit": "85226962794ee484b9bdb40276d4213237969e44",
+    "reviewHead": "34bf50cdab55b377c4d723d951121fde486bc6f1",
+    "gitDirty": false,
+    "imageId": "sha256:02d1e2ce255e881012a87b9b5c1979ef5b54b93ec7081ded4d77abe6b8da8ccb",
+    "platform": "linux/amd64",
+    "runtimeUser": "10001:10001",
+    "missingConfigExit": 1,
+    "registryPublished": false,
+    "deployed": false,
+    "promotionStatus": "UNAPPROVED_CI_ARTIFACT",
+    "artifact": "https://github.com/HipTran24/smart-recruitment-platform/actions/runs/41079361553/artifacts/12988543698"
+  },
+  "blockers": [
+    {
+      "condition": "PR1 GitGuardian",
+      "providerResult": "FAIL on observed parent head",
+      "localClassification": "4 incidents / 8 occurrences are commit metadata",
+      "proof": "gitguardian-metadata-proof.json",
+      "resolution": "Authenticated GitGuardian owner must classify exact incidents; no blanket allowlist/history rewrite"
+    },
+    {
+      "condition": "Independent review",
+      "result": "BLOCKED",
+      "submittedReviews": 0,
+      "reviewersFabricated": 0
+    },
+    {
+      "condition": "Main merge enforcement",
+      "result": "BLOCKED_UNVERIFIED",
+      "rulesetListCount": 0,
+      "legacyProtectionRead": "403 Resource not accessible by integration",
+      "settingsChanged": false
+    }
+  ],
+  "limitations": [
+    "PR/branch links verified; native attribution of all historical keyless commits is not claimed",
+    "8-issue CI evidence does not certify browser E2E, durable AI dispatch/submission integration or production readiness",
+    "No retrospective meeting, acceptance signature, production rollback or deployment was fabricated",
+    "PR heads and main may change in concurrent owner sessions; use current API checks before a merge"
+  ]
+}

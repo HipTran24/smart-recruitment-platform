@@ -1,0 +1,41 @@
+{
+  "result": "LOCAL_FALSE_POSITIVE_CLASSIFICATION",
+  "providerDisposition": "NOT_CHANGED",
+  "incidents": [
+    39298637,
+    39298638,
+    39298639,
+    39298640
+  ],
+  "occurrences": 8,
+  "rows": [
+    {
+      "csvLine": 18,
+      "path": "src/main/java/com/recruitment/app/modules/identity/application/IdentityAuthenticationService.java",
+      "distinctCommitReferences": 5,
+      "allObjectTypes": "commit",
+      "classification": "Git lineage metadata; no raw credential field"
+    },
+    {
+      "csvLine": 36,
+      "path": "src/main/java/com/recruitment/app/modules/identity/application/AuthenticationThrottlingService.java",
+      "distinctCommitReferences": 4,
+      "allObjectTypes": "commit",
+      "classification": "Git lineage metadata; no raw credential field"
+    },
+    {
+      "csvLine": 37,
+      "path": "src/main/java/com/recruitment/app/modules/identity/api/AuthController.java",
+      "distinctCommitReferences": 5,
+      "allObjectTypes": "commit",
+      "classification": "Git lineage metadata; no raw credential field"
+    },
+    {
+      "csvLine": 48,
+      "path": "src/main/java/com/recruitment/app/modules/identity/application/GoogleOAuthLoginService.java",
+      "distinctCommitReferences": 2,
+      "allObjectTypes": "commit",
+      "classification": "Git lineage metadata; no raw credential field"
+    }
+  ]
+}

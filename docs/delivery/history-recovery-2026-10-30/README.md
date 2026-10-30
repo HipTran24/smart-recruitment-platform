@@ -1,5 +1,7 @@
 # Hồ sơ phục hồi lịch sử Git và đối chiếu Jira — 30/10/2026
 
+> Hồ sơ bên dưới là snapshot recovery lịch sử. Báo cáo hiện tại cho 8 issue, CI/security/Jira và các thay đổi ngoài phiên nằm ở [hồ sơ nghiệm thu CI](../owner-recovery-2026-10-30/README.md). Các CSV/SHA lịch sử được giữ nguyên.
+
 Repository: https://github.com/HipTran24/smart-recruitment-platform. Chủ phạm vi Jira: **Thanh Hiệp Trần** (người dùng xác nhận Trần Thanh Hiệp).
 
 ## Follow-up bảo mật và Jira
