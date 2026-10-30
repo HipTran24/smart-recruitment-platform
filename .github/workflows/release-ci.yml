@@ -1,0 +1,90 @@
+name: Release candidate
+on:
+  pull_request:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Candidate semver (no tag is created and no deployment occurs)
+        required: true
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: release-candidate-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  candidate:
+    name: Release candidate
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 25
+          cache: maven
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Validate candidate identity
+        id: version
+        env:
+          REQUESTED_VERSION: ${{ inputs.version }}
+        run: |
+          python3 - <<'PY'
+          import os, subprocess, sys
+          sys.path.insert(0,'scripts/release')
+          from bundle import valid_version
+          value=os.environ.get('REQUESTED_VERSION') or (os.environ['GITHUB_REF_NAME'].removeprefix('v') if os.environ['GITHUB_REF_TYPE']=='tag' else '0.0.0-ci.'+os.environ['GITHUB_RUN_NUMBER'])
+          value=valid_version(value)
+          epoch=subprocess.check_output(['git','show','-s','--format=%ct','HEAD'],text=True).strip()
+          with open(os.environ['GITHUB_ENV'],'a') as output: output.write('RELEASE_VERSION='+value+'\nSOURCE_DATE_EPOCH='+epoch+'\n')
+          with open(os.environ['GITHUB_OUTPUT'],'a') as output: output.write('version='+value+'\n')
+          PY
+      - name: Required backend tests, coverage and versioned JAR
+        run: ./mvnw -B -ntp "-Drevision=$RELEASE_VERSION" "-Dproject.build.outputTimestamp=$SOURCE_DATE_EPOCH" clean verify
+      - name: Resolve and audit backend dependencies
+        run: |
+          ./mvnw -B -ntp "-Drevision=$RELEASE_VERSION" org.apache.maven.plugins:maven-dependency-plugin:3.7.0:tree -DoutputType=json -DoutputFile=quality-reports/dependency-tree.json
+          python3 scripts/quality/dependency_audit.py quality-reports/dependency-tree.json --output quality-reports/osv.json
+      - name: Frontend quality, security and production build
+        working-directory: frontend
+        run: |
+          npm ci
+          npm audit --audit-level=high
+          npm run typecheck
+          npm test
+          npm run build
+      - name: Gate and rollback protocol negative controls
+        run: |
+          python3 -m unittest discover -s scripts/quality -p 'test_*.py'
+          python3 -m unittest discover -s scripts/release -p 'test_*.py'
+      - name: Create and verify candidate bundle
+        run: |
+          python3 scripts/release/bundle.py create --jar "target/application-$RELEASE_VERSION.jar" --frontend frontend/dist --output release-output/bundle --version "$RELEASE_VERSION"
+          python3 scripts/release/bundle.py verify release-output/bundle
+      - name: Package the tested JAR in a pinned non-root runtime image
+        run: docker build -f infra/docker/backend-release.Dockerfile --label "org.opencontainers.image.revision=$GITHUB_SHA" --label "org.opencontainers.image.version=$RELEASE_VERSION" -t smartrecruit-api:ci release-output/bundle
+      - name: Isolated image configuration safety smoke
+        run: python3 scripts/release/smoke_image.py smartrecruit-api:ci --output release-output/image-provenance.json
+      - name: Retain immutable candidate image
+        run: docker save smartrecruit-api:ci -o release-output/api-image.tar
+      - name: Publish candidate and verification reports
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: release-candidate-${{ steps.version.outputs.version }}-${{ github.sha }}
+          path: |
+            release-output/
+            quality-reports/
+            target/site/jacoco/
+            target/surefire-reports/
+          if-no-files-found: error
+          retention-days: 30

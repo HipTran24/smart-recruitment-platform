@@ -26,6 +26,8 @@ jobs:
             build_mode: manual
           - language: javascript-typescript
             build_mode: none
+          - language: python
+            build_mode: none
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-java@v6
