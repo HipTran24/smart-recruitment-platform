@@ -34,3 +34,7 @@ src/main/resources/application-local.yml
 
 # Reviewed placeholder-only production input contract.
 !.env.production.example
+
+# Python quality tools generate local bytecode only.
+__pycache__/
+*.py[cod]

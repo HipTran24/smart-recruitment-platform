@@ -86,7 +86,9 @@ public class IdentitySecurityConfiguration {
                 // JWTs are sent only in Authorization headers. The temporary
                 // OAuth session is protected by OAuth state and is invalidated
                 // on callback; it is never used as application authentication.
-                .csrf(AbstractHttpConfigurer::disable)
+                .csrf(csrf -> csrf.ignoringRequestMatchers(new JwtApiCsrfExemptions()))
+                .securityContext(context -> context.securityContextRepository(
+                        new org.springframework.security.web.context.RequestAttributeSecurityContextRepository()))
                 .cors(Customizer.withDefaults())
                 .requestCache(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(
