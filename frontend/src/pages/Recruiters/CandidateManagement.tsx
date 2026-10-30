@@ -183,7 +183,7 @@ export default function CandidateManagement() {
               role="region"
               aria-label="Danh sách ứng viên có thể cuộn ngang"
             >
-              <table className="w-full text-left text-sm">
+              <table className="w-full min-w-[760px] text-left text-sm">
                 <caption className="sr-only">
                   Xếp hạng hồ sơ trên trang hiện tại
                 </caption>

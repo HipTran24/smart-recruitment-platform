@@ -201,7 +201,7 @@ function DataTable({
   total,
   caption,
 }: {
-  counts: { status: string count: number }[]
+  counts: { status: string; count: number }[]
   total: number
   caption: string
 }) {

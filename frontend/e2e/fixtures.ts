@@ -14,7 +14,7 @@ export async function signedIn(page: Page) {
 }
 export async function fixtureApi(
   page: Page,
-  options: { empty?: boolean failList?: boolean failMutation?: boolean } = {},
+  options: { empty?: boolean; failList?: boolean; failMutation?: boolean } = {},
 ) {
   const applications = options.empty
     ? []
@@ -63,7 +63,7 @@ export async function fixtureApi(
         },
       ]
   let read = false
-  const calls: { url: string method: string body: unknown }[] = []
+  const calls: { url: string; method: string; body: unknown }[] = []
   await page.route("**/api/v1/**", async (route) => {
     const request = route.request()
     const url = new URL(request.url())
