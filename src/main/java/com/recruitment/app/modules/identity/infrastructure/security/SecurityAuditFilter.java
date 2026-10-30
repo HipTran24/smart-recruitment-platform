@@ -26,7 +26,11 @@ public class SecurityAuditFilter extends OncePerRequestFilter {
             Map.entry("/password/reset-confirm","PASSWORD_RESET_CONFIRM"),Map.entry("/verify-email","VERIFY_EMAIL"),
             Map.entry("/oauth/exchange","OAUTH_EXCHANGE"));
     private final AuditEventService audit;
-    public SecurityAuditFilter(AuditEventService audit) { this.audit = audit; }
+    private final io.micrometer.core.instrument.Counter failures;
+    public SecurityAuditFilter(AuditEventService audit,io.micrometer.core.instrument.MeterRegistry registry) {
+        this.audit = audit;
+        this.failures = registry.counter("smartrecruit.audit.persistence.failures");
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,HttpServletResponse response,FilterChain chain)
@@ -47,6 +51,7 @@ public class SecurityAuditFilter extends OncePerRequestFilter {
                     "requestId",Objects.toString(RequestContext.requestId(),"")));
             audit.recordSecurityEvent(new AuditEventSnapshot(null,Instant.now(),userId,action,"API",null,metadata,null));
         } catch (RuntimeException failure) {
+            failures.increment();
             // Do not turn a completed business request into a retryable duplicate mutation.
             LOG.error("Security audit persistence failed: type={}, requestId={}",failure.getClass().getSimpleName(),RequestContext.requestId());
         }
