@@ -12,6 +12,8 @@ public interface ApplicationStore {
 
     ApplicationSnapshot createApplication(Long jobId, Long candidateProfileId, Long candidateResumeId, String coverLetter);
 
+    ApplicationSnapshot createApplication(Long jobId, Long candidateProfileId, Long candidateResumeId, String coverLetter, String source);
+
     Optional<ApplicationSnapshot> findById(Long id);
 
     Optional<ApplicationSnapshot> findByJobAndCandidate(Long jobId, Long candidateProfileId);

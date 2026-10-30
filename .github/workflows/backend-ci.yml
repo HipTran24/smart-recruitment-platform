@@ -3,7 +3,6 @@ on:
   push:
     branches: [main]
   pull_request:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -31,8 +30,25 @@ jobs:
           cache: maven
           cache-dependency-path: pom.xml
 
-      - name: Build and test
-        run: mvn --batch-mode --no-transfer-progress verify
+      - name: Build, test and enforce coverage
+        run: ./mvnw --batch-mode --no-transfer-progress clean verify
+      - name: Test quality gate negative controls
+        run: python3 -m unittest discover -s scripts/quality -p 'test_*.py'
+      - name: Resolve dependency inventory
+        run: ./mvnw -B -ntp org.apache.maven.plugins:maven-dependency-plugin:3.7.0:tree -DoutputType=json -DoutputFile=quality-reports/dependency-tree.json
+      - name: Audit all resolved Maven dependencies
+        run: python3 scripts/quality/dependency_audit.py quality-reports/dependency-tree.json --output quality-reports/osv.json
+      - name: Publish test, coverage and dependency reports
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: backend-quality-${{ github.sha }}
+          path: |
+            target/surefire-reports/
+            target/site/jacoco/
+            quality-reports/
+          if-no-files-found: error
+          retention-days: 30
 
 
 

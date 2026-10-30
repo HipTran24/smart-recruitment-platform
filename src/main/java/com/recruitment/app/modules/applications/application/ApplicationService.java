@@ -26,6 +26,11 @@ public class ApplicationService {
     }
 
     public ApplicationSnapshot apply(Long userId, Long jobId, Long resumeId, String coverLetter) {
+        return apply(userId, jobId, resumeId, coverLetter, null);
+    }
+
+    public ApplicationSnapshot apply(Long userId, Long jobId, Long resumeId, String coverLetter, String source) {
+        String attribution = ApplicationSource.normalize(source);
         Long profileId = getCandidateProfileId(userId);
         Optional<ApplicationSnapshot> existing = applicationStore.findByJobAndCandidate(jobId, profileId);
         if (existing.isPresent()) {
@@ -40,28 +45,18 @@ public class ApplicationService {
             );
         }
 
-        ApplicationSnapshot app = applicationStore.createApplication(jobId, profileId, effectiveResumeId, coverLetter);
+        ApplicationSnapshot app = applicationStore.createApplication(jobId, profileId, effectiveResumeId, coverLetter, attribution);
 
-        // Record initial screening entry if CV and consent are present
-        boolean consented = queryScalarBoolean("SELECT ai_processing_consented FROM candidate_profiles WHERE id = ?", profileId);
-        if (consented) {
-            jdbcTemplate.update(
-                    "INSERT INTO application_screenings (version, created_at, updated_at, job_application_id, status, " +
-                    "score, recommendation, summary, provider, model_version, prompt_version, input_hash, attempt, evaluated_at) " +
-                    "VALUES (0, NOW(), NOW(), ?, 'COMPLETED', 85, 'RECOMMENDED', 'Candidate profile matches core requirements.', " +
-                    "'gemini', 'gemini-2.5-flash', 'v1', SHA2(CONCAT(?, NOW()), 256), 1, NOW()) " +
-                    "ON DUPLICATE KEY UPDATE updated_at = NOW()",
-                    app.id(), app.id()
-            );
-        }
+        // Screening is asynchronous and requires explicit consent and actual provider output.
+        // Submission must never manufacture a completed score or infer consent.
 
         return applicationStore.findById(app.id()).orElse(app);
     }
 
     @Transactional(readOnly = true)
     public List<ApplicationSnapshot> getCandidateApplications(Long userId) {
-        Long profileId = getCandidateProfileId(userId);
-        return applicationStore.findByCandidateProfileId(profileId);
+        List<Long> profiles = jdbcTemplate.queryForList("SELECT id FROM candidate_profiles WHERE user_id = ?", Long.class, userId);
+        return profiles.isEmpty() ? List.of() : applicationStore.findByCandidateProfileId(profiles.getFirst());
     }
 
     @Transactional(readOnly = true)
@@ -263,8 +258,8 @@ public class ApplicationService {
     private Long getCandidateProfileId(Long userId) {
         try {
             return jdbcTemplate.queryForObject("SELECT id FROM candidate_profiles WHERE user_id = ?", Long.class, userId);
-        } catch (Exception e) {
-            jdbcTemplate.update("INSERT INTO candidate_profiles (version, created_at, updated_at, user_id, ai_processing_consented) VALUES (0, NOW(), NOW(), ?, 1)", userId);
+        } catch (org.springframework.dao.EmptyResultDataAccessException e) {
+            jdbcTemplate.update("INSERT INTO candidate_profiles (version, created_at, updated_at, user_id, ai_processing_consented) VALUES (0, NOW(), NOW(), ?, 0)", userId);
             return jdbcTemplate.queryForObject("SELECT id FROM candidate_profiles WHERE user_id = ?", Long.class, userId);
         }
     }
@@ -274,15 +269,6 @@ public class ApplicationService {
             return jdbcTemplate.queryForObject(sql, Long.class, param);
         } catch (Exception e) {
             return null;
-        }
-    }
-
-    private boolean queryScalarBoolean(String sql, Long param) {
-        try {
-            Boolean res = jdbcTemplate.queryForObject(sql, Boolean.class, param);
-            return res != null && res;
-        } catch (Exception e) {
-            return true;
         }
     }
 

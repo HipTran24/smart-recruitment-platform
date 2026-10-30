@@ -63,7 +63,7 @@ public class AdminUserService {
                 "UPDATE_USER_ROLES",
                 "USER",
                 id.toString(),
-                "{\"roles\":" + roles + "}",
+                tools.jackson.databind.json.JsonMapper.builder().build().writeValueAsString(java.util.Map.of("roles", roles)),
                 ipAddress
         ));
     }

@@ -1,0 +1,256 @@
+{
+  "rule_files": [
+    "alerts.yml"
+  ],
+  "evaluation_interval": "1m",
+  "tests": [
+    {
+      "name": "unhealthy signals fire after policy duration",
+      "interval": "1m",
+      "input_series": [
+        {
+          "series": "up{job=\"smartrecruit\",instance=\"fixture\"}",
+          "values": "0+0x20"
+        },
+        {
+          "series": "http_server_requests_seconds_count{job=\"smartrecruit\",status=\"200\"}",
+          "values": "0+900x20"
+        },
+        {
+          "series": "http_server_requests_seconds_count{job=\"smartrecruit\",status=\"500\"}",
+          "values": "0+100x20"
+        },
+        {
+          "series": "http_server_requests_seconds_bucket{job=\"smartrecruit\",le=\"0.5\"}",
+          "values": "0+900x20"
+        },
+        {
+          "series": "http_server_requests_seconds_bucket{job=\"smartrecruit\",le=\"1.0\"}",
+          "values": "0+950x20"
+        },
+        {
+          "series": "http_server_requests_seconds_bucket{job=\"smartrecruit\",le=\"+Inf\"}",
+          "values": "0+1000x20"
+        },
+        {
+          "series": "smartrecruit_screenings_oldest_pending_seconds{job=\"smartrecruit\",instance=\"fixture\"}",
+          "values": "600+0x20"
+        },
+        {
+          "series": "smartrecruit_screenings_expired_leases{job=\"smartrecruit\",instance=\"fixture\"}",
+          "values": "1+0x20"
+        },
+        {
+          "series": "smartrecruit_audit_persistence_failures_total{job=\"smartrecruit\",instance=\"fixture\"}",
+          "values": "0+1x20"
+        },
+        {
+          "series": "smartrecruit_queue_metrics_available{job=\"smartrecruit\",instance=\"fixture\"}",
+          "values": "0+0x20"
+        }
+      ],
+      "alert_rule_test": [
+        {
+          "eval_time": "16m",
+          "alertname": "SmartRecruitApiDown",
+          "exp_alerts": [
+            {
+              "exp_labels": {
+                "job": "smartrecruit",
+                "severity": "critical",
+                "owner": "project-owner",
+                "instance": "fixture"
+              },
+              "exp_annotations": {
+                "summary": "API scrape unavailable"
+              }
+            }
+          ]
+        },
+        {
+          "eval_time": "16m",
+          "alertname": "SmartRecruitHighErrorRate",
+          "exp_alerts": [
+            {
+              "exp_labels": {
+                "job": "smartrecruit",
+                "severity": "critical",
+                "owner": "project-owner"
+              },
+              "exp_annotations": {
+                "summary": "API 5xx ratio exceeds 5 percent"
+              }
+            }
+          ]
+        },
+        {
+          "eval_time": "16m",
+          "alertname": "SmartRecruitHighLatency",
+          "exp_alerts": [
+            {
+              "exp_labels": {
+                "job": "smartrecruit",
+                "severity": "warning",
+                "owner": "project-owner"
+              },
+              "exp_annotations": {
+                "summary": "API p95 exceeds 800 milliseconds"
+              }
+            }
+          ]
+        },
+        {
+          "eval_time": "16m",
+          "alertname": "SmartRecruitScreeningStalled",
+          "exp_alerts": [
+            {
+              "exp_labels": {
+                "job": "smartrecruit",
+                "severity": "warning",
+                "owner": "project-owner",
+                "instance": "fixture"
+              },
+              "exp_annotations": {
+                "summary": "Screening queue oldest pending exceeds five minutes"
+              }
+            }
+          ]
+        },
+        {
+          "eval_time": "16m",
+          "alertname": "SmartRecruitExpiredLease",
+          "exp_alerts": [
+            {
+              "exp_labels": {
+                "job": "smartrecruit",
+                "severity": "warning",
+                "owner": "project-owner",
+                "instance": "fixture"
+              },
+              "exp_annotations": {
+                "summary": "Screening has expired processing leases"
+              }
+            }
+          ]
+        },
+        {
+          "eval_time": "16m",
+          "alertname": "SmartRecruitAuditLoss",
+          "exp_alerts": [
+            {
+              "exp_labels": {
+                "job": "smartrecruit",
+                "severity": "critical",
+                "owner": "project-owner",
+                "instance": "fixture"
+              },
+              "exp_annotations": {
+                "summary": "Audit persistence failed"
+              }
+            }
+          ]
+        },
+        {
+          "eval_time": "16m",
+          "alertname": "SmartRecruitQueueMetricsUnavailable",
+          "exp_alerts": [
+            {
+              "exp_labels": {
+                "job": "smartrecruit",
+                "severity": "critical",
+                "owner": "project-owner",
+                "instance": "fixture"
+              },
+              "exp_annotations": {
+                "summary": "Queue metrics database query failed"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "healthy signals do not fire",
+      "interval": "1m",
+      "input_series": [
+        {
+          "series": "up{job=\"smartrecruit\",instance=\"fixture\"}",
+          "values": "1+0x20"
+        },
+        {
+          "series": "http_server_requests_seconds_count{job=\"smartrecruit\",status=\"200\"}",
+          "values": "0+1000x20"
+        },
+        {
+          "series": "http_server_requests_seconds_count{job=\"smartrecruit\",status=\"500\"}",
+          "values": "0+0x20"
+        },
+        {
+          "series": "http_server_requests_seconds_bucket{job=\"smartrecruit\",le=\"0.5\"}",
+          "values": "0+1000x20"
+        },
+        {
+          "series": "http_server_requests_seconds_bucket{job=\"smartrecruit\",le=\"1.0\"}",
+          "values": "0+1000x20"
+        },
+        {
+          "series": "http_server_requests_seconds_bucket{job=\"smartrecruit\",le=\"+Inf\"}",
+          "values": "0+1000x20"
+        },
+        {
+          "series": "smartrecruit_screenings_oldest_pending_seconds{job=\"smartrecruit\",instance=\"fixture\"}",
+          "values": "0+0x20"
+        },
+        {
+          "series": "smartrecruit_screenings_expired_leases{job=\"smartrecruit\",instance=\"fixture\"}",
+          "values": "0+0x20"
+        },
+        {
+          "series": "smartrecruit_audit_persistence_failures_total{job=\"smartrecruit\",instance=\"fixture\"}",
+          "values": "0+0x20"
+        },
+        {
+          "series": "smartrecruit_queue_metrics_available{job=\"smartrecruit\",instance=\"fixture\"}",
+          "values": "1+0x20"
+        }
+      ],
+      "alert_rule_test": [
+        {
+          "eval_time": "16m",
+          "alertname": "SmartRecruitApiDown",
+          "exp_alerts": []
+        },
+        {
+          "eval_time": "16m",
+          "alertname": "SmartRecruitHighErrorRate",
+          "exp_alerts": []
+        },
+        {
+          "eval_time": "16m",
+          "alertname": "SmartRecruitHighLatency",
+          "exp_alerts": []
+        },
+        {
+          "eval_time": "16m",
+          "alertname": "SmartRecruitScreeningStalled",
+          "exp_alerts": []
+        },
+        {
+          "eval_time": "16m",
+          "alertname": "SmartRecruitExpiredLease",
+          "exp_alerts": []
+        },
+        {
+          "eval_time": "16m",
+          "alertname": "SmartRecruitAuditLoss",
+          "exp_alerts": []
+        },
+        {
+          "eval_time": "16m",
+          "alertname": "SmartRecruitQueueMetricsUnavailable",
+          "exp_alerts": []
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,118 @@
+{
+  "complete": true,
+  "packages": 206,
+  "findings": [
+    {
+      "package": "io.opentelemetry:opentelemetry-api",
+      "version": "1.62.0",
+      "id": "GHSA-ccrj-gw8r-854m",
+      "severity": "MODERATE",
+      "url": "https://osv.dev/vulnerability/GHSA-ccrj-gw8r-854m"
+    },
+    {
+      "package": "org.apache.tomcat.embed:tomcat-embed-core",
+      "version": "11.0.24",
+      "id": "GHSA-9xv2-5v5q-p794",
+      "severity": "CRITICAL",
+      "url": "https://osv.dev/vulnerability/GHSA-9xv2-5v5q-p794"
+    },
+    {
+      "package": "org.apache.tomcat.embed:tomcat-embed-core",
+      "version": "11.0.24",
+      "id": "GHSA-f525-44xv-f2qj",
+      "severity": "CRITICAL",
+      "url": "https://osv.dev/vulnerability/GHSA-f525-44xv-f2qj"
+    },
+    {
+      "package": "org.apache.tomcat.embed:tomcat-embed-core",
+      "version": "11.0.24",
+      "id": "GHSA-gcx9-497g-6cp6",
+      "severity": "CRITICAL",
+      "url": "https://osv.dev/vulnerability/GHSA-gcx9-497g-6cp6"
+    },
+    {
+      "package": "org.apache.tomcat.embed:tomcat-embed-core",
+      "version": "11.0.24",
+      "id": "GHSA-h3x4-894j-xpx5",
+      "severity": "CRITICAL",
+      "url": "https://osv.dev/vulnerability/GHSA-h3x4-894j-xpx5"
+    },
+    {
+      "package": "org.bouncycastle:bcprov-jdk18on",
+      "version": "1.80",
+      "id": "GHSA-574f-3g2m-x479",
+      "severity": "CRITICAL",
+      "url": "https://osv.dev/vulnerability/GHSA-574f-3g2m-x479"
+    },
+    {
+      "package": "org.bouncycastle:bcprov-jdk18on",
+      "version": "1.80",
+      "id": "GHSA-9pwp-9qqc-pr26",
+      "severity": "CRITICAL",
+      "url": "https://osv.dev/vulnerability/GHSA-9pwp-9qqc-pr26"
+    },
+    {
+      "package": "org.bouncycastle:bcprov-jdk18on",
+      "version": "1.80",
+      "id": "GHSA-c3fc-8qff-9hwx",
+      "severity": "MODERATE",
+      "url": "https://osv.dev/vulnerability/GHSA-c3fc-8qff-9hwx"
+    },
+    {
+      "package": "org.bouncycastle:bcprov-jdk18on",
+      "version": "1.80",
+      "id": "GHSA-qp49-qgx5-5m26",
+      "severity": "HIGH",
+      "url": "https://osv.dev/vulnerability/GHSA-qp49-qgx5-5m26"
+    },
+    {
+      "package": "tools.jackson.core:jackson-core",
+      "version": "3.1.5",
+      "id": "GHSA-7hhh-6rmp-j9qf",
+      "severity": "HIGH",
+      "url": "https://osv.dev/vulnerability/GHSA-7hhh-6rmp-j9qf"
+    },
+    {
+      "package": "tools.jackson.core:jackson-core",
+      "version": "3.1.5",
+      "id": "GHSA-p6pp-m3f8-5c89",
+      "severity": "HIGH",
+      "url": "https://osv.dev/vulnerability/GHSA-p6pp-m3f8-5c89"
+    },
+    {
+      "package": "tools.jackson.core:jackson-databind",
+      "version": "3.1.5",
+      "id": "GHSA-cxp5-3px4-pw24",
+      "severity": "HIGH",
+      "url": "https://osv.dev/vulnerability/GHSA-cxp5-3px4-pw24"
+    },
+    {
+      "package": "tools.jackson.core:jackson-databind",
+      "version": "3.1.5",
+      "id": "GHSA-gx83-3vf8-gh7j",
+      "severity": "MODERATE",
+      "url": "https://osv.dev/vulnerability/GHSA-gx83-3vf8-gh7j"
+    },
+    {
+      "package": "tools.jackson.core:jackson-databind",
+      "version": "3.1.5",
+      "id": "GHSA-q4xh-88c3-wmh7",
+      "severity": "HIGH",
+      "url": "https://osv.dev/vulnerability/GHSA-q4xh-88c3-wmh7"
+    },
+    {
+      "package": "tools.jackson.core:jackson-databind",
+      "version": "3.1.5",
+      "id": "GHSA-wjgm-6hv5-3cvf",
+      "severity": "MODERATE",
+      "url": "https://osv.dev/vulnerability/GHSA-wjgm-6hv5-3cvf"
+    },
+    {
+      "package": "tools.jackson.core:jackson-databind",
+      "version": "3.1.5",
+      "id": "GHSA-wv8q-qhhj-9h54",
+      "severity": "HIGH",
+      "url": "https://osv.dev/vulnerability/GHSA-wv8q-qhhj-9h54"
+    }
+  ]
+}

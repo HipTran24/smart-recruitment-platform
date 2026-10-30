@@ -1,0 +1,21 @@
+{
+  "status": "PROPOSED_NOT_APPLIED",
+  "branch": "main",
+  "strictUpToDate": true,
+  "requiredChecks": [
+    "Build and Test",
+    "Frontend quality and security",
+    "Observability rules",
+    "SAST (java-kotlin)",
+    "SAST (javascript-typescript)",
+    "SAST (python)",
+    "Release candidate",
+    "GitGuardian Security Checks"
+  ],
+  "independentApprovingReviews": 1,
+  "dismissStaleReviews": true,
+  "requireConversationResolution": true,
+  "allowForcePushes": false,
+  "allowDeletions": false,
+  "applyAfter": "Owner/admin review and workflow adoption; do not present this JSON as applied protection"
+}
