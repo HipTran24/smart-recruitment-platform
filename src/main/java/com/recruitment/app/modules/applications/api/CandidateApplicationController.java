@@ -2,6 +2,7 @@ package com.recruitment.app.modules.applications.api;
 
 import com.recruitment.app.modules.applications.api.dto.ApplicationDtos.*;
 import com.recruitment.app.modules.applications.application.ApplicationService;
+import com.recruitment.app.modules.applications.application.CandidateApplicationAccessService;
 import com.recruitment.app.modules.applications.domain.model.ApplicationSnapshot;
 import com.recruitment.app.modules.applications.domain.model.InterviewSnapshot;
 import com.recruitment.app.modules.applications.domain.model.OfferSnapshot;
@@ -22,8 +23,11 @@ public class CandidateApplicationController {
 
     private final ApplicationService applicationService;
 
-    public CandidateApplicationController(ApplicationService applicationService) {
+    private final CandidateApplicationAccessService candidateAccess;
+
+    public CandidateApplicationController(ApplicationService applicationService, CandidateApplicationAccessService candidateAccess) {
         this.applicationService = applicationService;
+        this.candidateAccess = candidateAccess;
     }
 
     @PostMapping("/api/v1/jobs/{jobId}/applications")
@@ -48,8 +52,7 @@ public class CandidateApplicationController {
 
     @GetMapping("/api/v1/candidates/me/applications/{id}")
     public ApplicationResponse getApplication(Authentication auth, @PathVariable("id") Long id) {
-        return applicationService.getApplicationById(id).map(this::toResponse)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Application not found"));
+        return toResponse(candidateAccess.application(getUserId(auth), id));
     }
 
     @PostMapping("/api/v1/candidates/me/applications/{id}/withdraw")
@@ -60,7 +63,7 @@ public class CandidateApplicationController {
     ) {
         Long userId = getUserId(auth);
         String note = req != null ? req.note() : "Withdrawn by candidate";
-        ApplicationSnapshot app = applicationService.withdrawApplication(userId, id, note);
+        ApplicationSnapshot app = candidateAccess.withdraw(userId, id, note);
         return toResponse(app);
     }
 
@@ -77,9 +80,8 @@ public class CandidateApplicationController {
     }
 
     @GetMapping("/api/v1/candidates/me/offers/{id}")
-    public OfferResponse getOffer(@PathVariable("id") Long id) {
-        return applicationService.getOfferById(id).map(this::toOfferResponse)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Offer not found"));
+    public OfferResponse getOffer(Authentication auth, @PathVariable("id") Long id) {
+        return toOfferResponse(candidateAccess.offer(getUserId(auth), id));
     }
 
     @PostMapping("/api/v1/candidates/me/offers/{id}/accept")
@@ -89,7 +91,7 @@ public class CandidateApplicationController {
             @RequestBody(required = false) RespondOfferRequest req
     ) {
         String comment = req != null ? req.comment() : "Accepted by candidate";
-        OfferSnapshot offer = applicationService.acceptOffer(id, comment);
+        OfferSnapshot offer = candidateAccess.respond(getUserId(auth), id, true, comment);
         return toOfferResponse(offer);
     }
 
@@ -100,7 +102,7 @@ public class CandidateApplicationController {
             @RequestBody(required = false) RespondOfferRequest req
     ) {
         String comment = req != null ? req.comment() : "Declined by candidate";
-        OfferSnapshot offer = applicationService.declineOffer(id, comment);
+        OfferSnapshot offer = candidateAccess.respond(getUserId(auth), id, false, comment);
         return toOfferResponse(offer);
     }
 
@@ -113,9 +115,9 @@ public class CandidateApplicationController {
         String action = req != null && req.action() != null ? req.action() : "ACCEPT";
         String comment = req != null ? req.comment() : null;
         if ("DECLINE".equalsIgnoreCase(action) || "REJECT".equalsIgnoreCase(action)) {
-            return toOfferResponse(applicationService.declineOffer(id, comment != null ? comment : "Declined by candidate"));
+            return toOfferResponse(candidateAccess.respond(getUserId(auth), id, false, comment != null ? comment : "Declined by candidate"));
         } else {
-            return toOfferResponse(applicationService.acceptOffer(id, comment != null ? comment : "Accepted by candidate"));
+            return toOfferResponse(candidateAccess.respond(getUserId(auth), id, true, comment != null ? comment : "Accepted by candidate"));
         }
     }
 
