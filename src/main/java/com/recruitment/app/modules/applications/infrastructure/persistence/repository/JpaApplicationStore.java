@@ -49,7 +49,12 @@ public class JpaApplicationStore implements ApplicationStore {
 
     @Override
     public ApplicationSnapshot createApplication(Long jobId, Long candidateProfileId, Long candidateResumeId, String coverLetter) {
-        JobApplication application = new JobApplication(jobId, candidateProfileId, candidateResumeId, coverLetter);
+        return createApplication(jobId, candidateProfileId, candidateResumeId, coverLetter, "UNKNOWN");
+    }
+
+    @Override
+    public ApplicationSnapshot createApplication(Long jobId, Long candidateProfileId, Long candidateResumeId, String coverLetter, String source) {
+        JobApplication application = new JobApplication(jobId, candidateProfileId, candidateResumeId, coverLetter, source);
         JobApplication saved = applicationRepository.save(application);
         return toSnapshot(saved);
     }

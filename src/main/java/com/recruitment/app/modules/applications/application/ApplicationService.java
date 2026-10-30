@@ -26,6 +26,11 @@ public class ApplicationService {
     }
 
     public ApplicationSnapshot apply(Long userId, Long jobId, Long resumeId, String coverLetter) {
+        return apply(userId, jobId, resumeId, coverLetter, null);
+    }
+
+    public ApplicationSnapshot apply(Long userId, Long jobId, Long resumeId, String coverLetter, String source) {
+        String attribution = ApplicationSource.normalize(source);
         Long profileId = getCandidateProfileId(userId);
         Optional<ApplicationSnapshot> existing = applicationStore.findByJobAndCandidate(jobId, profileId);
         if (existing.isPresent()) {
@@ -40,7 +45,7 @@ public class ApplicationService {
             );
         }
 
-        ApplicationSnapshot app = applicationStore.createApplication(jobId, profileId, effectiveResumeId, coverLetter);
+        ApplicationSnapshot app = applicationStore.createApplication(jobId, profileId, effectiveResumeId, coverLetter, attribution);
 
         // Screening is asynchronous and requires explicit consent and actual provider output.
         // Submission must never manufacture a completed score or infer consent.
