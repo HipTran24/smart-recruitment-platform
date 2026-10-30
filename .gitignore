@@ -38,3 +38,7 @@ src/main/resources/application-local.yml
 # Python quality tools generate local bytecode only.
 __pycache__/
 *.py[cod]
+
+# CI candidate artifacts and reports are retained in Actions, never source control.
+quality-reports/
+release-output/

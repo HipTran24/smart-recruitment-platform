@@ -10,11 +10,12 @@
 	</parent>
 	<groupId>com.recruitment</groupId>
 	<artifactId>application</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>${revision}</version>
 	<name>SmartRecruit Platform API</name>
 	<description>Assistive recruitment screening API</description>
 	<properties>
 		<java.version>25</java.version>
+        <revision>0.0.1-SNAPSHOT</revision>
         <!-- GHSA-ccrj-gw8r-854m: align the entire OTEL BOM on its fixed release. -->
         <opentelemetry.version>1.67.0</opentelemetry.version>
         <coverage.global.line>0.55</coverage.global.line>

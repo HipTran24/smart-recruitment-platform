@@ -1,59 +1,13 @@
-# Quy Trình Khôi Phục & Xử Lý Sự Cố (Disaster Recovery & Incident Runbook)
-## SmartRecruit Platform Disaster Recovery Plan
+# Recovery and incident procedure
 
-### 1. Phân Loại Sự Cố & Kịch Bản Ứng Phó (Incident Scenarios)
+This is a procedure for review, not evidence that a real environment was restored. The current owner scope is CI only; see [release candidate checks](release-ci.md) and [observability triage](../../infra/observability/README.md).
 
-#### Kịch Bản A: Cơ Sở Dữ Liệu Bị Lỗi Khóa Ngoài Hoặc Lỗi Migration Drift
-- **Hiện tượng:** Backend không khởi động được, log báo `FlywayValidateException` hoặc lỗi schema migration.
-- **Hành động khắc phục:**
-  1. Kiểm tra log chi tiết:
-     ```bash
-     docker logs smart-recruitment-app-1 | grep -i "flyway"
-     ```
-  2. Nếu cần sửa chữa schema checksum, khởi chạy lệnh repair:
-     ```bash
-     docker exec -it smart-recruitment-app-1 java -cp ... org.flywaydb.commandline.Main repair
-     ```
-  3. Trong môi trường dev/local nếu cần làm mới sạch sẽ database:
-     ```bash
-     docker compose -f compose.local.yml down -v
-     docker compose -f compose.local.yml up -d
-     ```
+For a failed migration or schema drift, stop the rollout and preserve the exact artifact SHA, Flyway history, sanitized error class/request ID and backup reference. Validate configuration and migration checksums against the accepted source. Never automatically run `Flyway repair`, edit deployed V001–V010, set Hibernate update/create, clean a shared DB or run Compose down with volume deletion. Resolve drift through an approved forward migration or a restoration plan reviewed by the data owner.
 
-#### Kịch Bản B: Người Dùng Bị Khóa Quyền Nhưng JWT Cũ Còn Hạn
-- **Hiện tượng:** Admin vừa thu hồi quyền hoặc khóa một tài khoản, nhưng lo ngại Access Token của họ còn hiệu lực trong 15 phút.
-- **Cơ chế tự động (Built-in Guard):**
-  - Hệ thống sử dụng `LiveAccountValidator` kết hợp trường `credential_version` trong bảng `users`.
-  - Bất cứ khi nào tài khoản bị khóa (`deactivate()`) hoặc thay đổi vai trò (`updateUserRoles()`), `credentialVersion` tự động tăng lên $N+1$.
-  - Mọi request tiếp theo mang JWT cũ (có `credentialVersion = N`) sẽ bị `JwtAuthenticationFilter` chặn ngay lập tức với mã HTTP 401 Unauthorized tại cổng servlet, không cần chờ hết hạn 15 phút.
+For auth incidents, live account/credential-version validation invalidates old tokens after status/role/password changes. Verify with synthetic accounts or an explicitly authorized real account. Do not print bearer/refresh/reset tokens or alter the last administrator without a reviewed recovery path. Admin and Recruiter remain mutually exclusive; Admin cannot read CVs/dossiers.
 
-#### Kịch Bản C: Quản Trị Viên Vô Tình Tự Tước Quyền Admin (Last Admin Guard)
-- **Hiện tượng:** Admin thực hiện hạ cấp hoặc khóa tài khoản admin duy nhất trong hệ thống.
-- **Cơ chế bảo vệ (Safety Barrier):**
-  - Phương thức `AdminUserService.updateUserRoles()` và `updateUserStatus()` tự động đếm số lượng admin đang hoạt động thông qua `countActivePlatformAdmins()`.
-  - Nếu số lượng $\le 1$, hệ thống lập tức từ chối và ném lỗi `IllegalStateException("Cannot remove/deactivate the last active platform administrator")`.
-  - Nếu muốn bổ sung admin khẩn cấp từ dòng lệnh DB:
-    ```sql
-    INSERT INTO user_roles (user_id, role_id)
-    SELECT u.id, r.id FROM users u, roles r
-    WHERE u.email = 'emergency-admin@smartrecruit.local' AND r.code = 'ROLE_PLATFORM_ADMIN'
-    ON DUPLICATE KEY UPDATE user_id = u.id;
-    ```
+For Gemini quota/timeouts, preserve submission and the durable failure/lease metadata, monitor retries, quota and consent, and use the fenced screening workflow. There is **no automatic deterministic score fallback**. Never manufacture a completed score, change recruitment status or send AI feedback without recruiter approval. Actual dispatcher/submission integration must be accepted separately; an empty metrics queue does not prove successful screening.
 
-#### Kịch Bản D: Quá Tải API Sàng Lọc Gemini AI
-- **Hiện tượng:** Gemini API trả về mã lỗi 429 Quota Exceeded hoặc timeout.
-- **Cơ chế dự phòng (Graceful Degradation):**
-  - `GeminiCvScreeningClient` tự động chuyển đổi sang bộ tính điểm xác định (Deterministic Rule-based Matcher).
-  - Thuật toán tự động đối chiếu từ khóa kỹ năng giữa yêu cầu việc làm và CV thô của ứng viên để đưa ra điểm số có giải thích, đảm bảo pipeline tuyển dụng của Recruiter không bị gián đoạn.
+Backups must use the deployment's approved secret references, private storage, encryption, retention and scoped DB account. Prefer a protected client option file over passwords in shell arguments. A future drill must restore into a new isolated database, validate migration history and row/invariant checks, then verify application readiness and synthetic role flows. Do not restore over a shared DB as an exploratory check. Record actual timings/data checks; RPO/RTO and retention approval belong to the owner. No real backup/restore was performed by this CI task.
 
----
-
-### 2. Quy Trình Khôi Phục Dữ Liệu (Backup & Restore)
-
-```bash
-# Sao lưu dữ liệu MySQL
-docker exec smart-recruitment-mysql-1 mysqldump -u recruitment_user -precruitment_password recruitment_db > backup_$(date +%Y%m%d_%H%M%S).sql
-
-# Khôi phục dữ liệu từ bản sao lưu
-docker exec -i smart-recruitment-mysql-1 mysql -u recruitment_user -precruitment_password recruitment_db < backup_file.sql
-```
+Application rollback retains additive schema/data and selects a previously verified immutable artifact. Rehearse compatibility first; a binary rollback is not a schema rollback. Do not select an old artifact with known security findings as an automatic response. Check health/error rate/latency/audit loss and stalled leases after mitigation. Preserve evidence and obtain owner acceptance before closing the incident.
