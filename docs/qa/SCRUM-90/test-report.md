@@ -51,3 +51,55 @@
 \- Kiểm tra chặn trang ở giao diện chưa thay thế kiểm thử quyền API.
 
 \- Chưa có xác nhận UAT nghiệp vụ hoặc nghiệm thu Production
+
+\## \[Test ID]
+
+
+
+\## FLOW-01 — Recruiter tạo và đăng Job
+
+
+
+\- Thời điểm kiểm thử và timezone: \[điền]
+
+\- Môi trường: Docker local
+
+\- Base SHA: \[SHA lúc kiểm thử]
+
+\- Thay đổi chưa commit lúc chạy: \[nếu có]
+
+\- Setup: Recruiter đã đăng nhập, mở trang tạo Job.
+
+\- Input giả lập: QA SCRUM90 — Backend Intern
+
+\- Steps: Điền dữ liệu hợp lệ → Publish → kiểm tra danh sách và DB.
+
+\- Expected: Job được lưu và có trạng thái phù hợp.
+
+\- Actual: \[ghi kết quả quan sát trong lần chạy này]
+
+\- Status: PASS / FAIL / BLOCKED / NOT RUN
+
+\- Evidence: \[link ảnh/log thực sự tồn tại]
+
+\- Bug URL: chưa có
+
+\- Retest: chưa chạy
+## Phạm vi chưa hoàn tất
+
+
+
+\- \[Liệt kê case chưa chạy hoặc bị chặn]
+
+\- UAT nghiệp vụ: \[chờ xác nhận hoặc xác nhận thực tế]
+
+\- Production smoke: \[chưa thực hiện hoặc kết quả thực tế]
+
+
+
+\## Kết luận
+
+
+
+\[Chỉ kết luận trong phạm vi đã kiểm thử]
+

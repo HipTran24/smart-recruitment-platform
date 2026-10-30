@@ -1,0 +1,60 @@
+﻿app-1  | Picked up JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=75.0 -Djava.security.egd=file:/dev/./urandom
+app-1  | 
+app-1  |   .   ____          _            __ _ _
+app-1  |  /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+app-1  | ( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+app-1  |  \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+app-1  |   '  |____| .__|_| |_|_| |_\__, | / / / /
+app-1  |  =========|_|==============|___/=/_/_/_/
+app-1  | 
+app-1  |  :: Spring Boot ::                (v4.1.1)
+app-1  | 
+app-1  | 2026-10-30T16:03:40.711Z  INFO 1 --- [smart-recruitment] [           main] com.recruitment.app.Application          : Starting Application v0.0.1-SNAPSHOT using Java 25.0.5 with PID 1 (/app/application.jar started by app in /app)
+app-1  | 2026-10-30T16:03:40.717Z  INFO 1 --- [smart-recruitment] [           main] com.recruitment.app.Application          : The following 1 profile is active: "default"
+app-1  | 2026-10-30T16:03:43.284Z  INFO 1 --- [smart-recruitment] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+app-1  | 2026-10-30T16:03:43.511Z  INFO 1 --- [smart-recruitment] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 198 ms. Found 19 JPA repository interfaces.
+app-1  | 2026-10-30T16:03:44.715Z  INFO 1 --- [smart-recruitment] [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 8080 (http)
+app-1  | 2026-10-30T16:03:44.739Z  INFO 1 --- [smart-recruitment] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+app-1  | 2026-10-30T16:03:44.740Z  INFO 1 --- [smart-recruitment] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.24]
+app-1  | 2026-10-30T16:03:44.791Z  INFO 1 --- [smart-recruitment] [           main] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 3826 ms
+app-1  | 2026-10-30T16:03:45.606Z  INFO 1 --- [smart-recruitment] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+app-1  | 2026-10-30T16:03:46.073Z  INFO 1 --- [smart-recruitment] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@31b6fb14
+app-1  | 2026-10-30T16:03:46.076Z  INFO 1 --- [smart-recruitment] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+app-1  | 2026-10-30T16:03:46.167Z  INFO 1 --- [smart-recruitment] [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:mysql://mysql:3306/smartrecruit_db?useSSL=false&allowPublicKeyRetrieval=true&connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true (MySQL 8.4)
+app-1  | 2026-10-30T16:03:46.518Z  INFO 1 --- [smart-recruitment] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 10 migrations (execution time 00:00.091s)
+app-1  | 2026-10-30T16:03:46.559Z  INFO 1 --- [smart-recruitment] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema `smartrecruit_db`: 010
+app-1  | 2026-10-30T16:03:46.575Z  INFO 1 --- [smart-recruitment] [           main] o.f.core.internal.command.DbMigrate      : Schema `smartrecruit_db` is up to date. No migration necessary.
+app-1  | 2026-10-30T16:03:46.816Z  INFO 1 --- [smart-recruitment] [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+app-1  | 2026-10-30T16:03:46.982Z  INFO 1 --- [smart-recruitment] [           main] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.4.5.Final
+app-1  | 2026-10-30T16:03:48.913Z  INFO 1 --- [smart-recruitment] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+app-1  | 2026-10-30T16:03:49.200Z  INFO 1 --- [smart-recruitment] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+app-1  | 	Database JDBC URL [jdbc:mysql://mysql:3306/smartrecruit_db?useSSL=false&allowPublicKeyRetrieval=true&connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true]
+app-1  | 	Database driver: MySQL Connector/J
+app-1  | 	Database dialect: MySQLDialect
+app-1  | 	Database version: 8.4.11
+app-1  | 	Default catalog/schema: smartrecruit_db/undefined
+app-1  | 	Autocommit mode: undefined/unknown
+app-1  | 	Isolation level: REPEATABLE_READ [default REPEATABLE_READ]
+app-1  | 	JDBC fetch size: none
+app-1  | 	Pool: DataSourceConnectionProvider
+app-1  | 	Minimum pool size: undefined/unknown
+app-1  | 	Maximum pool size: undefined/unknown
+app-1  | 2026-10-30T16:03:51.848Z  INFO 1 --- [smart-recruitment] [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+app-1  | 2026-10-30T16:03:51.929Z  INFO 1 --- [smart-recruitment] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+app-1  | 2026-10-30T16:03:52.021Z  INFO 1 --- [smart-recruitment] [           main] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+app-1  | 2026-10-30T16:03:53.183Z  INFO 1 --- [smart-recruitment] [           main] o.s.boot.web.servlet.RegistrationBean    : Filter jwtAuthenticationFilterRegistration was not registered (disabled)
+app-1  | 2026-10-30T16:03:54.462Z  INFO 1 --- [smart-recruitment] [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name userDetailsService
+app-1  | 2026-10-30T16:03:55.257Z  INFO 1 --- [smart-recruitment] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 2 endpoints beneath base path '/actuator'
+app-1  | 2026-10-30T16:03:55.353Z  INFO 1 --- [smart-recruitment] [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 8080 (http) with context path '/'
+app-1  | 2026-10-30T16:03:55.362Z  INFO 1 --- [smart-recruitment] [           main] com.recruitment.app.Application          : Started Application in 15.819 seconds (process running for 17.726)
+app-1  | 2026-10-30T16:03:55.600Z  INFO 1 --- [smart-recruitment] [           main] c.r.a.m.i.i.b.AdminBootstrapRunner       : Bootstrapping platform administrator: qa.admin@example.com
+app-1  | 2026-10-30T16:03:55.883Z  INFO 1 --- [smart-recruitment] [           main] c.r.a.m.i.i.b.AdminBootstrapRunner       : Platform administrator bootstrapped successfully.
+app-1  | 2026-10-30T16:03:58.198Z  INFO 1 --- [smart-recruitment] [nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+app-1  | 2026-10-30T16:03:58.199Z  INFO 1 --- [smart-recruitment] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+app-1  | 2026-10-30T16:03:58.202Z  INFO 1 --- [smart-recruitment] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 3 ms
+app-1  | 2026-10-30T16:12:31.501Z  INFO 1 --- [smart-recruitment] [nio-8080-exec-5] .i.i.e.LoggingAccountNotificationGateway : Recorded email verification instructions (in-memory test/logging provider; no external email dispatched) for recipient: qa.candidate@example.com
+app-1  | 2026-10-30T16:16:22.729Z  INFO 1 --- [smart-recruitment] [nio-8080-exec-4] .i.i.e.LoggingAccountNotificationGateway : Recorded email verification instructions (in-memory test/logging provider; no external email dispatched) for recipient: candidate@smartrecruit.local
+app-1  | 2026-10-30T16:30:47.763Z  WARN 1 --- [smart-recruitment] [nio-8080-exec-2] c.r.a.m.i.a.IdentityApiExceptionHandler  : Account conflict: requestId=e592e919-25e9-4558-8063-4669c8582611
+app-1  | 2026-10-30T16:35:14.873Z  WARN 1 --- [smart-recruitment] [nio-8080-exec-7] c.r.a.m.i.a.IdentityApiExceptionHandler  : Authentication failure: requestId=6fded664-3f6b-4a57-8eed-b563ff15f078
+app-1  | 2026-10-30T16:35:36.068Z  WARN 1 --- [smart-recruitment] [nio-8080-exec-1] c.r.a.m.i.a.IdentityApiExceptionHandler  : Authentication failure: requestId=fffc1ef8-0394-4d1d-9cfb-341e87833bd8
+app-1  | 2026-10-30T16:35:59.058Z  INFO 1 --- [smart-recruitment] [io-8080-exec-10] .i.i.e.LoggingAccountNotificationGateway : Recorded email verification instructions (in-memory test/logging provider; no external email dispatched) for recipient: qa.recruiter@example.com
