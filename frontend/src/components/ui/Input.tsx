@@ -1,4 +1,4 @@
-import { type InputHTMLAttributes, forwardRef } from 'react';
+import { type InputHTMLAttributes, forwardRef, useId } from 'react';
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -7,8 +7,12 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ label, error, helperText, className = '', id, ...props }, ref) => {
-    const inputId = id ?? (label ? label.toLowerCase().replace(/\s+/g, '-') : undefined);
+  ({ label, error, helperText, className = '', id, 'aria-describedby': describedBy, 'aria-invalid': invalid, ...props }, ref) => {
+    const generatedId = useId();
+    const inputId = id ?? generatedId;
+    const descriptionId = `${inputId}-description`;
+    const descriptionIds = [describedBy, (error || helperText) ? descriptionId : undefined]
+      .filter(Boolean).join(' ') || undefined;
 
     return (
       <div className="flex flex-col gap-1.5 w-full">
@@ -25,10 +29,12 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             error ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''
           } ${className}`}
           {...props}
+          aria-invalid={error ? true : invalid}
+          aria-describedby={descriptionIds}
         />
-        {error && <span className="text-xs text-red-500 font-medium">{error}</span>}
+        {error && <span id={descriptionId} role="alert" className="text-xs text-red-500 font-medium">{error}</span>}
         {!error && helperText && (
-          <span className="text-xs text-[var(--color-text-muted)]">{helperText}</span>
+          <span id={descriptionId} className="text-xs text-[var(--color-text-muted)]">{helperText}</span>
         )}
       </div>
     );

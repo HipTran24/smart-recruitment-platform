@@ -1,74 +1,105 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { useAuth } from '../../auth/AuthContext';
-import { authService } from '../../services/auth.service';
-import { Card } from '../../components/ui/Card';
-import { Input } from '../../components/ui/Input';
-import { Button } from '../../components/ui/Button';
+import React, { useState, useEffect } from "react"
+
+import { useNavigate, useSearchParams, Link } from "react-router-dom"
+
+import { useAuth } from "../../auth/AuthContext"
+
+import { authService } from "../../services/auth.service"
+
+import { Card } from "../../components/ui/Card"
+
+import { Input } from "../../components/ui/Input"
+
+import { Button } from "../../components/ui/Button"
 
 export default function VerifyEmail() {
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const { verifyEmail } = useAuth();
+  const navigate = useNavigate()
 
-  const initialEmail = searchParams.get('email') || '';
-  const initialToken = searchParams.get('token') || '';
+  const [searchParams] = useSearchParams()
 
-  const [email, setEmail] = useState(initialEmail);
-  const [token, setToken] = useState(initialToken);
-  const [loading, setLoading] = useState(false);
-  const [fetchingTestToken, setFetchingTestToken] = useState(false);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const { verifyEmail } = useAuth()
+
+  const initialEmail = searchParams.get("email") || ""
+
+  const initialToken = searchParams.get("token") || ""
+
+  const [email, setEmail] = useState(initialEmail)
+
+  const [token, setToken] = useState(initialToken)
+
+  const [loading, setLoading] = useState(false)
+
+  const [fetchingTestToken, setFetchingTestToken] = useState(false)
+
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
+
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const handleVerify = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
+    if (e) e.preventDefault()
+
     if (!token) {
-      setErrorMessage('Vui lòng nhập mã token xác thực email.');
-      return;
+      setErrorMessage("Vui lòng nhập mã token xác thực email.")
+
+      return
     }
 
-    setLoading(true);
-    setErrorMessage(null);
+    setLoading(true)
+
+    setErrorMessage(null)
 
     try {
-      await verifyEmail(token);
-      setSuccessMessage('Xác minh địa chỉ email thành công! Bạn có thể tiếp tục sử dụng hệ thống.');
+      await verifyEmail(token)
+
+      setSuccessMessage(
+        "Xác minh địa chỉ email thành công! Bạn có thể tiếp tục sử dụng hệ thống.",
+      )
     } catch (err: any) {
-      setErrorMessage(err.message || 'Token xác minh không hợp lệ hoặc đã hết hạn.');
+      setErrorMessage(
+        err.message || "Token xác minh không hợp lệ hoặc đã hết hạn.",
+      )
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleFetchTestToken = async () => {
     if (!email) {
-      setErrorMessage('Vui lòng nhập email để truy vấn test mailbox.');
-      return;
+      setErrorMessage("Vui lòng nhập email để truy vấn test mailbox.")
+
+      return
     }
-    setFetchingTestToken(true);
-    setErrorMessage(null);
+
+    setFetchingTestToken(true)
+
+    setErrorMessage(null)
+
     try {
-      const fetched = await authService.fetchLocalTestVerificationToken(email);
+      const fetched = await authService.fetchLocalTestVerificationToken(email)
+
       if (fetched) {
-        setToken(fetched);
-        setSuccessMessage('Đã tìm thấy token xác minh từ Test Mailbox!');
+        setToken(fetched)
+
+        setSuccessMessage("Đã tìm thấy token xác minh từ Test Mailbox!")
       } else {
-        setErrorMessage('Không tìm thấy token nào cho email này trong Test Mailbox.');
+        setErrorMessage(
+          "Không tìm thấy token nào cho email này trong Test Mailbox.",
+        )
       }
     } catch (err: any) {
-      setErrorMessage(err.message || 'Lỗi khi gọi Test Mailbox harness.');
+      setErrorMessage(err.message || "Lỗi khi gọi Test Mailbox harness.")
     } finally {
-      setFetchingTestToken(false);
+      setFetchingTestToken(false)
     }
-  };
+  }
 
   useEffect(() => {
     // If token passed in URL query param, automatically verify
+
     if (initialToken) {
-      handleVerify();
+      handleVerify()
     }
-  }, [initialToken]);
+  }, [initialToken])
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-950 text-slate-100">
@@ -77,21 +108,30 @@ export default function VerifyEmail() {
           <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-400 font-black text-2xl mb-1 ring-1 ring-emerald-500/40">
             ✓
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-white">Xác Minh Địa Chỉ Email</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-white">
+            Xác Minh Địa Chỉ Email
+          </h1>
           <p className="text-sm text-slate-400">
-            Kích hoạt tài khoản để nộp hồ sơ ứng tuyển và nhận cập nhật phỏng vấn
+            Kích hoạt tài khoản để nộp hồ sơ ứng tuyển và nhận cập nhật phỏng
+            vấn
           </p>
         </div>
 
         {successMessage && (
-          <div className="p-3 text-sm rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 flex items-start gap-2">
+          <div
+            role="status"
+            className="p-3 text-sm rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 flex items-start gap-2"
+          >
             <span className="font-bold">✓</span>
             <span>{successMessage}</span>
           </div>
         )}
 
         {errorMessage && (
-          <div className="p-3 text-sm rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-300 flex items-start gap-2">
+          <div
+            role="alert"
+            className="p-3 text-sm rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-300 flex items-start gap-2"
+          >
             <span className="font-bold">!</span>
             <span>{errorMessage}</span>
           </div>
@@ -100,8 +140,14 @@ export default function VerifyEmail() {
         {!successMessage ? (
           <form onSubmit={handleVerify} className="space-y-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-300">Email đã đăng ký</label>
+              <label
+                htmlFor="verifyemail-email"
+                className="text-xs font-semibold text-slate-300"
+              >
+                Email đã đăng ký
+              </label>
               <Input
+                id="verifyemail-email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -113,7 +159,12 @@ export default function VerifyEmail() {
 
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold text-slate-300">Mã Token Xác Minh</label>
+                <label
+                  htmlFor="verifyemail-token"
+                  className="text-xs font-semibold text-slate-300"
+                >
+                  Mã Token Xác Minh
+                </label>
                 {email && (
                   <button
                     type="button"
@@ -121,11 +172,14 @@ export default function VerifyEmail() {
                     disabled={fetchingTestToken}
                     className="text-xs text-emerald-400 hover:text-emerald-300 transition-colors underline font-medium"
                   >
-                    {fetchingTestToken ? 'Đang đọc mailbox...' : 'Lấy token test local'}
+                    {fetchingTestToken
+                      ? "Đang đọc mailbox..."
+                      : "Lấy token test local"}
                   </button>
                 )}
               </div>
               <Input
+                id="verifyemail-token"
                 type="text"
                 value={token}
                 onChange={(e) => setToken(e.target.value)}
@@ -140,17 +194,17 @@ export default function VerifyEmail() {
               type="submit"
               variant="primary"
               disabled={loading}
-              className="w-full py-2.5 font-medium bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-900/30"
+              className="w-full py-2.5 font-medium bg-emerald-700 hover:bg-emerald-800 text-white shadow-lg shadow-emerald-900/30"
             >
-              {loading ? 'Đang xác minh...' : 'Xác Nhận Email'}
+              {loading ? "Đang xác minh..." : "Xác Nhận Email"}
             </Button>
           </form>
         ) : (
           <div className="pt-2">
             <Button
               variant="primary"
-              className="w-full py-2.5 font-medium bg-emerald-600 hover:bg-emerald-500 text-white"
-              onClick={() => navigate('/my-applications', { replace: true })}
+              className="w-full py-2.5 font-medium bg-emerald-700 hover:bg-emerald-800 text-white"
+              onClick={() => navigate("/my-applications", { replace: true })}
             >
               Tiếp Tục Đến Cổng Ứng Viên
             </Button>
@@ -158,7 +212,7 @@ export default function VerifyEmail() {
         )}
 
         <div className="pt-4 border-t border-slate-800 text-center text-xs text-slate-400">
-          Quay lại{' '}
+          Quay lại{" "}
           <Link
             to="/login"
             className="font-semibold text-emerald-400 hover:text-emerald-300 transition-colors"
@@ -168,5 +222,5 @@ export default function VerifyEmail() {
         </div>
       </Card>
     </div>
-  );
+  )
 }

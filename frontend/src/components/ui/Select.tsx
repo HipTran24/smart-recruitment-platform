@@ -1,18 +1,36 @@
-import { type SelectHTMLAttributes } from 'react';
+import { type SelectHTMLAttributes, useId } from "react"
 
 interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
-  label?: string;
-  options: { value: string; label: string }[];
-  error?: string;
+  label?: string
+
+  options: { value: string; label: string }[]
+
+  error?: string
 }
 
-export function Select({ label, options, error, className = '', id, ...props }: SelectProps) {
-  const selectId = id ?? (label ? label.toLowerCase().replace(/\s+/g, '-') : undefined);
+export function Select({
+  label,
+  options,
+  error,
+  className = "",
+  id,
+  "aria-describedby": describedBy,
+  "aria-invalid": invalid,
+  ...props
+}: SelectProps) {
+  const generatedId = useId()
+
+  const selectId = id ?? generatedId
+
+  const errorId = `${selectId}-error`
 
   return (
     <div className="flex flex-col gap-1.5 w-full">
       {label && (
-        <label htmlFor={selectId} className="text-xs font-medium text-[var(--color-text-secondary)]">
+        <label
+          htmlFor={selectId}
+          className="text-xs font-medium text-[var(--color-text-secondary)]"
+        >
           {label}
           {props.required && <span className="text-red-500 ml-0.5">*</span>}
         </label>
@@ -21,9 +39,15 @@ export function Select({ label, options, error, className = '', id, ...props }: 
         <select
           id={selectId}
           className={`h-10 w-full appearance-none bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text-primary)] rounded-lg pl-3.5 pr-9 py-2 text-sm outline-none transition-all focus:border-[var(--color-brand)] focus:ring-2 focus:ring-[var(--color-brand)]/20 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
-            error ? 'border-red-500' : ''
+            error ? "border-red-500" : ""
           } ${className}`}
           {...props}
+          aria-invalid={error ? true : invalid}
+          aria-describedby={
+            [describedBy, error ? errorId : undefined]
+              .filter(Boolean)
+              .join(" ") || undefined
+          }
         >
           {options.map((opt) => (
             <option
@@ -41,10 +65,23 @@ export function Select({ label, options, error, className = '', id, ...props }: 
           stroke="currentColor"
           viewBox="0 0 24 24"
         >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 9l-7 7-7-7"
+          />
         </svg>
       </div>
-      {error && <span className="text-xs text-red-500 font-medium">{error}</span>}
+      {error && (
+        <span
+          id={errorId}
+          role="alert"
+          className="text-xs text-red-500 font-medium"
+        >
+          {error}
+        </span>
+      )}
     </div>
-  );
+  )
 }

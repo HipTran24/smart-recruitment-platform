@@ -1,6 +1,12 @@
 @import url("https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap");
 @import "tailwindcss";
 
+/* Keep keyboard focus visible across native controls and links. */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 3px solid var(--color-focus, #2563eb);
+  outline-offset: 3px;
+}
+
 /* ========================================================================= */
 /* THEME TOKENS - SCOPED PER WORKSPACE (RECRUITER, CANDIDATE, ADMIN)         */
 /* ========================================================================= */
