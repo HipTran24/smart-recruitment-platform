@@ -40,7 +40,7 @@ public class CandidateApplicationController {
         Long resumeId = req != null ? req.candidateResumeId() : null;
         String coverLetter = req != null ? req.coverLetter() : null;
 
-        ApplicationSnapshot app = applicationService.apply(userId, jobId, resumeId, coverLetter);
+        ApplicationSnapshot app = applicationService.apply(userId, jobId, resumeId, coverLetter, req != null ? req.source() : null);
         return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(app));
     }
 

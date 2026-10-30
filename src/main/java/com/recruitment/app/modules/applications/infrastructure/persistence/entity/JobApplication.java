@@ -46,6 +46,9 @@ public class JobApplication extends BaseEntity {
     @Column(nullable = false, length = 20)
     private ApplicationStatus status = ApplicationStatus.SUBMITTED;
 
+    @Column(nullable = false, length = 64)
+    private String source = "UNKNOWN";
+
     @Column(name = "cover_letter", columnDefinition = "TEXT")
     private String coverLetter;
 
@@ -66,6 +69,11 @@ public class JobApplication extends BaseEntity {
             Long candidateResumeId,
             String coverLetter
     ) {
+        this(jobId, candidateProfileId, candidateResumeId, coverLetter, "UNKNOWN");
+    }
+
+    public JobApplication(Long jobId, Long candidateProfileId, Long candidateResumeId, String coverLetter, String source) {
+        this.source = com.recruitment.app.modules.applications.domain.model.ApplicationSource.normalize(source);
         this.jobId = requireId(jobId, "job id");
         this.candidateProfileId = requireId(candidateProfileId, "candidate profile id");
         if (candidateResumeId != null && candidateResumeId <= 0) {
