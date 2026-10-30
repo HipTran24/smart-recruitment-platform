@@ -14,7 +14,7 @@ Yêu cầu tiếp tục recovery cho phép sửa finding bảo mật thực tế
 
 Manifest nâng minimum Vite lên `^8.3.3`; lockfile giữ phiên bản đã kiểm tra. Hai dependency gián tiếp được cập nhật trong phạm vi tương thích của parent. Không nâng major framework.
 
-`pnpm-lock.yaml` trước đó không khớp manifest hiện tại: còn Vite 8.0.5 và thiếu nhóm dependency kiểm thử đã có trong package.json. Đã import lại từ npm lockfile bằng pnpm 10.34.3 đúng phiên bản trong `.mise.toml`; việc này giải thích phần diff lockfile lớn. Cả npm và pnpm giờ mô tả cùng đồ thị package đã vá, gồm Vitest/jsdom/testing-library.
+`pnpm-lock.yaml` trước đó không khớp manifest hiện tại: còn Vite 8.0.5 và thiếu nhóm dependency kiểm thử đã có trong package.json. Đã import lại từ npm lockfile bằng pnpm 10.34.3 đúng phiên bản trong `.mise.toml`; việc này giải thích phần diff lockfile lớn. Đã đối chiếu đủ 177 cặp package name/version: npm và pnpm mô tả cùng đồ thị đã vá, gồm Vitest/jsdom/testing-library.
 
 ## Kiểm chứng local sau bản vá
 

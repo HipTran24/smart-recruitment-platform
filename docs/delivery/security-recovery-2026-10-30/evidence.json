@@ -89,7 +89,12 @@
       "tests": 22
     },
     "pnpm_10_34_3_frozen_lockfile_check": "PASS",
-    "git_diff_check": "PASS"
+    "git_diff_check": "PASS",
+    "npm_pnpm_package_graph": {
+      "status": "PASS",
+      "unique_name_version_pairs": 177,
+      "note": "Compared the entire generated pnpm packages table with npm lockfile package names/versions after a clean import."
+    }
   },
   "ci_gate": {
     "workflow": ".github/workflows/frontend-ci.yml",
