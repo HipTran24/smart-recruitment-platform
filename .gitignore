@@ -31,3 +31,6 @@ src/main/resources/application-local.yml
 /frontend/yarn-debug.log*
 /frontend/yarn-error.log*
 .aider*
+
+# Reviewed placeholder-only production input contract.
+!.env.production.example
