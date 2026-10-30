@@ -12,13 +12,13 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Comparator;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * Multi-dimensional sliding-window rate limiter and lockout service.
+ * Multi-dimensional fixed-window rate limiter and lockout service.
  * Separates concerns by namespace (login credential lockout vs dispatch rate limiting).
  */
 @Service
@@ -79,6 +79,31 @@ public class AuthenticationThrottlingService {
         this.maxAccountAttempts = maxAccountAttempts <= 0 ? DEFAULT_ACCOUNT_MAX_ATTEMPTS : maxAccountAttempts;
         this.windowDuration = Objects.requireNonNull(windowDuration, "window duration must not be null");
         this.trustForwardedHeader = trustForwardedHeader;
+    }
+
+    /** Reserve before expensive work: check + increment are atomic across concurrent callers. */
+    public synchronized void reserveLoginAttempt(String email) {
+        checkThrottled(email);
+        recordFailure(email);
+    }
+
+    public synchronized void reservePasswordReset(String email) {
+        checkPasswordResetThrottled(email);
+        recordPasswordResetDispatch(email);
+    }
+
+    public synchronized void reserveSensitiveRequest(SensitiveAction action) {
+        String ip = resolveClientIp();
+        if (ip == null || ip.isBlank()) return;
+        String key = action.name().toLowerCase(Locale.ROOT) + ":ip:" + normalize(ip);
+        checkKey(key, action.limit);
+        recordKeyFailure(key);
+    }
+
+    public enum SensitiveAction {
+        REGISTER(20), VERIFY(20), REFRESH(30), OAUTH(30), RESET_CONFIRM(20), PASSWORD_CHANGE(20), LOGOUT(30);
+        private final int limit;
+        SensitiveAction(int limit) { this.limit = limit; }
     }
 
     public void checkThrottled(String key) {
@@ -271,8 +296,8 @@ public class AuthenticationThrottlingService {
         }
     }
 
-    private void recordKeyFailure(String normalizedKey) {
-        ensureCapacity();
+    private synchronized void recordKeyFailure(String normalizedKey) {
+        ensureCapacity(normalizedKey);
         Instant now = clock.instant();
         attempts.compute(normalizedKey, (k, existing) -> {
             if (existing == null || existing.isExpired(now, windowDuration)) {
@@ -282,28 +307,21 @@ public class AuthenticationThrottlingService {
         });
     }
 
-    private void ensureCapacity() {
-        if (attempts.size() < MAX_ENTRIES) {
-            return;
-        }
+    private void ensureCapacity(String key) {
+        if (attempts.containsKey(key) || attempts.size() < MAX_ENTRIES) return;
         Instant now = clock.instant();
         attempts.entrySet().removeIf(entry -> entry.getValue().isExpired(now, windowDuration));
-        if (attempts.size() >= MAX_ENTRIES) {
-            int toEvict = Math.max(10, MAX_ENTRIES / 20);
-            attempts.entrySet().stream()
-                    .sorted(Comparator.comparing(e -> e.getValue().firstAttemptAt()))
-                    .limit(toEvict)
-                    .forEach(e -> attempts.remove(e.getKey()));
-        }
+        // Keep active lockouts. Evicting them would let high-cardinality traffic bypass limits.
+        if (attempts.size() >= MAX_ENTRIES) throw new AuthenticationThrottledException(windowDuration.toSeconds());
     }
 
     private static String normalize(String str) {
-        return str == null ? "" : str.strip().toLowerCase();
+        return com.recruitment.app.common.security.TokenDigest.sha256Hex(str == null ? "" : str.strip().toLowerCase(Locale.ROOT));
     }
 
     private record AttemptRecord(int count, Instant firstAttemptAt) {
         boolean isExpired(Instant now, Duration window) {
-            return now.isAfter(firstAttemptAt.plus(window));
+            return !now.isBefore(firstAttemptAt.plus(window));
         }
     }
 }

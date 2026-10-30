@@ -1,0 +1,55 @@
+# CI-validated production baseline; credentials and target values are external.
+spring:
+  datasource:
+    hikari:
+      maximum-pool-size: ${DB_POOL_MAX_SIZE:10}
+      connection-timeout: 5000
+      validation-timeout: 2000
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    # Schema deployment is a separate approved step; runtime identity has no DDL.
+    enabled: ${APP_MIGRATION_ENABLED:false}
+    clean-disabled: true
+    user: ${MIGRATION_DB_USERNAME:}
+    password: ${MIGRATION_DB_PASSWORD:}
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+server:
+  address: ${APP_BIND_ADDRESS:127.0.0.1}
+  servlet:
+    session:
+      cookie:
+        secure: true
+  error:
+    include-message: never
+    include-stacktrace: never
+    include-exception: false
+management:
+  endpoint:
+    health:
+      show-details: never
+      group:
+        readiness:
+          include: readinessState,db
+        liveness:
+          include: livenessState
+app:
+  test-mailbox:
+    enabled: false
+  notification:
+    provider: ${APP_NOTIFICATION_PROVIDER:}
+  identity:
+    bootstrap-admin:
+      enabled: false
+logging:
+  structured:
+    format:
+      console: ecs
+  level:
+    org.hibernate.SQL: "OFF"
+    org.hibernate.orm.jdbc.bind: "OFF"
+    org.hibernate.orm.jdbc.extract: "OFF"
+    org.hibernate.orm.jdbc.error: "OFF"
+    org.springframework.web: WARN

@@ -5,16 +5,23 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>4.1.1</version>
+		<version>4.1.2</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.recruitment</groupId>
 	<artifactId>application</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>${revision}</version>
 	<name>SmartRecruit Platform API</name>
 	<description>Assistive recruitment screening API</description>
 	<properties>
 		<java.version>25</java.version>
+        <revision>0.0.1-SNAPSHOT</revision>
+        <!-- GHSA-ccrj-gw8r-854m: align the entire OTEL BOM on its fixed release. -->
+        <opentelemetry.version>1.67.0</opentelemetry.version>
+        <coverage.global.line>0.55</coverage.global.line>
+        <coverage.global.branch>0.40</coverage.global.branch>
+        <coverage.critical.line>0.80</coverage.critical.line>
+        <coverage.throttling.line>0.65</coverage.throttling.line>
         <smartrecruit.build.directory>${project.basedir}/target</smartrecruit.build.directory>
 	</properties>
 	<dependencyManagement>
@@ -54,6 +61,21 @@
 			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
 
+
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-opentelemetry</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-devtools</artifactId>
@@ -85,7 +107,7 @@
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcprov-jdk18on</artifactId>
-			<version>1.80</version>
+			<version>1.85</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -128,6 +150,53 @@
 	<build>
         <directory>${smartrecruit.build.directory}</directory>
 		<plugins>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.14</version>
+                <executions>
+                    <execution>
+                        <id>coverage-agent</id>
+                        <goals><goal>prepare-agent</goal></goals>
+                    </execution>
+                    <execution>
+                        <id>coverage-report</id>
+                        <phase>verify</phase>
+                        <goals><goal>report</goal></goals>
+                    </execution>
+                    <execution>
+                        <id>coverage-gate</id>
+                        <phase>verify</phase>
+                        <goals><goal>check</goal></goals>
+                        <configuration>
+                            <rules>
+                                <rule>
+                                    <element>BUNDLE</element>
+                                    <limits>
+                                        <limit><counter>LINE</counter><value>COVEREDRATIO</value><minimum>${coverage.global.line}</minimum></limit>
+                                        <limit><counter>BRANCH</counter><value>COVEREDRATIO</value><minimum>${coverage.global.branch}</minimum></limit>
+                                    </limits>
+                                </rule>
+                                <rule>
+                                    <element>CLASS</element>
+                                    <includes>
+                                        <include>com.recruitment.app.modules.applications.application.KpiService</include>
+                                        <include>com.recruitment.app.modules.applications.application.CandidateApplicationAccessService</include>
+                                        <include>com.recruitment.app.modules.identity.application.AuditEventService</include>
+                                        <include>com.recruitment.app.common.infrastructure.config.ProductionEnvironmentGuard</include>
+                                    </includes>
+                                    <limits><limit><counter>LINE</counter><value>COVEREDRATIO</value><minimum>${coverage.critical.line}</minimum></limit></limits>
+                                </rule>
+                                <rule>
+                                    <element>CLASS</element>
+                                    <includes><include>com.recruitment.app.modules.identity.application.AuthenticationThrottlingService</include></includes>
+                                    <limits><limit><counter>LINE</counter><value>COVEREDRATIO</value><minimum>${coverage.throttling.line}</minimum></limit></limits>
+                                </rule>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>

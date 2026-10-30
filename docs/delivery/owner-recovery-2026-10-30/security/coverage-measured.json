@@ -1,0 +1,32 @@
+{
+  "INSTRUCTION": {
+    "covered": 12362,
+    "missed": 9767,
+    "ratio": 0.5586334673957251
+  },
+  "BRANCH": {
+    "covered": 879,
+    "missed": 1069,
+    "ratio": 0.45123203285420943
+  },
+  "LINE": {
+    "covered": 2533,
+    "missed": 1786,
+    "ratio": 0.5864783514702477
+  },
+  "COMPLEXITY": {
+    "covered": 816,
+    "missed": 1348,
+    "ratio": 0.37707948243992606
+  },
+  "METHOD": {
+    "covered": 652,
+    "missed": 527,
+    "ratio": 0.553011026293469
+  },
+  "CLASS": {
+    "covered": 179,
+    "missed": 78,
+    "ratio": 0.6964980544747081
+  }
+}

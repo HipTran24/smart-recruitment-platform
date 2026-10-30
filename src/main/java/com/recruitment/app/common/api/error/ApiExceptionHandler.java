@@ -70,7 +70,7 @@ public class ApiExceptionHandler {
     @ExceptionHandler(HttpMediaTypeNotAcceptableException.class)
     ResponseEntity<Void> handleNotAcceptable(HttpMediaTypeNotAcceptableException exception) {
         log.warn("Spring MVC not acceptable media type: message={}, requestId={}",
-                exception.getMessage(), RequestContext.requestId());
+                exception.getClass().getSimpleName(), RequestContext.requestId());
         return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).build();
     }
 
@@ -83,7 +83,7 @@ public class ApiExceptionHandler {
                 ? er.getStatusCode()
                 : HttpStatus.BAD_REQUEST;
         log.warn("Spring MVC client error: status={}, message={}, requestId={}",
-                statusCode, exception.getMessage(), RequestContext.requestId());
+                statusCode, exception.getClass().getSimpleName(), RequestContext.requestId());
         String code = switch (statusCode.value()) {
             case 404 -> "NOT_FOUND";
             case 405 -> "METHOD_NOT_ALLOWED";
@@ -100,7 +100,7 @@ public class ApiExceptionHandler {
     ResponseEntity<ApiErrorResponse> handleUnexpected(Exception exception) {
         if (exception instanceof ErrorResponse errorResponse) {
             log.warn("Client error response: status={}, message={}, requestId={}",
-                    errorResponse.getStatusCode(), exception.getMessage(), RequestContext.requestId());
+                    errorResponse.getStatusCode(), exception.getClass().getSimpleName(), RequestContext.requestId());
             String code = switch (errorResponse.getStatusCode().value()) {
                 case 404 -> "NOT_FOUND";
                 case 405 -> "METHOD_NOT_ALLOWED";
@@ -113,7 +113,7 @@ public class ApiExceptionHandler {
                     "The request could not be processed."
             ));
         }
-        log.error("Unhandled unexpected exception: requestId={}", RequestContext.requestId(), exception);
+        log.error("Unhandled unexpected exception: type={}, requestId={}", exception.getClass().getSimpleName(), RequestContext.requestId());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiErrorResponse.of(
                 "INTERNAL_ERROR",
                 "An unexpected internal error occurred."

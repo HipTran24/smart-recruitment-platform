@@ -44,7 +44,9 @@ class ApiExceptionHandlerTests {
 
     @Test
     void unsupportedContentTypeReturns415UnsupportedMediaType() throws Exception {
-        mockMvc.perform(post("/api/v1/auth/login")
+        // This test reaches the media-type handler with a valid CSRF precondition.
+        // A separate security test verifies that an untrusted simple form is rejected first.
+        mockMvc.perform(post("/api/v1/auth/login").with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf())
                         .contentType(MediaType.TEXT_PLAIN)
                         .content("email=test%40example.com"))
                 .andExpect(status().isUnsupportedMediaType())

@@ -1,0 +1,79 @@
+{
+  "result": "VERIFIED_FALSE_POSITIVE_DISPOSITION",
+  "providerDisposition": "Ignored: Not a secret (false positive)",
+  "incidents": [
+    {
+      "id": 39298637,
+      "url": "https://dashboard.gitguardian.com/workspace/852097/incidents/39298637",
+      "status": "Ignored",
+      "reason": "Not a secret (false positive)",
+      "uiVerified": true
+    },
+    {
+      "id": 39298638,
+      "url": "https://dashboard.gitguardian.com/workspace/852097/incidents/39298638",
+      "status": "Ignored",
+      "reason": "Not a secret (false positive)",
+      "uiVerified": true
+    },
+    {
+      "id": 39298639,
+      "url": "https://dashboard.gitguardian.com/workspace/852097/incidents/39298639",
+      "status": "Ignored",
+      "reason": "Not a secret (false positive)",
+      "uiVerified": true
+    },
+    {
+      "id": 39298640,
+      "url": "https://dashboard.gitguardian.com/workspace/852097/incidents/39298640",
+      "status": "Ignored",
+      "reason": "Not a secret (false positive)",
+      "uiVerified": true
+    }
+  ],
+  "occurrences": 8,
+  "rows": [
+    {
+      "csvLine": 18,
+      "path": "src/main/java/com/recruitment/app/modules/identity/application/IdentityAuthenticationService.java",
+      "distinctCommitReferences": 5,
+      "allObjectTypes": "commit",
+      "classification": "Git lineage metadata; no raw credential field"
+    },
+    {
+      "csvLine": 36,
+      "path": "src/main/java/com/recruitment/app/modules/identity/application/AuthenticationThrottlingService.java",
+      "distinctCommitReferences": 4,
+      "allObjectTypes": "commit",
+      "classification": "Git lineage metadata; no raw credential field"
+    },
+    {
+      "csvLine": 37,
+      "path": "src/main/java/com/recruitment/app/modules/identity/api/AuthController.java",
+      "distinctCommitReferences": 5,
+      "allObjectTypes": "commit",
+      "classification": "Git lineage metadata; no raw credential field"
+    },
+    {
+      "csvLine": 48,
+      "path": "src/main/java/com/recruitment/app/modules/identity/application/GoogleOAuthLoginService.java",
+      "distinctCommitReferences": 2,
+      "allObjectTypes": "commit",
+      "classification": "Git lineage metadata; no raw credential field"
+    }
+  ],
+  "verifiedVia": "Authenticated GitGuardian incident pages; explicit status/reason visibly confirmed for each exact incident",
+  "entireCsvAudit": {
+    "rows": 62,
+    "fields": [
+      "issue",
+      "path",
+      "baseline_sha",
+      "file_url",
+      "path_history_shas"
+    ],
+    "distinct40HexValues": 11,
+    "allObjectTypes": "commit",
+    "rawCredentialFields": 0
+  }
+}

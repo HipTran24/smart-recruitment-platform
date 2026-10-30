@@ -49,7 +49,8 @@ public final class ApplicationDtos {
     public record ApplyRequest(
             @JsonAlias({"resumeId", "candidateResumeId"})
             Long candidateResumeId,
-            String coverLetter
+            String coverLetter,
+            String source
     ) {}
 
     @JsonIgnoreProperties(ignoreUnknown = true)

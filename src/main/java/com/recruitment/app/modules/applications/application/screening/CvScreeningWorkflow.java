@@ -21,6 +21,7 @@ public class CvScreeningWorkflow {
 
     public static final int MAX_PROVIDER_ATTEMPTS = 3;
 
+    private final io.micrometer.observation.ObservationRegistry observations;
     private final CvScreeningStateService stateService;
     private final ObjectProvider<CvScreeningGateway> screeningGateway;
 
@@ -28,12 +29,31 @@ public class CvScreeningWorkflow {
             CvScreeningStateService stateService,
             ObjectProvider<CvScreeningGateway> screeningGateway
     ) {
+        this(stateService, screeningGateway, io.micrometer.observation.ObservationRegistry.NOOP);
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public CvScreeningWorkflow(CvScreeningStateService stateService,ObjectProvider<CvScreeningGateway> screeningGateway,
+                               io.micrometer.observation.ObservationRegistry observations) {
+        this.observations = observations;
         this.stateService = Objects.requireNonNull(stateService, "screening state service must not be null");
         this.screeningGateway = Objects.requireNonNull(screeningGateway, "screening gateway provider must not be null");
     }
 
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public CvScreeningExecutionOutcome execute(Long screeningId, CvScreeningRequest request) {
+        var observation=io.micrometer.observation.Observation.createNotStarted("smartrecruit.screening",observations).start();
+        try(var scope=observation.openScope()) {
+            var outcome=executeObserved(screeningId,request);
+            observation.lowCardinalityKeyValue("outcome",outcome.status().name());
+            return outcome;
+        } catch(RuntimeException failure) {
+            observation.error(new IllegalStateException("Screening execution failed"));
+            throw failure;
+        } finally { observation.stop(); }
+    }
+
+    private CvScreeningExecutionOutcome executeObserved(Long screeningId,CvScreeningRequest request) {
         Objects.requireNonNull(request, "CV screening request must not be null");
 
         CvScreeningStateService.ClaimResult claim = stateService.claim(
