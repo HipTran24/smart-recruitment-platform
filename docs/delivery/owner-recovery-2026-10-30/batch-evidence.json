@@ -39,7 +39,7 @@
   "issues": [
     {
       "key": "SCRUM-79",
-      "purpose": "KPI theo ngày/múi giờ/job/source",
+      "purpose": "KPI theo ng\u00e0y/m\u00fai gi\u1edd/job/source",
       "implementationSha": "f34ff4b58a1499fa72d3d162e2a327b76dae920d",
       "pullRequest": {
         "pr": 4,
@@ -81,7 +81,7 @@
     },
     {
       "key": "SCRUM-82",
-      "purpose": "Coverage, SAST, dependency audit và bản vá",
+      "purpose": "Coverage, SAST, dependency audit v\u00e0 b\u1ea3n v\u00e1",
       "implementationSha": "92e4e496309d35354f51c5fa8a18e81b00f14a96",
       "pullRequest": {
         "pr": 8,
@@ -144,7 +144,7 @@
     },
     {
       "key": "SCRUM-85",
-      "purpose": "Atomic rate limit, audit và redaction",
+      "purpose": "Atomic rate limit, audit v\u00e0 redaction",
       "implementationSha": "b81bbb287b7fa4f123f149d137afc0ae2b499813",
       "pullRequest": {
         "pr": 5,
@@ -186,7 +186,7 @@
     },
     {
       "key": "SCRUM-86",
-      "purpose": "Metrics, tracing, dashboard và alert tests",
+      "purpose": "Metrics, tracing, dashboard v\u00e0 alert tests",
       "implementationSha": "4be88afca487a5309f72c82ed280f65fca5a7da5",
       "pullRequest": {
         "pr": 7,
@@ -235,7 +235,7 @@
     },
     {
       "key": "SCRUM-88",
-      "purpose": "Versioned CI candidate và rollback protocol",
+      "purpose": "Versioned CI candidate v\u00e0 rollback protocol",
       "implementationSha": "34bf50cdab55b377c4d723d951121fde486bc6f1",
       "pullRequest": {
         "pr": 9,
@@ -312,7 +312,7 @@
     },
     {
       "key": "SCRUM-89",
-      "purpose": "Production profile và guard trước DB",
+      "purpose": "Production profile v\u00e0 guard tr\u01b0\u1edbc DB",
       "implementationSha": "6d6ce1cf04ce276cd9a9d764419667b9cb30f2fb",
       "pullRequest": {
         "pr": 6,
@@ -354,7 +354,7 @@
     },
     {
       "key": "SCRUM-21",
-      "purpose": "Ownership, consent và auth hardening",
+      "purpose": "Ownership, consent v\u00e0 auth hardening",
       "implementationSha": "bde4fbbdbd9d5f9e46fb525acee1ff1d5643eb24",
       "pullRequest": {
         "pr": 2,
@@ -396,7 +396,7 @@
     },
     {
       "key": "SCRUM-50",
-      "purpose": "Recovery và hồ sơ nghiệm thu",
+      "purpose": "Recovery v\u00e0 h\u1ed3 s\u01a1 nghi\u1ec7m thu",
       "implementationSha": null,
       "pullRequest": {
         "pr": 1,
@@ -570,6 +570,39 @@
   },
   "blockers": [
     {
+      "condition": "Independent review",
+      "result": "BLOCKED",
+      "submittedReviews": 0,
+      "reviewersFabricated": 0
+    },
+    {
+      "condition": "Main merge enforcement",
+      "result": "BLOCKED_UNVERIFIED",
+      "rulesetListCount": 0,
+      "legacyProtectionRead": "403 Resource not accessible by integration",
+      "settingsChanged": false
+    }
+  ],
+  "limitations": [
+    "PR/branch links verified; native attribution of all historical keyless commits is not claimed",
+    "8-issue CI evidence does not certify browser E2E, durable AI dispatch/submission integration or production readiness",
+    "No retrospective meeting, acceptance signature, production rollback or deployment was fabricated",
+    "PR heads and main may change in concurrent owner sessions; use current API checks before a merge"
+  ],
+  "providerDispositionUpdate": {
+    "status": "PASS",
+    "incidents": [
+      39298637,
+      39298638,
+      39298639,
+      39298640
+    ],
+    "reason": "Not a secret (false positive)",
+    "scope": "Only these four proven Git metadata incidents; no blanket allowlist or scanner setting change",
+    "exactHeadCi": "Verify current PR1 checks after final dossier publication"
+  },
+  "historicalBlockers": [
+    {
       "condition": "PR1 GitGuardian",
       "providerResult": "FAIL on observed parent head",
       "localClassification": "4 incidents / 8 occurrences are commit metadata",
@@ -590,10 +623,9 @@
       "settingsChanged": false
     }
   ],
-  "limitations": [
-    "PR/branch links verified; native attribution of all historical keyless commits is not claimed",
-    "8-issue CI evidence does not certify browser E2E, durable AI dispatch/submission integration or production readiness",
-    "No retrospective meeting, acceptance signature, production rollback or deployment was fabricated",
-    "PR heads and main may change in concurrent owner sessions; use current API checks before a merge"
-  ]
+  "pr1StackingUpdate": {
+    "base": "codex/SCRUM-88-release-ci",
+    "reason": "Dossier depends on the verified complete owner tree; avoid current main add/add workflow conflict without merging branches or rewriting history",
+    "mergePerformed": false
+  }
 }
