@@ -158,6 +158,7 @@ public class IdentitySecurityConfiguration {
                 .requestMatchers("/api/v1/candidates/**", "/api/v1/jobs/*/applications").hasAuthority("ROLE_CANDIDATE")
                 .requestMatchers("/api/v1/recruiter/**").hasAuthority("ROLE_RECRUITER")
                 .requestMatchers("/api/v1/admin/**").hasAuthority("ROLE_PLATFORM_ADMIN")
+                .requestMatchers("/actuator/prometheus", "/actuator/metrics", "/actuator/metrics/**").hasAuthority("ROLE_PLATFORM_ADMIN")
                 .anyRequest().denyAll();
     }
 

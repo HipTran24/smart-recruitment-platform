@@ -1,0 +1,59 @@
+groups:
+  - name: smartrecruit
+    rules:
+      - alert: SmartRecruitApiDown
+        expr: "up{job=\"smartrecruit\"} == 0"
+        for: 2m
+        labels:
+          severity: critical
+          owner: project-owner
+        annotations:
+          summary: "API scrape unavailable"
+      - alert: SmartRecruitHighErrorRate
+        expr: "sum by(job)(rate(http_server_requests_seconds_count{job=\"smartrecruit\",status=~\"5..\"}[5m])) / clamp_min(sum by(job)(rate(http_server_requests_seconds_count{job=\"smartrecruit\"}[5m])), 1) > 0.05"
+        for: 5m
+        labels:
+          severity: critical
+          owner: project-owner
+        annotations:
+          summary: "API 5xx ratio exceeds 5 percent"
+      - alert: SmartRecruitHighLatency
+        expr: "histogram_quantile(0.95, sum by(le,job)(rate(http_server_requests_seconds_bucket{job=\"smartrecruit\"}[5m]))) > 0.8"
+        for: 10m
+        labels:
+          severity: warning
+          owner: project-owner
+        annotations:
+          summary: "API p95 exceeds 800 milliseconds"
+      - alert: SmartRecruitScreeningStalled
+        expr: "smartrecruit_screenings_oldest_pending_seconds{job=\"smartrecruit\"} > 300"
+        for: 5m
+        labels:
+          severity: warning
+          owner: project-owner
+        annotations:
+          summary: "Screening queue oldest pending exceeds five minutes"
+      - alert: SmartRecruitExpiredLease
+        expr: "smartrecruit_screenings_expired_leases{job=\"smartrecruit\"} > 0"
+        for: 2m
+        labels:
+          severity: warning
+          owner: project-owner
+        annotations:
+          summary: "Screening has expired processing leases"
+      - alert: SmartRecruitAuditLoss
+        expr: "increase(smartrecruit_audit_persistence_failures_total{job=\"smartrecruit\"}[5m]) > 0"
+        for: 0m
+        labels:
+          severity: critical
+          owner: project-owner
+        annotations:
+          summary: "Audit persistence failed"
+      - alert: SmartRecruitQueueMetricsUnavailable
+        expr: "smartrecruit_queue_metrics_available{job=\"smartrecruit\"} == 0"
+        for: 2m
+        labels:
+          severity: critical
+          owner: project-owner
+        annotations:
+          summary: "Queue metrics database query failed"
