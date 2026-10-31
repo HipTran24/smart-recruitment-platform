@@ -83,6 +83,75 @@ export default function ProfileResume() {
   const [aiConsent, setAiConsent] = useState(true);
   const [dataRetention, setDataRetention] = useState(true);
 
+  // CV Upload state
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadStatus, setUploadStatus] = useState<"idle" | "uploading" | "success" | "error">("idle");
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+
+  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+  const ALLOWED_EXTENSIONS = [".pdf", ".docx"];
+  const ALLOWED_MIME_TYPES = [
+    "application/pdf",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ];
+
+  const handleValidateAndUpload = (file: File) => {
+    setUploadError(null);
+
+    const hasAllowedExt = ALLOWED_EXTENSIONS.some((ext) =>
+      file.name.toLowerCase().endsWith(ext),
+    );
+    const hasAllowedMime = ALLOWED_MIME_TYPES.includes(file.type);
+
+    if (!hasAllowedExt && !hasAllowedMime) {
+      setUploadStatus("error");
+      setUploadError("Invalid file type. Only PDF and DOCX files are allowed.");
+      return;
+    }
+
+    if (file.size > MAX_FILE_SIZE) {
+      setUploadStatus("error");
+      setUploadError("File size exceeds 10MB limit.");
+      return;
+    }
+
+    setSelectedFile(file);
+    setUploadStatus("uploading");
+    setUploadProgress(72);
+    setTimeout(() => {
+      setUploadProgress(100);
+      setUploadStatus("success");
+    }, 500);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handleValidateAndUpload(file);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      handleValidateAndUpload(file);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800">
       {/* Top Header / Navbar */}
@@ -284,34 +353,70 @@ export default function ProfileResume() {
               </div>
 
               {/* Upload Dropzone */}
-              <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/50 p-8 text-center transition hover:border-indigo-300 hover:bg-slate-50">
+              <label
+                htmlFor="cv-upload-input"
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                className={`flex flex-col items-center justify-center rounded-xl border-2 border-dashed p-8 text-center cursor-pointer transition ${
+                  isDragging
+                    ? "border-indigo-500 bg-indigo-50/50"
+                    : "border-slate-200 bg-slate-50/50 hover:border-indigo-300 hover:bg-slate-50"
+                }`}
+              >
+                <input
+                  id="cv-upload-input"
+                  type="file"
+                  accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                  onChange={handleFileChange}
+                  className="sr-only"
+                />
                 <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-indigo-50 text-indigo-600">
                   <UploadCloud className="h-6 w-6" />
                 </div>
                 <p className="text-sm font-semibold text-slate-800">
-                  Upload latest CV (PDF/DOCX, max 10MB)
+                  {selectedFile ? selectedFile.name : "Upload latest CV (PDF/DOCX, max 10MB)"}
                 </p>
                 <p className="mt-1 text-xs text-slate-400">
-                  Drag and drop or click to browse
+                  {selectedFile
+                    ? `${(selectedFile.size / (1024 * 1024)).toFixed(2)} MB`
+                    : "Drag and drop or click to browse"}
                 </p>
-              </div>
+              </label>
+
+              {uploadError && (
+                <div role="alert" className="mt-3 rounded-lg border border-red-200 bg-red-50 p-3 text-xs font-medium text-red-700">
+                  {uploadError}
+                </div>
+              )}
+
+              {uploadStatus === "success" && (
+                <div role="status" className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-xs font-medium text-emerald-700">
+                  CV uploaded successfully. Processing completed.
+                </div>
+              )}
 
               {/* Progress Section */}
-              <div className="mt-6 border-t border-slate-100 pt-4">
-                <div className="flex items-center justify-between text-xs font-semibold">
-                  <div className="flex items-center gap-2 text-indigo-600">
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    <span>PROCESSING...</span>
+              {uploadStatus === "uploading" && (
+                <div className="mt-6 border-t border-slate-100 pt-4">
+                  <div className="flex items-center justify-between text-xs font-semibold">
+                    <div className="flex items-center gap-2 text-indigo-600">
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      <span>PROCESSING...</span>
+                    </div>
+                    <span className="text-slate-600">{uploadProgress}%</span>
                   </div>
-                  <span className="text-slate-600">72%</span>
+                  <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                    <div
+                      className="h-full rounded-full bg-indigo-600 transition-all duration-300"
+                      style={{ width: `${uploadProgress}%` }}
+                    ></div>
+                  </div>
+                  <p className="mt-2 text-xs text-slate-400">
+                    AI is identifying work history, skills, and contact details.
+                  </p>
                 </div>
-                <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-100">
-                  <div className="h-full w-[72%] rounded-full bg-indigo-600 transition-all duration-300"></div>
-                </div>
-                <p className="mt-2 text-xs text-slate-400">
-                  AI is identifying work history, skills, and contact details.
-                </p>
-              </div>
+              )}
             </div>
 
             {/* AI Extraction Preview Card */}
