@@ -67,7 +67,7 @@ public class RecruiterApplicationController {
     public ResponseEntity<EvaluationResponse> submitEvaluation(
             Authentication auth,
             @PathVariable("id") Long id,
-            @RequestBody CreateEvaluationRequest req
+            @jakarta.validation.Valid @RequestBody CreateEvaluationRequest req
     ) {
         Long userId = getUserId(auth);
         EvaluationSnapshot eval = applicationService.saveEvaluation(
