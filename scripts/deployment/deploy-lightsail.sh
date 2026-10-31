@@ -83,9 +83,6 @@ compose=(docker compose --env-file .env -f infra/docker/compose.prod.yml)
 "${compose[@]}" stop app frontend
 "${compose[@]}" up -d --wait --wait-timeout 180 mysql
 python3 scripts/deployment/prepare-vps.py database
-"${compose[@]}" run --rm --no-deps --entrypoint java app \
-  -Dloader.main=com.recruitment.app.common.infrastructure.config.DatabaseMigrationMain \
-  -cp /app/application.jar org.springframework.boot.loader.launch.PropertiesLauncher
 "${compose[@]}" run --rm --no-deps --user 0:0 --entrypoint sh app -c 'chown -R 10001:10001 /app/uploads'
 "${compose[@]}" up -d --remove-orphans --wait --wait-timeout 300
 docker compose --env-file .env -f infra/docker/compose.prod.yml ps

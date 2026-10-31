@@ -16,6 +16,9 @@ This repository provides only a local Compose environment. Before a production d
 
 The Lightsail Compose deployment prepares a private MySQL CA, verifies the server identity over TLS,
 backs up the database and runs Flyway through a separate migration identity before starting the runtime.
+Its password is generated per deployment, passed only to the temporary migration container and never
+saved in `.env`. The migration identity is locked afterwards, including when a migration fails.
+The runtime container receives no migration credentials.
 The runtime database identity has only DML privileges. Existing data volumes are retained.
 Email may be explicitly disabled with `APP_NOTIFICATION_PROVIDER=disabled` and
 `APP_NOTIFICATION_ENABLED=false` until a real delivery adapter is configured; this mode never

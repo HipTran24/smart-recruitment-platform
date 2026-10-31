@@ -16,7 +16,7 @@ def run(command, *, data=None, env=None, label='Preparation'):
     result = subprocess.run(command, input=data, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     if result.returncode:
         detail = result.stderr.decode(errors='replace')[-1200:]
-        for key, value in read_env().items():
+        for key, value in {**read_env(), **(env or {})}.items():
             if re.search(r'PASSWORD|SECRET|TOKEN|API_KEY', key) and len(value) >= 6:
                 detail = detail.replace(value, '[REDACTED]')
         raise RuntimeError(label + ' failed: ' + detail)
@@ -28,8 +28,10 @@ def read_env():
                 if '=' in line and not line.lstrip().startswith('#'))
 
 
-def save_env(updates):
-    path = Path('.env'); lines = path.read_text().splitlines()
+def save_env(updates, *, remove=()):
+    path = Path('.env')
+    lines = [line for line in path.read_text().splitlines()
+             if not any(line.startswith(key + '=') for key in remove)]
     for key, value in updates.items():
         if any(line.startswith(key + '=') for line in lines):
             lines = [key + '=' + value if line.startswith(key + '=') else line for line in lines]
@@ -75,7 +77,6 @@ def certificates():
     v = read_env()
     updates = {'MYSQL_TLS_DIRECTORY': str(tls), 'MYSQL_TRUSTSTORE_FILE': str(trust), 'APP_MIGRATION_ENABLED': 'false'}
     updates['MIGRATION_DB_USERNAME'] = v.get('MIGRATION_DB_USERNAME') or 'smartrecruit_migrator'
-    updates['MIGRATION_DB_PASSWORD'] = v.get('MIGRATION_DB_PASSWORD') or secrets.token_urlsafe(32)
     if not v.get('APP_NOTIFICATION_PROVIDER') or v['APP_NOTIFICATION_PROVIDER'] == 'logging':
         updates.update(APP_NOTIFICATION_PROVIDER='disabled', APP_NOTIFICATION_ENABLED='false')
     if not v.get('APP_SECURITY_JWT_ISSUER', '').startswith('https://'):
@@ -87,7 +88,7 @@ def certificates():
     url = v.get('SPRING_DATASOURCE_URL', '')
     if not url or url.startswith('jdbc:mysql://mysql:') or url.startswith('jdbc:mysql://mysql/'):
         updates['SPRING_DATASOURCE_URL'] = 'jdbc:mysql://mysql:3306/' + v['MYSQL_DATABASE'] + '?sslMode=VERIFY_IDENTITY&trustCertificateKeyStoreUrl=file:/run/secrets/mysql-truststore.p12&trustCertificateKeyStoreType=PKCS12&trustCertificateKeyStorePassword=changeit&fallbackToSystemTrustStore=false&connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true'
-    save_env(updates)
+    save_env(updates, remove=('MIGRATION_DB_PASSWORD',))
     image = 'mysql:8.4.11'
     uid = run(['docker', 'run', '--rm', '--entrypoint', 'id', image, '-u', 'mysql']).decode().strip()
     gid = run(['docker', 'run', '--rm', '--entrypoint', 'id', image, '-g', 'mysql']).decode().strip()
@@ -124,14 +125,27 @@ def database():
     with (backups / ('before-migration-' + stamp + '.sql.gz')).open('xb') as output: output.write(gzip.compress(backup))
     def quote(value): return "'" + value.replace('\\', '\\\\').replace("'", "''") + "'"
     identity = quote(migrator) + "@'%'"; app = quote(runtime) + "@'%'"
+    # This credential exists only in this deployment process and the short-lived
+    # migration container. Never persist it in .env or pass it to the runtime app.
+    migration_password = secrets.token_urlsafe(32)
     scope = '`' + name.replace('_', '\\_') + '`.*'
-    sql = 'CREATE USER IF NOT EXISTS ' + identity + ' IDENTIFIED BY ' + quote(v['MIGRATION_DB_PASSWORD']) + ';\n'
-    sql += 'ALTER USER ' + identity + ' IDENTIFIED BY ' + quote(v['MIGRATION_DB_PASSWORD']) + ';\n'
+    sql = 'CREATE USER IF NOT EXISTS ' + identity + ' IDENTIFIED BY ' + quote(migration_password) + ';\n'
+    sql += 'ALTER USER ' + identity + ' IDENTIFIED BY ' + quote(migration_password) + ' ACCOUNT UNLOCK;\n'
     sql += 'GRANT ALL PRIVILEGES ON ' + scope + ' TO ' + identity + ';\n'
     sql += 'REVOKE ALL PRIVILEGES, GRANT OPTION FROM ' + app + ';\n'
     sql += 'GRANT SELECT,INSERT,UPDATE,DELETE ON ' + scope + ' TO ' + app + ';\n'
-    run(admin, data=sql.encode(), env=env, label='Separate migration/runtime database permissions')
-    print('Database backed up; migration and runtime identities prepared.')
+    migration_env = {**env, 'MIGRATION_DB_USERNAME': migrator, 'MIGRATION_DB_PASSWORD': migration_password}
+    try:
+        run(admin, data=sql.encode(), env=migration_env, label='Separate migration/runtime database permissions')
+        run(compose + ['run', '--rm', '--no-deps', '-e', 'MIGRATION_DB_USERNAME', '-e', 'MIGRATION_DB_PASSWORD',
+            '--entrypoint', 'java', 'app',
+            '-Dloader.main=com.recruitment.app.common.infrastructure.config.DatabaseMigrationMain',
+            '-cp', '/app/application.jar', 'org.springframework.boot.loader.launch.PropertiesLauncher'],
+            env=migration_env, label='Flyway schema migration')
+    finally:
+        run(admin, data=('ALTER USER ' + identity + ' ACCOUNT LOCK;').encode(), env=env,
+            label='Lock migration identity after deployment')
+    print('Database backed up and migrated; temporary migration identity locked.')
 
 
 if __name__ == '__main__':

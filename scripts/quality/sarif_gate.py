@@ -1,12 +1,39 @@
 #!/usr/bin/env python3
 """Fail on high/critical CodeQL findings or error-level results; retain all findings in the report."""
 import argparse
+import hashlib
 import json
 import sys
 from pathlib import Path
 
 
-def inspect(paths):
+def load_reviews(path, root):
+    """Accept only individually reviewed results tied to unchanged source and safeguards."""
+    if not path.exists():
+        return {}
+    data = json.loads(path.read_text())
+    if data.get('version') != 1:
+        raise ValueError('Unsupported finding review format')
+    reviewed = {}
+    for item in data['findings']:
+        if item.get('classification') != 'false-positive' or not item.get('reason') or not item.get('evidence'):
+            raise ValueError('A finding review requires its classification, reason and test evidence')
+        guards = {item['file']: item['sourceSha256'], **item.get('guards', {})}
+        for filename, expected in guards.items():
+            relative = Path(filename)
+            if relative.is_absolute() or '..' in relative.parts:
+                raise ValueError('Invalid reviewed source path')
+            source = root / relative
+            if not source.is_file() or hashlib.sha256(source.read_bytes()).hexdigest() != expected:
+                raise ValueError('Finding review requires re-evaluation after a source change: ' + filename)
+        key = (item['rule'], item['file'], item['line'])
+        if key in reviewed:
+            raise ValueError('Duplicate finding review')
+        reviewed[key] = item['reason']
+    return reviewed
+
+
+def inspect(paths, reviewed=None):
     findings = []
     if not paths:
         raise ValueError('No SARIF files were produced')
@@ -34,10 +61,14 @@ def inspect(paths):
                 level = result.get('level', rule.get('defaultConfiguration', {}).get('level', 'warning'))
                 locations = result.get('locations', [])
                 location = locations[0].get('physicalLocation', {}) if locations else {}
-                findings.append({'rule': rule_id, 'score': score, 'level': level,
-                                 'file': location.get('artifactLocation', {}).get('uri'),
-                                 'line': location.get('region', {}).get('startLine'),
-                                 'blocking': score >= 7.0 or level == 'error'})
+                finding = {'rule': rule_id, 'score': score, 'level': level,
+                           'file': location.get('artifactLocation', {}).get('uri'),
+                           'line': location.get('region', {}).get('startLine'),
+                           'blocking': score >= 7.0 or level == 'error'}
+                reason = (reviewed or {}).get((rule_id, finding['file'], finding['line']))
+                if reason:
+                    finding.update(blocking=False, reviewedFalsePositive=True, reviewReason=reason)
+                findings.append(finding)
     return findings
 
 
@@ -47,8 +78,11 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
     try:
-        findings = inspect(sorted(args.directory.rglob('*.sarif')))
-        report = {'complete': True, 'findings': findings, 'blocking': sum(item['blocking'] for item in findings)}
+        root = Path(__file__).resolve().parents[2]
+        reviewed = load_reviews(root / '.github/codeql/reviewed-findings.json', root)
+        findings = inspect(sorted(args.directory.rglob('*.sarif')), reviewed)
+        report = {'complete': True, 'findings': findings, 'blocking': sum(item['blocking'] for item in findings),
+                  'reviewedFalsePositives': sum(item.get('reviewedFalsePositive', False) for item in findings)}
         code = 1 if report['blocking'] else 0
     except (ValueError, KeyError, TypeError, OSError) as error:
         report = {'complete': False, 'error': str(error)}

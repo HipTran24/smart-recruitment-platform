@@ -1,0 +1,148 @@
+{
+  "version": 1,
+  "reviewedBy": "Codex: source inspection and existing negative controls",
+  "findings": [
+    {
+      "rule": "java/insufficient-key-size",
+      "file": "src/test/java/com/recruitment/app/modules/identity/infrastructure/security/RsaJwtKeyLoaderTests.java",
+      "line": 37,
+      "sourceSha256": "0c64adb066cea39e8d1c2cfdb556b22340327ddf5e3c55892ad47c2a860e6a2f",
+      "classification": "false-positive",
+      "reason": "The 1024-bit key is an intentionally invalid, in-memory negative-test input. rejectsWeakRsaKeysAtStartup asserts production key loading rejects it; VPS deployment key generation uses 3072 bits. No weak test key is deployed.",
+      "evidence": [
+        "RsaJwtKeyLoaderTests.rejectsWeakRsaKeysAtStartup"
+      ],
+      "guards": {
+        "src/main/java/com/recruitment/app/modules/identity/infrastructure/security/RsaJwtKeyLoader.java": "2a2f839ee7c9e980f2acf576d096924ebbfd5e519bc4bca8c0e0da1fd08d0fa3",
+        "scripts/generate-local-jwt-keys.sh": "51bc368ae000eda5a77ca594fc3aeb9250284c781ba035c0f120e10bf5bb7f17",
+        "scripts/deployment/deploy-lightsail.sh": "8594b17601a4aa4c95fcba66ad4a8548454ef82564ce2d4d9a90c100b085db3f"
+      }
+    },
+    {
+      "rule": "java/concatenated-sql-query",
+      "file": "src/main/java/com/recruitment/app/modules/applications/infrastructure/persistence/repository/JdbcKpiStore.java",
+      "line": 39,
+      "sourceSha256": "e1a8f277f6c5514ba7a6d581f9104bec0cd7b5c2d185a854d2bef8d522c0347c",
+      "classification": "false-positive",
+      "reason": "SQL text is composed exclusively from string literals and STAGES, an immutable List.of of hardcoded enum names. All query-supplied dates, job IDs and sources are separate JdbcTemplate bind arguments. No request value is concatenated into SQL.",
+      "evidence": [
+        "KpiFilterTests",
+        "KpiIntegrationTests",
+        "KpiSourceUpgradeTests"
+      ],
+      "guards": {}
+    },
+    {
+      "rule": "java/user-controlled-bypass",
+      "file": "src/main/java/com/recruitment/app/modules/identity/application/AuthenticationThrottlingService.java",
+      "line": 115,
+      "sourceSha256": "37c284b51c74a3e1711cdfc0b383a0ae6f5b975a3d835b0ea5235eccd434cb53",
+      "classification": "false-positive",
+      "reason": "Both IP-present and IP-absent branches enforce a limit: the IP-present branch applies IP/account/pair limits, and the other branch checks or increments the hashed-account fallback limit. The preceding null/blank email return is unreachable for validated login requests. Public proxy headers are overwritten by Nginx.",
+      "evidence": [
+        "AuthenticationThrottlingAndArgon2MigrationTests",
+        "ThrottlingRateLimitingAndSecurityTests",
+        "RateLimitReservationTests"
+      ],
+      "guards": {
+        "infra/docker/nginx.ssl.conf": "5b54bd8bb4e785a3167e10e08254fd98c80e7906deaa058ff050d790045d5432",
+        "src/main/java/com/recruitment/app/modules/identity/api/AuthController.java": "4f95e65d5199388ba2e84de18521a7dbc5d462ba0b09224f6bb9b10d68a09924",
+        "src/main/java/com/recruitment/app/modules/identity/api/request/PasswordLoginRequest.java": "efe916428a99148509f99373cbd8458ee4080c65b622f68ac954e882cd7f6f72"
+      }
+    },
+    {
+      "rule": "java/user-controlled-bypass",
+      "file": "src/main/java/com/recruitment/app/modules/identity/application/AuthenticationThrottlingService.java",
+      "line": 143,
+      "sourceSha256": "37c284b51c74a3e1711cdfc0b383a0ae6f5b975a3d835b0ea5235eccd434cb53",
+      "classification": "false-positive",
+      "reason": "Both IP-present and IP-absent branches enforce a limit: the IP-present branch applies IP/account/pair limits, and the other branch checks or increments the hashed-account fallback limit. The preceding null/blank email return is unreachable for validated login requests. Public proxy headers are overwritten by Nginx.",
+      "evidence": [
+        "AuthenticationThrottlingAndArgon2MigrationTests",
+        "ThrottlingRateLimitingAndSecurityTests",
+        "RateLimitReservationTests"
+      ],
+      "guards": {
+        "infra/docker/nginx.ssl.conf": "5b54bd8bb4e785a3167e10e08254fd98c80e7906deaa058ff050d790045d5432",
+        "src/main/java/com/recruitment/app/modules/identity/api/AuthController.java": "4f95e65d5199388ba2e84de18521a7dbc5d462ba0b09224f6bb9b10d68a09924",
+        "src/main/java/com/recruitment/app/modules/identity/api/request/PasswordLoginRequest.java": "efe916428a99148509f99373cbd8458ee4080c65b622f68ac954e882cd7f6f72"
+      }
+    },
+    {
+      "rule": "java/user-controlled-bypass",
+      "file": "src/main/java/com/recruitment/app/modules/identity/infrastructure/security/JwtAuthenticationFilter.java",
+      "line": 71,
+      "sourceSha256": "ffb19b7461d9c1636b8088f2ed0e80c0b6afdfdf2148e2fe666338d11f50dca6",
+      "classification": "false-positive",
+      "reason": "A missing bearer token continues to Spring Security authorization, which rejects unauthenticated private routes. A pre-existing non-anonymous authenticated context is reused. User ID and authorities are populated only after signature, issuer, audience and expiry validation, and a live-account/credential-version check. Malformed or invalid tokens receive HTTP 401. The analyzer does not model these custom token-service and servlet-denial contracts.",
+      "evidence": [
+        "JwtAccessTokenServiceTests",
+        "LiveAccountAuthorizationIntegrationTests",
+        "ThrottlingRateLimitingAndSecurityTests"
+      ],
+      "guards": {
+        "src/main/java/com/recruitment/app/modules/identity/infrastructure/security/JwtAccessTokenService.java": "e825a03b1f1817a353f435852c1d3d6334c0595c29b7875dc3559ed7e60f5fa4",
+        "src/main/java/com/recruitment/app/modules/identity/infrastructure/security/LiveAccountValidator.java": "1c1b8e640d9adc1601d14eb8d48dece38f60ba18cea1c12ad61b08aaa70d6357",
+        "src/main/java/com/recruitment/app/modules/identity/infrastructure/security/IdentitySecurityConfiguration.java": "5562186298c5302711a365b88184b8f2ee7b95da5df95cba4306c80903c0dac0",
+        "src/main/java/com/recruitment/app/modules/identity/infrastructure/security/JwtSecurityConfiguration.java": "f2cf13d81f3eb38e50564bc45af923767b75147295669238837ed7989e4808b5"
+      }
+    },
+    {
+      "rule": "java/user-controlled-bypass",
+      "file": "src/main/java/com/recruitment/app/modules/identity/infrastructure/security/JwtAuthenticationFilter.java",
+      "line": 77,
+      "sourceSha256": "ffb19b7461d9c1636b8088f2ed0e80c0b6afdfdf2148e2fe666338d11f50dca6",
+      "classification": "false-positive",
+      "reason": "A missing bearer token continues to Spring Security authorization, which rejects unauthenticated private routes. A pre-existing non-anonymous authenticated context is reused. User ID and authorities are populated only after signature, issuer, audience and expiry validation, and a live-account/credential-version check. Malformed or invalid tokens receive HTTP 401. The analyzer does not model these custom token-service and servlet-denial contracts.",
+      "evidence": [
+        "JwtAccessTokenServiceTests",
+        "LiveAccountAuthorizationIntegrationTests",
+        "ThrottlingRateLimitingAndSecurityTests"
+      ],
+      "guards": {
+        "src/main/java/com/recruitment/app/modules/identity/infrastructure/security/JwtAccessTokenService.java": "e825a03b1f1817a353f435852c1d3d6334c0595c29b7875dc3559ed7e60f5fa4",
+        "src/main/java/com/recruitment/app/modules/identity/infrastructure/security/LiveAccountValidator.java": "1c1b8e640d9adc1601d14eb8d48dece38f60ba18cea1c12ad61b08aaa70d6357",
+        "src/main/java/com/recruitment/app/modules/identity/infrastructure/security/IdentitySecurityConfiguration.java": "5562186298c5302711a365b88184b8f2ee7b95da5df95cba4306c80903c0dac0",
+        "src/main/java/com/recruitment/app/modules/identity/infrastructure/security/JwtSecurityConfiguration.java": "f2cf13d81f3eb38e50564bc45af923767b75147295669238837ed7989e4808b5"
+      }
+    },
+    {
+      "rule": "java/user-controlled-bypass",
+      "file": "src/main/java/com/recruitment/app/modules/identity/infrastructure/security/JwtAuthenticationFilter.java",
+      "line": 83,
+      "sourceSha256": "ffb19b7461d9c1636b8088f2ed0e80c0b6afdfdf2148e2fe666338d11f50dca6",
+      "classification": "false-positive",
+      "reason": "A missing bearer token continues to Spring Security authorization, which rejects unauthenticated private routes. A pre-existing non-anonymous authenticated context is reused. User ID and authorities are populated only after signature, issuer, audience and expiry validation, and a live-account/credential-version check. Malformed or invalid tokens receive HTTP 401. The analyzer does not model these custom token-service and servlet-denial contracts.",
+      "evidence": [
+        "JwtAccessTokenServiceTests",
+        "LiveAccountAuthorizationIntegrationTests",
+        "ThrottlingRateLimitingAndSecurityTests"
+      ],
+      "guards": {
+        "src/main/java/com/recruitment/app/modules/identity/infrastructure/security/JwtAccessTokenService.java": "e825a03b1f1817a353f435852c1d3d6334c0595c29b7875dc3559ed7e60f5fa4",
+        "src/main/java/com/recruitment/app/modules/identity/infrastructure/security/LiveAccountValidator.java": "1c1b8e640d9adc1601d14eb8d48dece38f60ba18cea1c12ad61b08aaa70d6357",
+        "src/main/java/com/recruitment/app/modules/identity/infrastructure/security/IdentitySecurityConfiguration.java": "5562186298c5302711a365b88184b8f2ee7b95da5df95cba4306c80903c0dac0",
+        "src/main/java/com/recruitment/app/modules/identity/infrastructure/security/JwtSecurityConfiguration.java": "f2cf13d81f3eb38e50564bc45af923767b75147295669238837ed7989e4808b5"
+      }
+    },
+    {
+      "rule": "java/user-controlled-bypass",
+      "file": "src/main/java/com/recruitment/app/modules/identity/infrastructure/security/JwtAuthenticationFilter.java",
+      "line": 86,
+      "sourceSha256": "ffb19b7461d9c1636b8088f2ed0e80c0b6afdfdf2148e2fe666338d11f50dca6",
+      "classification": "false-positive",
+      "reason": "A missing bearer token continues to Spring Security authorization, which rejects unauthenticated private routes. A pre-existing non-anonymous authenticated context is reused. User ID and authorities are populated only after signature, issuer, audience and expiry validation, and a live-account/credential-version check. Malformed or invalid tokens receive HTTP 401. The analyzer does not model these custom token-service and servlet-denial contracts.",
+      "evidence": [
+        "JwtAccessTokenServiceTests",
+        "LiveAccountAuthorizationIntegrationTests",
+        "ThrottlingRateLimitingAndSecurityTests"
+      ],
+      "guards": {
+        "src/main/java/com/recruitment/app/modules/identity/infrastructure/security/JwtAccessTokenService.java": "e825a03b1f1817a353f435852c1d3d6334c0595c29b7875dc3559ed7e60f5fa4",
+        "src/main/java/com/recruitment/app/modules/identity/infrastructure/security/LiveAccountValidator.java": "1c1b8e640d9adc1601d14eb8d48dece38f60ba18cea1c12ad61b08aaa70d6357",
+        "src/main/java/com/recruitment/app/modules/identity/infrastructure/security/IdentitySecurityConfiguration.java": "5562186298c5302711a365b88184b8f2ee7b95da5df95cba4306c80903c0dac0",
+        "src/main/java/com/recruitment/app/modules/identity/infrastructure/security/JwtSecurityConfiguration.java": "f2cf13d81f3eb38e50564bc45af923767b75147295669238837ed7989e4808b5"
+      }
+    }
+  ]
+}
