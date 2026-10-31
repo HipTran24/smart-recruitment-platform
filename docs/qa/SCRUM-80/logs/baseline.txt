@@ -1,0 +1,221 @@
+[INFO] Scanning for projects...
+[INFO]
+[INFO] --------------------< com.recruitment:application >---------------------
+[INFO] Building SmartRecruit Platform API 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO]
+[INFO] --- enforcer:3.6.3:enforce (enforce-build-toolchain) @ application ---
+[INFO] Rule 0: org.apache.maven.enforcer.rules.version.RequireJavaVersion passed
+[INFO]
+[INFO] --- jacoco:0.8.14:prepare-agent (coverage-agent) @ application ---
+[INFO] argLine set to -javaagent:/root/.m2/repository/org/jacoco/org.jacoco.agent/0.8.14/org.jacoco.agent-0.8.14-runtime.jar=destfile=/workspace/target/jacoco.exec
+[INFO]
+[INFO] --- resources:3.5.0:resources (default-resources) @ application ---
+[INFO] Copying 3 resources from src/main/resources to target/classes
+[INFO] Copying 13 resources from src/main/resources to target/classes
+[INFO]
+[INFO] --- compiler:3.15.0:compile (default-compile) @ application ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO]
+[INFO] --- resources:3.5.0:testResources (default-testResources) @ application ---
+[INFO] Copying 3 resources from src/test/resources to target/test-classes
+[INFO]
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ application ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO]
+[INFO] --- surefire:3.5.6:test (default-test) @ application ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO]
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.recruitment.app.recovery.KpiQueryBaselineTests
+04:39:19.632 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.recruitment.app.recovery.KpiQueryBaselineTests]: KpiQueryBaselineTests does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+04:39:20.986 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.recruitment.app.Application for test class com.recruitment.app.recovery.KpiQueryBaselineTests
+04:39:21.552 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.recruitment.app.recovery.KpiQueryBaselineTests]: KpiQueryBaselineTests does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+04:39:21.566 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.recruitment.app.recovery.RecoveryDatabaseTest]: RecoveryDatabaseTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+04:39:21.616 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.recruitment.app.Application for test class com.recruitment.app.recovery.KpiQueryBaselineTests
+04:39:22.140 [main] INFO org.springframework.boot.devtools.restart.RestartApplicationListener -- Restart disabled due to context in which it is running
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.1.2)
+
+2026-10-31T04:39:24.233Z  INFO 95 --- [smart-recruitment-test] [           main] [                                                 ] org.testcontainers.images.PullPolicy     : Image pull policy will be performed by: DefaultPullPolicy()
+2026-10-31T04:39:24.250Z  INFO 95 --- [smart-recruitment-test] [           main] [                                                 ] o.t.utility.ImageNameSubstitutor         : Image name substitution will be performed by: DefaultImageNameSubstitutor (composite of 'ConfigurationFileImageNameSubstitutor' and 'PrefixingImageNameSubstitutor')
+2026-10-31T04:39:24.280Z  INFO 95 --- [smart-recruitment-test] [           main] [                                                 ] org.testcontainers.DockerClientFactory   : Testcontainers version: 2.0.5
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by com.sun.jna.Native in an unnamed module (file:/root/.m2/repository/net/java/dev/jna/jna/5.18.1/jna-5.18.1.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+2026-10-31T04:39:28.978Z  INFO 95 --- [smart-recruitment-test] [           main] [                                                 ] o.t.d.DockerClientProviderStrategy       : Found Docker environment with local Unix socket (unix:///var/run/docker.sock)
+2026-10-31T04:39:28.984Z  INFO 95 --- [smart-recruitment-test] [           main] [                                                 ] org.testcontainers.DockerClientFactory   : Docker host IP address is host.docker.internal
+2026-10-31T04:39:29.071Z  INFO 95 --- [smart-recruitment-test] [           main] [                                                 ] org.testcontainers.DockerClientFactory   : Connected to docker:
+  Server Version: 29.1.2
+  API Version: 1.52
+  Operating System: Docker Desktop (containerized)
+  Total Memory: 3728 MB
+  Labels:
+    com.docker.desktop.address=npipe://\\.\pipe\docker_cli
+2026-10-31T04:39:29.307Z  INFO 95 --- [smart-recruitment-test] [           main] [                                                 ] tc.testcontainers/ryuk:0.14.0            : Creating container for image: testcontainers/ryuk:0.14.0
+2026-10-31T04:39:29.337Z  INFO 95 --- [smart-recruitment-test] [           main] [                                                 ] o.t.utility.RegistryAuthLocator          : Failure when attempting to lookup auth config. Please ignore if you don't have images in an authenticated registry. Details: (dockerImageName: testcontainers/ryuk:0.14.0, configFile: /root/.docker/config.json, configEnv: DOCKER_AUTH_CONFIG). Falling back to docker-java default behaviour. Exception message: Status 404: No config supplied. Checked in order: /root/.docker/config.json (file not found), DOCKER_AUTH_CONFIG (not set)
+2026-10-31T04:39:29.930Z  INFO 95 --- [smart-recruitment-test] [           main] [                                                 ] tc.testcontainers/ryuk:0.14.0            : Container testcontainers/ryuk:0.14.0 is starting: da01185d86da149ba378941e035074926065e4ed9878f763d23c28f5c96e2c40
+2026-10-31T04:39:31.103Z  INFO 95 --- [smart-recruitment-test] [           main] [                                                 ] tc.testcontainers/ryuk:0.14.0            : Container testcontainers/ryuk:0.14.0 started in PT1.796642732S
+2026-10-31T04:39:31.127Z  INFO 95 --- [smart-recruitment-test] [           main] [                                                 ] o.t.utility.RyukResourceReaper           : Ryuk started - will monitor and terminate Testcontainers containers on JVM exit
+2026-10-31T04:39:31.127Z  INFO 95 --- [smart-recruitment-test] [           main] [                                                 ] org.testcontainers.DockerClientFactory   : Checking the system...
+2026-10-31T04:39:31.131Z  INFO 95 --- [smart-recruitment-test] [           main] [                                                 ] org.testcontainers.DockerClientFactory   : ✔︎ Docker server version should be at least 1.6.0
+2026-10-31T04:39:31.145Z  INFO 95 --- [smart-recruitment-test] [           main] [                                                 ] tc.mysql:8.4.11                          : Creating container for image: mysql:8.4.11
+2026-10-31T04:39:31.471Z  INFO 95 --- [smart-recruitment-test] [           main] [                                                 ] tc.mysql:8.4.11                          : Container mysql:8.4.11 is starting: 5ef6cb4d0ae613673465d1834d0df3e94377e76ce08985d590a726eda4b629a7
+2026-10-31T04:39:31.836Z  INFO 95 --- [smart-recruitment-test] [           main] [                                                 ] tc.mysql:8.4.11                          : Waiting for database connection to become available at jdbc:mysql://host.docker.internal:54101/smartrecruit_test using query 'SELECT 1'
+2026-10-31T04:39:48.935Z  INFO 95 --- [smart-recruitment-test] [           main] [                                                 ] tc.mysql:8.4.11                          : Container mysql:8.4.11 started in PT17.789020679S
+2026-10-31T04:39:48.941Z  INFO 95 --- [smart-recruitment-test] [           main] [                                                 ] tc.mysql:8.4.11                          : Container is started (JDBC URL: jdbc:mysql://host.docker.internal:54101/smartrecruit_test)
+2026-10-31T04:39:49.046Z  INFO 95 --- [smart-recruitment-test] [           main] [                                                 ] c.r.app.recovery.KpiQueryBaselineTests   : Starting KpiQueryBaselineTests using Java 25.0.4.1 with PID 95 (started by root in /workspace)
+2026-10-31T04:39:49.049Z  INFO 95 --- [smart-recruitment-test] [           main] [                                                 ] c.r.app.recovery.KpiQueryBaselineTests   : The following 1 profile is active: "test"
+2026-10-31T04:40:01.163Z  INFO 95 --- [smart-recruitment-test] [           main] [                                                 ] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-10-31T04:40:03.183Z  INFO 95 --- [smart-recruitment-test] [           main] [                                                 ] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 1982 ms. Found 19 JPA repository interfaces.
+2026-10-31T04:40:06.764Z  INFO 95 --- [smart-recruitment-test] [           main] [                                                 ] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-10-31T04:40:07.252Z  INFO 95 --- [smart-recruitment-test] [           main] [                                                 ] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@10005a46
+2026-10-31T04:40:07.268Z  INFO 95 --- [smart-recruitment-test] [           main] [                                                 ] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-10-31T04:40:07.392Z  INFO 95 --- [smart-recruitment-test] [           main] [                                                 ] org.flywaydb.core.FlywayExecutor         : Database: jdbc:mysql://host.docker.internal:54101/smartrecruit_test (MySQL 8.4)
+2026-10-31T04:40:08.092Z  INFO 95 --- [smart-recruitment-test] [           main] [                                                 ] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table `smartrecruit_test`.`flyway_schema_history` does not exist yet
+2026-10-31T04:40:08.107Z  INFO 95 --- [smart-recruitment-test] [           main] [                                                 ] o.f.core.internal.command.DbValidate     : Successfully validated 11 migrations (execution time 00:00.329s)
+2026-10-31T04:40:08.185Z  INFO 95 --- [smart-recruitment-test] [           main] [                                                 ] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table `smartrecruit_test`.`flyway_schema_history` ...
+2026-10-31T04:40:08.442Z  INFO 95 --- [smart-recruitment-test] [           main] [                                                 ] o.f.core.internal.command.DbMigrate      : Current version of schema `smartrecruit_test`: << Empty Schema >>
+2026-10-31T04:40:08.484Z  INFO 95 --- [smart-recruitment-test] [           main] [                                                 ] o.f.core.internal.command.DbMigrate      : Migrating schema `smartrecruit_test` to version "001 - initial schema"
+2026-10-31T04:40:09.414Z  INFO 95 --- [smart-recruitment-test] [           main] [                                                 ] o.f.core.internal.command.DbMigrate      : Migrating schema `smartrecruit_test` to version "002 - create recruitment domain schema"
+2026-10-31T04:40:17.013Z  INFO 95 --- [smart-recruitment-test] [           main] [                                                 ] o.f.core.internal.command.DbMigrate      : Migrating schema `smartrecruit_test` to version "003 - add identity authentication schema"
+2026-10-31T04:40:17.885Z  INFO 95 --- [smart-recruitment-test] [           main] [                                                 ] o.f.core.internal.command.DbMigrate      : Migrating schema `smartrecruit_test` to version "004 - bind oauth handoff codes to pkce"
+2026-10-31T04:40:18.166Z  INFO 95 --- [smart-recruitment-test] [           main] [                                                 ] o.f.core.internal.command.DbMigrate      : Migrating schema `smartrecruit_test` to version "005 - add application screening audit data"
+2026-10-31T04:40:18.665Z  INFO 95 --- [smart-recruitment-test] [           main] [                                                 ] o.f.core.internal.command.DbMigrate      : Migrating schema `smartrecruit_test` to version "006 - bind oauth handoff codes to transactions"
+2026-10-31T04:40:18.885Z  INFO 95 --- [smart-recruitment-test] [           main] [                                                 ] o.f.core.internal.command.DbMigrate      : Migrating schema `smartrecruit_test` to version "007 - convert job creator membership to user references"
+2026-10-31T04:40:19.801Z  INFO 95 --- [smart-recruitment-test] [           main] [                                                 ] o.f.core.internal.command.DbMigrate      : Migrating schema `smartrecruit_test` to version "008 - add identity credential version and verification"
+2026-10-31T04:40:20.418Z  INFO 95 --- [smart-recruitment-test] [           main] [                                                 ] o.f.core.internal.command.DbMigrate      : Migrating schema `smartrecruit_test` to version "009 - harden schema integrity and precision"
+2026-10-31T04:40:23.523Z  INFO 95 --- [smart-recruitment-test] [           main] [                                                 ] o.f.core.internal.command.DbMigrate      : Migrating schema `smartrecruit_test` to version "010 - add interviews offers evaluations notifications and audit"
+2026-10-31T04:40:25.170Z  INFO 95 --- [smart-recruitment-test] [           main] [                                                 ] o.f.core.internal.command.DbMigrate      : Migrating schema `smartrecruit_test` to version "011 - application source and kpi indexes"
+2026-10-31T04:40:25.559Z  INFO 95 --- [smart-recruitment-test] [           main] [                                                 ] o.f.core.internal.command.DbMigrate      : Successfully applied 11 migrations to schema `smartrecruit_test`, now at version v011 (execution time 00:16.180s)
+2026-10-31T04:40:26.831Z  INFO 95 --- [smart-recruitment-test] [           main] [                                                 ] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-10-31T04:40:27.492Z  INFO 95 --- [smart-recruitment-test] [           main] [                                                 ] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.4.13.Final
+2026-10-31T04:40:30.818Z  INFO 95 --- [smart-recruitment-test] [           main] [                                                 ] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-10-31T04:40:31.653Z  INFO 95 --- [smart-recruitment-test] [           main] [                                                 ] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:mysql://host.docker.internal:54101/smartrecruit_test]
+	Database driver: MySQL Connector/J
+	Database dialect: MySQLDialect
+	Database version: 8.4.11
+	Default catalog/schema: smartrecruit_test/undefined
+	Autocommit mode: undefined/unknown
+	Isolation level: REPEATABLE_READ [default REPEATABLE_READ]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-10-31T04:40:50.296Z  INFO 95 --- [smart-recruitment-test] [           main] [                                                 ] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-10-31T04:40:50.592Z  INFO 95 --- [smart-recruitment-test] [           main] [                                                 ] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-10-31T04:40:51.298Z  INFO 95 --- [smart-recruitment-test] [           main] [                                                 ] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-10-31T04:41:03.931Z  INFO 95 --- [smart-recruitment-test] [           main] [                                                 ] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name userDetailsService
+2026-10-31T04:41:06.749Z  INFO 95 --- [smart-recruitment-test] [           main] [                                                 ] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-10-31T04:41:06.749Z  INFO 95 --- [smart-recruitment-test] [           main] [                                                 ] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-10-31T04:41:06.792Z  INFO 95 --- [smart-recruitment-test] [           main] [                                                 ] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 2 endpoints beneath base path '/actuator'
+2026-10-31T04:41:06.831Z  INFO 95 --- [smart-recruitment-test] [           main] [                                                 ] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 80 ms
+2026-10-31T04:41:07.634Z  INFO 95 --- [smart-recruitment-test] [           main] [                                                 ] c.r.app.recovery.KpiQueryBaselineTests   : Started KpiQueryBaselineTests in 105.548 seconds (process running for 114.183)
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/root/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+SCRUM80_EXPLAIN_BEGIN
+{
+  "query_block": {
+    "select_id": 1,
+    "cost_info": {
+      "query_cost": "0.70"
+    },
+    "grouping_operation": {
+      "using_filesort": false,
+      "nested_loop": [
+        {
+          "table": {
+            "table_name": "a",
+            "access_type": "ALL",
+            "possible_keys": [
+              "uk_job_applications_job_candidate",
+              "idx_job_applications_job_status",
+              "idx_applications_created",
+              "idx_applications_job_created",
+              "idx_applications_source_created"
+            ],
+            "rows_examined_per_scan": 1,
+            "rows_produced_per_join": 1,
+            "filtered": "100.00",
+            "cost_info": {
+              "read_cost": "0.25",
+              "eval_cost": "0.10",
+              "prefix_cost": "0.35",
+              "data_read_per_join": "408"
+            },
+            "used_columns": [
+              "id",
+              "created_at",
+              "job_id",
+              "status",
+              "source"
+            ],
+            "attached_condition": "((`smartrecruit_test`.`a`.`source` = 'PORTAL') and (`smartrecruit_test`.`a`.`job_id` = 1) and (`smartrecruit_test`.`a`.`created_at` >= TIMESTAMP'2026-01-01 00:00:00') and (`smartrecruit_test`.`a`.`created_at` < TIMESTAMP'2026-01-02 00:00:00'))"
+          }
+        },
+        {
+          "table": {
+            "table_name": "h",
+            "access_type": "ref",
+            "possible_keys": [
+              "idx_application_status_histories_application_created_at"
+            ],
+            "key": "idx_application_status_histories_application_created_at",
+            "used_key_parts": [
+              "job_application_id"
+            ],
+            "key_length": "8",
+            "ref": [
+              "smartrecruit_test.a.id"
+            ],
+            "rows_examined_per_scan": 1,
+            "rows_produced_per_join": 1,
+            "filtered": "100.00",
+            "cost_info": {
+              "read_cost": "0.25",
+              "eval_cost": "0.10",
+              "prefix_cost": "0.70",
+              "data_read_per_join": "224"
+            },
+            "used_columns": [
+              "job_application_id",
+              "to_status"
+            ]
+          }
+        }
+      ]
+    }
+  }
+}
+SCRUM80_EXPLAIN_END
+SCRUM80_BASELINE applications=10000 histories=10000 matched=100 warmup=5 samples=20 p50_ms=9.446 p95_ms=16.951
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 270.0 s -- in com.recruitment.app.recovery.KpiQueryBaselineTests
+[ERROR] Surefire is going to kill self fork JVM. The exit has elapsed 30 seconds after System.exit(0).
+[INFO]
+[INFO] Results:
+[INFO]
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  05:41 min
+[INFO] Finished at: 2026-10-31T04:44:37Z
+[INFO] ------------------------------------------------------------------------
