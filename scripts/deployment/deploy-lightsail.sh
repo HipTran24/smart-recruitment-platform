@@ -4,6 +4,14 @@ set -Eeuo pipefail
 umask 077
 
 cd /home/ubuntu/smart-recruitment
+deployment_exit() {
+  result=$?
+  if [[ "$result" != 0 ]]; then
+    python3 scripts/deployment/deploy-diagnostics.py || true
+  fi
+  exit "$result"
+}
+trap deployment_exit EXIT
 mkdir -p secrets
 if [[ ! -f secrets/app-jwt-private.pem ]]; then
   openssl genpkey -algorithm RSA -out secrets/app-jwt-private.pem -pkeyopt rsa_keygen_bits:3072
