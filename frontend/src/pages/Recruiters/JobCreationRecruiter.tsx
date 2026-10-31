@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { jobService } from "../../services/job.service";
 
 export default function JobCreationStudio() {
   // Form State
@@ -6,6 +7,10 @@ export default function JobCreationStudio() {
   const [department, setDepartment] = useState("Product & Design");
   const [employmentType, setEmploymentType] = useState("Full-time");
   const [location, setLocation] = useState("New York - Hybrid");
+  const [titleError, setTitleError] = useState<string | null>(null);
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [publishError, setPublishError] = useState<string | null>(null);
+  const [publishSuccess, setPublishSuccess] = useState(false);
 
   // Matching Weights State
   const [weights, setWeights] = useState({
@@ -48,6 +53,43 @@ export default function JobCreationStudio() {
 
   const removeOptionalSkill = (index: number) => {
     setOptionalSkills(optionalSkills.filter((_, i) => i !== index));
+  };
+
+  const handlePublishJob = async () => {
+    if (!jobTitle.trim()) {
+      setTitleError("Job title is required.");
+      return;
+    }
+    setTitleError(null);
+    setIsPublishing(true);
+    setPublishError(null);
+    try {
+      await jobService.createJob({
+        companyId: 1,
+        title: jobTitle.trim(),
+        description: "We're looking for a skilled candidate to join our team.",
+        requirements: requiredSkills.join(", "),
+        employmentType:
+          employmentType === "Full-time"
+            ? "FULL_TIME"
+            : employmentType === "Part-time"
+            ? "PART_TIME"
+            : "CONTRACT",
+        workplaceType: location.includes("Remote")
+          ? "REMOTE"
+          : location.includes("Hybrid")
+          ? "HYBRID"
+          : "ON_SITE",
+        location: location,
+      });
+      setPublishSuccess(true);
+      alert("Job Published Successfully!");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to publish job";
+      setPublishError(msg);
+    } finally {
+      setIsPublishing(false);
+    }
   };
 
   return (
@@ -119,13 +161,29 @@ export default function JobCreationStudio() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1.5">Job Title *</label>
+                  <label htmlFor="jobTitle" className="block text-xs font-bold text-slate-700 mb-1.5">Job Title *</label>
                   <input
+                    id="jobTitle"
                     type="text"
+                    required
                     value={jobTitle}
-                    onChange={(e) => setJobTitle(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium"
+                    onChange={(e) => {
+                      setJobTitle(e.target.value);
+                      if (e.target.value.trim()) {
+                        setTitleError(null);
+                      }
+                    }}
+                    aria-invalid={titleError ? "true" : undefined}
+                    aria-describedby={titleError ? "job-title-error" : undefined}
+                    className={`w-full px-3.5 py-2.5 bg-white border ${
+                      titleError ? "border-red-500 focus:ring-red-500" : "border-slate-200 focus:ring-blue-500"
+                    } rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-2 font-medium`}
                   />
+                  {titleError && (
+                    <div id="job-title-error" role="alert" className="mt-1.5 text-xs text-red-600 font-medium">
+                      {titleError}
+                    </div>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-3 gap-3">
@@ -505,15 +563,28 @@ export default function JobCreationStudio() {
 
                   <button
                     type="button"
-                    onClick={() => alert("Job Published Successfully!")}
-                    className="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg flex items-center justify-center gap-2 shadow-sm shadow-blue-200 transition"
+                    disabled={isPublishing}
+                    onClick={handlePublishJob}
+                    className="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-xs font-bold rounded-lg flex items-center justify-center gap-2 shadow-sm shadow-blue-200 transition"
                   >
                     <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
                       <path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                     </svg>
-                    <span>Publish Job</span>
+                    <span>{isPublishing ? "Publishing Job..." : "Publish Job"}</span>
                   </button>
                 </div>
+
+                {publishError && (
+                  <div role="alert" className="p-2.5 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700 font-medium">
+                    {publishError}
+                  </div>
+                )}
+
+                {publishSuccess && (
+                  <div role="status" className="p-2.5 bg-emerald-50 border border-emerald-200 rounded-lg text-xs text-emerald-700 font-medium">
+                    Job has been published and is active.
+                  </div>
+                )}
 
                 <p className="text-[11px] text-slate-400 text-center leading-normal pt-1">
                   Publishing notifies your hiring team and activates AI candidate matching. You can pause the job anytime.

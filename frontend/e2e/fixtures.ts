@@ -114,6 +114,35 @@ export async function fixtureApi(
       item.status = request.postDataJSON().stage
       return json(item)
     }
+    if (path === "/api/v1/recruiter/jobs") {
+      if (request.method() === "POST") {
+        const data = request.postDataJSON() || {}
+        return json(
+          {
+            id: 101,
+            companyId: data.companyId ?? 1,
+            companyName: "Acme Corp",
+            title: data.title ?? "Untitled Job",
+            slug: "untitled-job",
+            description: data.description ?? "",
+            requirements: data.requirements ?? "",
+            employmentType: data.employmentType ?? "FULL_TIME",
+            workplaceType: data.workplaceType ?? "ON_SITE",
+            location: data.location ?? "Remote",
+            status: "ACTIVE",
+            skills: [],
+          },
+          201,
+        )
+      }
+      return json({
+        items: [],
+        page: 0,
+        size: 20,
+        totalElements: 0,
+        totalPages: 0,
+      })
+    }
     if (path === "/api/v1/notifications")
       return json({
         items: options.empty
