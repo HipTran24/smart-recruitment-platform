@@ -102,7 +102,7 @@ test("dashboard filters local-day boundaries and deduplicates stages", async ({
 
   await expect(current.getByRole("table")).toBeVisible()
 
-  for (const stage of ["IN_REVIEW", "INTERVIEW"]) {
+  for (const stage of ["Đang xem xét", "Phỏng vấn"]) {
     const row = current.getByRole("row").filter({
       has: page.getByRole("rowheader", { name: stage, exact: true }),
     })
@@ -111,13 +111,13 @@ test("dashboard filters local-day boundaries and deduplicates stages", async ({
   }
 
   const offered = current.getByRole("row").filter({
-    has: page.getByRole("rowheader", { name: "OFFERED", exact: true }),
+    has: page.getByRole("rowheader", { name: "Đã gửi đề nghị", exact: true }),
   })
   await expect(offered.getByRole("cell").nth(0)).toHaveText("0")
 
   const reviewed = funnel.getByRole("row").filter({
     has: page.getByRole("rowheader", {
-      name: "IN_REVIEW", exact: true,
+      name: "Đang xem xét", exact: true,
     }),
   })
   await expect(reviewed.getByRole("cell").nth(0)).toHaveText("2")
