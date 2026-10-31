@@ -16,3 +16,5 @@ logs
 uploads
 backups
 smartrecruit-data-*.tar.gz
+**/node_modules
+**/dist

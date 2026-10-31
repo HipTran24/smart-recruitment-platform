@@ -52,7 +52,9 @@ public class ApplicationEvaluation extends BaseEntity {
     ) {
         this.jobApplicationId = jobApplicationId;
         this.evaluatorUserId = evaluatorUserId;
-        this.score = Math.max(0, Math.min(100, score != null ? score : 0));
+        if (score != null && (score < 0 || score > 100)) {
+        throw new IllegalArgumentException("Evaluation score must be between 0 and 100");}
+        this.score = score != null ? score : 0;
         this.recommendation = recommendation != null ? recommendation : Recommendation.NEUTRAL;
         this.technicalNotes = technicalNotes;
         this.culturalFitNotes = culturalFitNotes;

@@ -1,0 +1,22 @@
+src/main/java/com/recruitment/app/modules/applications/application/screening/CvScreeningStateService.java:13: * through the screening persistence port. {@link CvScreeningWorkflow} invokes the external provider only
+src/main/java/com/recruitment/app/modules/applications/application/screening/CvScreeningWorkflow.java:20:public class CvScreeningWorkflow {
+src/main/java/com/recruitment/app/modules/applications/application/screening/CvScreeningWorkflow.java:28:    public CvScreeningWorkflow(
+src/main/java/com/recruitment/app/modules/applications/application/screening/CvScreeningWorkflow.java:36:    public CvScreeningWorkflow(CvScreeningStateService stateService,ObjectProvider<CvScreeningGateway> screeningGateway,
+src/test/java/com/recruitment/app/DomainLifecycleTests.java:85:        ApplicationScreening screening = new ApplicationScreening(
+src/test/java/com/recruitment/app/modules/applications/application/screening/CvScreeningWorkflowTests.java:35:class CvScreeningWorkflowTests {
+src/test/java/com/recruitment/app/modules/applications/application/screening/CvScreeningWorkflowTests.java:51:        CvScreeningWorkflow workflow = new CvScreeningWorkflow(stateService, gatewayProvider(gateway));
+src/test/java/com/recruitment/app/modules/applications/application/screening/CvScreeningWorkflowTests.java:87:        CvScreeningWorkflow workflow = new CvScreeningWorkflow(
+src/test/java/com/recruitment/app/modules/applications/application/screening/CvScreeningWorkflowTests.java:118:        CvScreeningWorkflow workflow = new CvScreeningWorkflow(
+src/test/java/com/recruitment/app/modules/applications/application/screening/CvScreeningWorkflowTests.java:144:            if (attempts.incrementAndGet() < CvScreeningWorkflow.MAX_PROVIDER_ATTEMPTS) {
+src/test/java/com/recruitment/app/modules/applications/application/screening/CvScreeningWorkflowTests.java:153:        CvScreeningWorkflow workflow = new CvScreeningWorkflow(
+src/test/java/com/recruitment/app/modules/applications/application/screening/CvScreeningWorkflowTests.java:181:        CvScreeningWorkflow workflow = new CvScreeningWorkflow(
+src/test/java/com/recruitment/app/modules/applications/application/screening/CvScreeningWorkflowTests.java:227:        Transactional transactional = CvScreeningWorkflow.class
+src/test/java/com/recruitment/app/modules/applications/application/screening/CvScreeningWorkflowTests.java:258:        ApplicationScreening screening = new ApplicationScreening(
+src/test/java/com/recruitment/app/modules/applications/application/screening/CvScreeningWorkflowTransactionBoundaryTests.java:39:@SpringJUnitConfig(CvScreeningWorkflowTransactionBoundaryTests.TransactionTestConfiguration.class)
+src/test/java/com/recruitment/app/modules/applications/application/screening/CvScreeningWorkflowTransactionBoundaryTests.java:40:class CvScreeningWorkflowTransactionBoundaryTests {
+src/test/java/com/recruitment/app/modules/applications/application/screening/CvScreeningWorkflowTransactionBoundaryTests.java:59:        ApplicationScreening screening = new ApplicationScreening(
+src/test/java/com/recruitment/app/modules/applications/application/screening/CvScreeningWorkflowTransactionBoundaryTests.java:128:        CvScreeningWorkflow cvScreeningWorkflow(
+src/test/java/com/recruitment/app/modules/applications/application/screening/CvScreeningWorkflowTransactionBoundaryTests.java:132:            return new CvScreeningWorkflow(cvScreeningStateService, cvScreeningGateway);
+src/test/java/com/recruitment/app/modules/applications/application/screening/CvScreeningWorkflowTransactionBoundaryTests.java:136:        TransactionalCaller transactionalCaller(CvScreeningWorkflow cvScreeningWorkflow) {
+src/test/java/com/recruitment/app/modules/applications/application/screening/CvScreeningWorkflowTransactionBoundaryTests.java:143:        private final CvScreeningWorkflow workflow;
+src/test/java/com/recruitment/app/modules/applications/application/screening/CvScreeningWorkflowTransactionBoundaryTests.java:145:        TransactionalCaller(CvScreeningWorkflow workflow) {

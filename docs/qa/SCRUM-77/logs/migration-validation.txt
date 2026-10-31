@@ -1,0 +1,123 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] --------------------< com.recruitment:application >---------------------
+[INFO] Building SmartRecruit Platform API 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- enforcer:3.6.3:enforce (enforce-build-toolchain) @ application ---
+[INFO] Rule 0: org.apache.maven.enforcer.rules.version.RequireJavaVersion passed
+[INFO] 
+[INFO] --- jacoco:0.8.14:prepare-agent (coverage-agent) @ application ---
+[INFO] argLine set to -javaagent:/root/.m2/repository/org/jacoco/org.jacoco.agent/0.8.14/org.jacoco.agent-0.8.14-runtime.jar=destfile=/workspace/target/jacoco.exec
+[INFO] 
+[INFO] --- resources:3.5.0:resources (default-resources) @ application ---
+[INFO] Copying 3 resources from src/main/resources to target/classes
+[INFO] Copying 13 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ application ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.5.0:testResources (default-testResources) @ application ---
+[INFO] Copying 3 resources from src/test/resources to target/test-classes
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ application ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.5.6:test (default-test) @ application ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.recruitment.app.SchemaMigrationUpgradeTests
+03:55:08.264 [main] INFO org.testcontainers.images.PullPolicy -- Image pull policy will be performed by: DefaultPullPolicy()
+03:55:08.315 [main] INFO org.testcontainers.utility.ImageNameSubstitutor -- Image name substitution will be performed by: DefaultImageNameSubstitutor (composite of 'ConfigurationFileImageNameSubstitutor' and 'PrefixingImageNameSubstitutor')
+03:55:08.405 [main] INFO org.testcontainers.DockerClientFactory -- Testcontainers version: 2.0.5
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by com.sun.jna.Native in an unnamed module (file:/root/.m2/repository/net/java/dev/jna/jna/5.18.1/jna-5.18.1.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+03:55:13.924 [main] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Found Docker environment with local Unix socket (unix:///var/run/docker.sock)
+03:55:13.946 [main] INFO org.testcontainers.DockerClientFactory -- Docker host IP address is host.docker.internal
+03:55:14.035 [main] INFO org.testcontainers.DockerClientFactory -- Connected to docker: 
+  Server Version: 29.1.2
+  API Version: 1.52
+  Operating System: Docker Desktop (containerized)
+  Total Memory: 3728 MB
+  Labels: 
+    com.docker.desktop.address=npipe://\\.\pipe\docker_cli
+03:55:14.314 [main] INFO tc.testcontainers/ryuk:0.14.0 -- Creating container for image: testcontainers/ryuk:0.14.0
+03:55:14.342 [main] INFO org.testcontainers.utility.RegistryAuthLocator -- Failure when attempting to lookup auth config. Please ignore if you don't have images in an authenticated registry. Details: (dockerImageName: testcontainers/ryuk:0.14.0, configFile: /root/.docker/config.json, configEnv: DOCKER_AUTH_CONFIG). Falling back to docker-java default behaviour. Exception message: Status 404: No config supplied. Checked in order: /root/.docker/config.json (file not found), DOCKER_AUTH_CONFIG (not set)
+03:55:15.053 [main] INFO tc.testcontainers/ryuk:0.14.0 -- Container testcontainers/ryuk:0.14.0 is starting: e997d0f32043e7449a01a9d1dc607e9dc0c845c3064f0dd515821a83525560c0
+03:55:16.285 [main] INFO tc.testcontainers/ryuk:0.14.0 -- Container testcontainers/ryuk:0.14.0 started in PT1.971222224S
+03:55:16.333 [main] INFO org.testcontainers.utility.RyukResourceReaper -- Ryuk started - will monitor and terminate Testcontainers containers on JVM exit
+03:55:16.333 [main] INFO org.testcontainers.DockerClientFactory -- Checking the system...
+03:55:16.336 [main] INFO org.testcontainers.DockerClientFactory -- ✔︎ Docker server version should be at least 1.6.0
+03:55:16.349 [main] INFO tc.mysql:8.4.11 -- Creating container for image: mysql:8.4.11
+03:55:16.723 [main] INFO tc.mysql:8.4.11 -- Container mysql:8.4.11 is starting: bc990fe65ecf446966a0bb17e2db1abdeaa62be81af6f1d32acfcc64f10ed668
+03:55:17.248 [main] INFO tc.mysql:8.4.11 -- Waiting for database connection to become available at jdbc:mysql://host.docker.internal:53195/smartrecruit_test using query 'SELECT 1'
+03:55:31.782 [main] INFO tc.mysql:8.4.11 -- Container mysql:8.4.11 started in PT15.432206183S
+03:55:31.785 [main] INFO tc.mysql:8.4.11 -- Container is started (JDBC URL: jdbc:mysql://host.docker.internal:53195/smartrecruit_test)
+03:55:34.658 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: jdbc:mysql://host.docker.internal:53195/empty_upgrade_test?allowPublicKeyRetrieval=true&useSSL=false (MySQL 8.4)
+03:55:35.244 [main] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Schema history table `empty_upgrade_test`.`flyway_schema_history` does not exist yet
+03:55:35.258 [main] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 11 migrations (execution time 00:00.316s)
+03:55:35.332 [main] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Creating Schema History table `empty_upgrade_test`.`flyway_schema_history` ...
+03:55:35.686 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Current version of schema `empty_upgrade_test`: << Empty Schema >>
+03:55:35.741 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `empty_upgrade_test` to version "001 - initial schema"
+03:55:36.841 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `empty_upgrade_test` to version "002 - create recruitment domain schema"
+03:55:44.914 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `empty_upgrade_test` to version "003 - add identity authentication schema"
+03:55:45.674 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `empty_upgrade_test` to version "004 - bind oauth handoff codes to pkce"
+03:55:45.962 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `empty_upgrade_test` to version "005 - add application screening audit data"
+03:55:46.481 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `empty_upgrade_test` to version "006 - bind oauth handoff codes to transactions"
+03:55:46.721 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `empty_upgrade_test` to version "007 - convert job creator membership to user references"
+03:55:47.800 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `empty_upgrade_test` to version "008 - add identity credential version and verification"
+03:55:48.434 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `empty_upgrade_test` to version "009 - harden schema integrity and precision"
+03:55:51.592 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `empty_upgrade_test` to version "010 - add interviews offers evaluations notifications and audit"
+03:55:53.471 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `empty_upgrade_test` to version "011 - application source and kpi indexes"
+03:55:53.932 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Successfully applied 11 migrations to schema `empty_upgrade_test`, now at version v011 (execution time 00:17.131s)
+03:55:53.982 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: jdbc:mysql://host.docker.internal:53195/empty_upgrade_test?allowPublicKeyRetrieval=true&useSSL=false (MySQL 8.4)
+03:55:54.362 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: jdbc:mysql://host.docker.internal:53195/v006_upgrade_test?allowPublicKeyRetrieval=true&useSSL=false (MySQL 8.4)
+03:55:54.576 [main] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Schema history table `v006_upgrade_test`.`flyway_schema_history` does not exist yet
+03:55:54.579 [main] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 11 migrations (execution time 00:00.121s)
+03:55:54.600 [main] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Creating Schema History table `v006_upgrade_test`.`flyway_schema_history` ...
+03:55:54.726 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Current version of schema `v006_upgrade_test`: << Empty Schema >>
+03:55:54.790 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `v006_upgrade_test` to version "001 - initial schema"
+03:55:55.673 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `v006_upgrade_test` to version "002 - create recruitment domain schema"
+03:56:03.335 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `v006_upgrade_test` to version "003 - add identity authentication schema"
+03:56:04.182 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `v006_upgrade_test` to version "004 - bind oauth handoff codes to pkce"
+03:56:04.399 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `v006_upgrade_test` to version "005 - add application screening audit data"
+03:56:04.916 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `v006_upgrade_test` to version "006 - bind oauth handoff codes to transactions"
+03:56:05.145 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Successfully applied 6 migrations to schema `v006_upgrade_test`, now at version v006 (execution time 00:09.906s)
+03:56:05.174 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: jdbc:mysql://host.docker.internal:53195/v006_upgrade_test?allowPublicKeyRetrieval=true&useSSL=false (MySQL 8.4)
+03:56:05.547 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: jdbc:mysql://host.docker.internal:53195/v006_upgrade_test?allowPublicKeyRetrieval=true&useSSL=false (MySQL 8.4)
+03:56:05.815 [main] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 11 migrations (execution time 00:00.175s)
+03:56:05.841 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Current version of schema `v006_upgrade_test`: 006
+03:56:05.869 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `v006_upgrade_test` to version "007 - convert job creator membership to user references"
+03:56:06.742 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Successfully applied 1 migration to schema `v006_upgrade_test`, now at version v007 (execution time 00:00.831s)
+03:56:06.776 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: jdbc:mysql://host.docker.internal:53195/v006_upgrade_test?allowPublicKeyRetrieval=true&useSSL=false (MySQL 8.4)
+03:56:07.134 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: jdbc:mysql://host.docker.internal:53195/v006_upgrade_test?allowPublicKeyRetrieval=true&useSSL=false (MySQL 8.4)
+03:56:07.493 [main] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 11 migrations (execution time 00:00.221s)
+03:56:07.525 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Current version of schema `v006_upgrade_test`: 007
+03:56:07.592 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `v006_upgrade_test` to version "008 - add identity credential version and verification"
+03:56:08.154 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Successfully applied 1 migration to schema `v006_upgrade_test`, now at version v008 (execution time 00:00.511s)
+03:56:08.182 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: jdbc:mysql://host.docker.internal:53195/v006_upgrade_test?allowPublicKeyRetrieval=true&useSSL=false (MySQL 8.4)
+03:56:08.558 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: jdbc:mysql://host.docker.internal:53195/v006_upgrade_test?allowPublicKeyRetrieval=true&useSSL=false (MySQL 8.4)
+03:56:08.822 [main] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 11 migrations (execution time 00:00.177s)
+03:56:08.845 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Current version of schema `v006_upgrade_test`: 008
+03:56:08.925 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema `v006_upgrade_test` to version "009 - harden schema integrity and precision"
+03:56:12.143 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Successfully applied 1 migration to schema `v006_upgrade_test`, now at version v009 (execution time 00:03.149s)
+03:56:12.173 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: jdbc:mysql://host.docker.internal:53195/v006_upgrade_test?allowPublicKeyRetrieval=true&useSSL=false (MySQL 8.4)
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 64.78 s -- in com.recruitment.app.SchemaMigrationUpgradeTests
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  01:49 min
+[INFO] Finished at: 2026-10-31T03:56:33Z
+[INFO] ------------------------------------------------------------------------
