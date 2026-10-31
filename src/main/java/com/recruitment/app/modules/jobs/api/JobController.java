@@ -30,7 +30,9 @@ public class JobController {
     ) {
         List<JobSnapshot> jobs = jobService.getPublishedJobs(query, workplaceType, employmentType, page, size);
         long total = jobService.countPublishedJobs(query, workplaceType, employmentType);
-        int totalPages = (int) Math.ceil((double) total / Math.max(1, size));
+        page = Math.max(0, page);
+        size = Math.min(100, Math.max(1, size));
+        int totalPages = (int) Math.ceil((double) total / size);
 
         List<JobSummaryResponse> items = jobs.stream().map(this::toSummaryResponse).toList();
         return new PageDto<>(items, page, size, total, totalPages);

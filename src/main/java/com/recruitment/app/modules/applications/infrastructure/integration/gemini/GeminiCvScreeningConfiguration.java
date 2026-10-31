@@ -18,7 +18,7 @@ import tools.jackson.databind.ObjectMapper;
  */
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(GeminiCvScreeningProperties.class)
-@ConditionalOnProperty(prefix = "app.ai.gemini", name = "enabled", havingValue = "true")
+@org.springframework.boot.autoconfigure.condition.ConditionalOnExpression("${app.ai.gemini.enabled:false} && !${app.ai.deepseek.enabled:false}")
 public class GeminiCvScreeningConfiguration {
 
     @Bean(name = "geminiCvScreeningRestClient")

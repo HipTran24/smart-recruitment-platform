@@ -38,7 +38,7 @@ export const CandidateSidebar = ({
               <span className="font-bold text-base text-slate-900 tracking-tight block leading-tight">
                 SmartRecruit
               </span>
-              <span className="text-[10px] font-semibold text-emerald-600 tracking-wide uppercase">
+              <span className="text-[10px] font-semibold text-emerald-700 tracking-wide uppercase">
                 Candidate Portal
               </span>
             </div>
@@ -49,7 +49,7 @@ export const CandidateSidebar = ({
               type="button"
               onClick={onClose}
               aria-label="Close sidebar"
-              className="lg:hidden p-1 text-slate-400 hover:text-slate-700 rounded-md hover:bg-slate-100"
+              className="lg:hidden p-1 text-slate-500 hover:text-slate-700 rounded-md hover:bg-slate-100"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -60,7 +60,7 @@ export const CandidateSidebar = ({
 
         {/* Navigation */}
         <nav className="flex w-full flex-col gap-1">
-          <div className="px-2 pb-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+          <div className="px-2 pb-1 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
             Applicant Space
           </div>
           <CandidateNavLink
@@ -124,7 +124,7 @@ export const CandidateSidebar = ({
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="w-4 h-4 shrink-0 text-slate-400"
+              className="w-4 h-4 shrink-0 text-slate-500"
             >
               <circle cx="12" cy="12" r="3" />
               <path d="m19.4 15 .1.1 1.4 1.1-1.4 2.4-1.7-.7a7.8 7.8 0 0 1-1.4.8l-.3 1.8h-2.8l-.3-1.8a7.8 7.8 0 0 1-1.4-.8l-1.7.7-1.4-2.4 1.4-1.1a7.1 7.1 0 0 1 0-1.7l-1.4-1.1 1.4-2.4 1.7.7a7.8 7.8 0 0 1 1.4-.8l.3-1.8h2.8l.3 1.8a7.8 7.8 0 0 1 1.4.8l1.7-.7 1.4 2.4-1.4 1.1a7.1 7.1 0 0 1 0 1.7Z" />
@@ -142,14 +142,14 @@ export const CandidateSidebar = ({
           </div>
           <div className="min-w-0">
             <div className="font-semibold text-xs text-slate-800 truncate">{user?.fullName || 'Ứng Viên'}</div>
-            <div className="text-emerald-600 text-[10px] font-medium truncate">{user?.email || 'candidate@smartrecruit.local'}</div>
+            <div className="text-emerald-700 text-[10px] font-medium truncate">{user?.email || 'candidate@smartrecruit.local'}</div>
           </div>
         </div>
         <button
           type="button"
           onClick={handleLogout}
           title="Đăng xuất khỏi hệ thống"
-          className="p-1.5 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition cursor-pointer shrink-0"
+          className="p-1.5 rounded-md text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition cursor-pointer shrink-0"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -183,7 +183,7 @@ function CandidateNavLink({ to, label, icon, onClick }: CandidateNavLinkProps) {
       {({ isActive }) => (
         <>
           <div className="flex items-center gap-2.5 min-w-0">
-            <span className={isActive ? "text-emerald-600" : "text-slate-400"}>
+            <span className={isActive ? "text-emerald-700" : "text-slate-500"}>
               {icon}
             </span>
             <span className="truncate">{label}</span>

@@ -16,19 +16,21 @@ public interface JobRepository extends JpaRepository<Job, Long> {
 
     @Query("SELECT j FROM Job j WHERE j.status = :status " +
            "AND (j.expiresAt IS NULL OR j.expiresAt > :now) " +
+           "AND (:workplace IS NULL OR j.workplaceType=:workplace) AND (:employment IS NULL OR j.employmentType=:employment) " +
            "AND (:query IS NULL OR LOWER(j.title) LIKE LOWER(CONCAT('%', :query, '%')) OR LOWER(j.description) LIKE LOWER(CONCAT('%', :query, '%')) OR LOWER(j.location) LIKE LOWER(CONCAT('%', :query, '%'))) " +
            "ORDER BY j.publishedAt DESC, j.id DESC")
-    Page<Job> findPublishedJobs(@Param("status") Job.JobStatus status, @Param("now") Instant now, @Param("query") String query, Pageable pageable);
+    Page<Job> findPublishedJobs(@Param("status") Job.JobStatus status, @Param("now") Instant now, @Param("query") String query, @Param("workplace") Job.WorkplaceType workplace, @Param("employment") Job.EmploymentType employment, Pageable pageable);
 
     @Query("SELECT COUNT(j) FROM Job j WHERE j.status = :status " +
            "AND (j.expiresAt IS NULL OR j.expiresAt > :now) " +
+           "AND (:workplace IS NULL OR j.workplaceType=:workplace) AND (:employment IS NULL OR j.employmentType=:employment) " +
            "AND (:query IS NULL OR LOWER(j.title) LIKE LOWER(CONCAT('%', :query, '%')) OR LOWER(j.description) LIKE LOWER(CONCAT('%', :query, '%')) OR LOWER(j.location) LIKE LOWER(CONCAT('%', :query, '%')))")
-    long countPublishedJobs(@Param("status") Job.JobStatus status, @Param("now") Instant now, @Param("query") String query);
+    long countPublishedJobs(@Param("status") Job.JobStatus status, @Param("now") Instant now, @Param("query") String query, @Param("workplace") Job.WorkplaceType workplace, @Param("employment") Job.EmploymentType employment);
 
-    @Query("SELECT j FROM Job j WHERE (:search IS NULL OR LOWER(j.title) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(j.location) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+    @Query("SELECT j FROM Job j WHERE j.companyId IN (SELECT m.company.id FROM CompanyMember m WHERE m.userId=:user AND m.active=true) AND (:status IS NULL OR j.status=:status) AND (:search IS NULL OR LOWER(j.title) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(j.location) LIKE LOWER(CONCAT('%', :search, '%'))) " +
            "ORDER BY j.updatedAt DESC, j.id DESC")
-    Page<Job> findAllRecruiterJobs(@Param("search") String search, Pageable pageable);
+    Page<Job> findAllRecruiterJobs(@Param("user") Long user, @Param("status") Job.JobStatus status, @Param("search") String search, Pageable pageable);
 
-    @Query("SELECT COUNT(j) FROM Job j WHERE (:search IS NULL OR LOWER(j.title) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(j.location) LIKE LOWER(CONCAT('%', :search, '%')))")
-    long countAllRecruiterJobs(@Param("search") String search);
+    @Query("SELECT COUNT(j) FROM Job j WHERE j.companyId IN (SELECT m.company.id FROM CompanyMember m WHERE m.userId=:user AND m.active=true) AND (:status IS NULL OR j.status=:status) AND (:search IS NULL OR LOWER(j.title) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(j.location) LIKE LOWER(CONCAT('%', :search, '%')))")
+    long countAllRecruiterJobs(@Param("user") Long user, @Param("status") Job.JobStatus status, @Param("search") String search);
 }

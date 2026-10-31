@@ -1,0 +1,42 @@
+name: Deploy to Amazon Lightsail
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-deployment
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Continuous Deployment to Lightsail VPS
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Deploy application via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          DEPLOY_SHA: ${{ github.sha }}
+        with:
+          host: ${{ secrets.LIGHTSAIL_HOST }}
+          username: ${{ secrets.LIGHTSAIL_USER }}
+          key: ${{ secrets.LIGHTSAIL_SSH_KEY }}
+          port: 22
+          envs: DEEPSEEK_API_KEY,DEPLOY_SHA
+          command_timeout: 22m
+          script_stop: true
+          script: |
+            set -eu
+            if [ ! -d /home/ubuntu/smart-recruitment/.git ]; then
+              git clone https://github.com/HipTran24/smart-recruitment-platform.git /home/ubuntu/smart-recruitment
+            fi
+            cd /home/ubuntu/smart-recruitment
+            git fetch origin main
+            git reset --hard "$DEPLOY_SHA"
+            bash scripts/deployment/deploy-lightsail.sh

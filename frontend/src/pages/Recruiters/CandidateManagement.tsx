@@ -1,3 +1,7 @@
+import {
+  applicationStatusLabel,
+  recommendationLabel,
+} from "../../lib/recruitment-labels"
 import { useEffect, useMemo, useState } from "react"
 import { useSearchParams } from "react-router-dom"
 import { PageHeader } from "../../components/ui/PageHeader"
@@ -50,7 +54,7 @@ export default function CandidateManagement() {
     setError("")
     setLoading(true)
     if (invalidFilter) {
-      setError("Bộ lọc không hợp lệ. Hãy kiểm tra Job ID và trạng thái.")
+      setError("Bộ lọc không hợp lệ. Hãy kiểm tra mã công việc và trạng thái.")
       setLoading(false)
       return
     }
@@ -117,7 +121,7 @@ export default function CandidateManagement() {
       />
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <Input
-          label="Job ID"
+          label="Mã công việc"
           type="number"
           min="1"
           value={rawJob}
@@ -129,7 +133,10 @@ export default function CandidateManagement() {
           onChange={(event) => filter("status", event.target.value)}
           options={[
             { value: "", label: "Tất cả" },
-            ...pipelineStatuses.map((value) => ({ value, label: value })),
+            ...pipelineStatuses.map((value) => ({
+              value,
+              label: applicationStatusLabel(value),
+            })),
           ]}
         />
         <Input
@@ -218,7 +225,9 @@ export default function CandidateManagement() {
                           ? "Chưa có điểm"
                           : `${item.screeningScore}%`}
                       </td>
-                      <td className="p-3">{item.status}</td>
+                      <td className="p-3">
+                        {applicationStatusLabel(item.status)}
+                      </td>
                       <td className="p-3">
                         {criteriaList(item.matchedCriteria).join(", ") ||
                           "Chưa có dữ liệu"}
@@ -278,7 +287,10 @@ export default function CandidateManagement() {
         {selected && (
           <div className="space-y-4">
             <p>{selected.screeningSummary || "Chưa có kết quả phân tích."}</p>
-            <p>Khuyến nghị: {selected.screeningRecommendation || "Chưa có"}</p>
+            <p>
+              Khuyến nghị:{" "}
+              {recommendationLabel(selected.screeningRecommendation)}
+            </p>
             <p>
               Tiêu chí còn thiếu:{" "}
               {criteriaList(selected.missingCriteria).join(", ") ||
@@ -291,7 +303,7 @@ export default function CandidateManagement() {
               onChange={(event) => setTarget(event.target.value)}
               options={pipelineStatuses.map((value) => ({
                 value,
-                label: value,
+                label: applicationStatusLabel(value),
               }))}
             />
             <Input

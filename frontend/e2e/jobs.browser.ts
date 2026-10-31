@@ -33,6 +33,12 @@ test("publishing a job must send a create request", async ({ page }) => {
   })
 
   await jobTitleInput(page).fill("QA SCRUM84 Backend Intern")
+  await page
+    .getByLabel("Mô tả công việc *", { exact: true })
+    .fill("Build and maintain backend services.")
+  await page
+    .getByLabel("Yêu cầu bắt buộc (mỗi dòng một tiêu chí) *", { exact: true })
+    .fill("Java\nSQL")
 
   const createRequest = page.waitForRequest(
     (request) =>
@@ -44,10 +50,12 @@ test("publishing a job must send a create request", async ({ page }) => {
   // Chờ request và click đồng thời để không bỏ lỡ request.
   const [request] = await Promise.all([
     createRequest,
-    page.getByRole("button", {
-      name: "Publish Job",
-      exact: true,
-    }).click(),
+    page
+      .getByRole("button", {
+        name: "Publish Job",
+        exact: true,
+      })
+      .click(),
   ])
 
   expect(request.postDataJSON()).toMatchObject({
@@ -71,29 +79,31 @@ test("empty job title must not report a successful publish", async ({
   page.on("request", (request) => {
     if (
       request.method() === "POST" &&
-      new URL(request.url()).pathname.startsWith(
-        "/api/v1/recruiter/jobs",
-      )
+      new URL(request.url()).pathname.startsWith("/api/v1/recruiter/jobs")
     ) {
       mutations.push(request.url())
     }
   })
 
   await jobTitleInput(page).fill("")
-  await page.getByRole("button", {
-    name: "Publish Job",
-    exact: true,
-  }).click()
+  await page
+    .getByRole("button", {
+      name: "Publish Job",
+      exact: true,
+    })
+    .click()
 
   // Chỉ một trong hai hành vi: validation trình duyệt
   // hoặc thông báo validation có thể truy cập được.
-  await expect.poll(async () => {
-    const browserValidation = await jobTitleInput(page).evaluate(
-      (element: HTMLInputElement) => !element.checkValidity(),
-    )
-    const errorVisible = await page.getByRole("alert").count()
-    return browserValidation || errorVisible > 0
-  }).toBe(true)
+  await expect
+    .poll(async () => {
+      const browserValidation = await jobTitleInput(page).evaluate(
+        (element: HTMLInputElement) => !element.checkValidity(),
+      )
+      const errorVisible = await page.getByRole("alert").count()
+      return browserValidation || errorVisible > 0
+    })
+    .toBe(true)
 
   expect(mutations).toEqual([])
   expect(

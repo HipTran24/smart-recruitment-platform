@@ -20,9 +20,9 @@ public interface ApplicationStore {
 
     List<ApplicationSnapshot> findByCandidateProfileId(Long candidateProfileId);
 
-    List<ApplicationSnapshot> findRecruiterApplications(Long jobId, String status, int page, int size);
+    List<ApplicationSnapshot> findRecruiterApplications(Long recruiterUserId, Long jobId, String status, int page, int size);
 
-    long countRecruiterApplications(Long jobId, String status);
+    long countRecruiterApplications(Long recruiterUserId, Long jobId, String status);
 
     ApplicationSnapshot transitionStatus(Long id, String targetStatus, Long changedByUserId, String note);
 

@@ -70,7 +70,7 @@ test("ranking preserves null and zero scores and persists a valid status transit
   await page.getByRole("button", { name: "Lưu trạng thái" }).click()
   await expect(dialog).toHaveCount(0)
   await expect(
-    page.getByRole("cell", { name: "IN_REVIEW", exact: true }),
+    page.getByRole("cell", { name: "Đang xem xét", exact: true }),
   ).toBeVisible()
   expect(
     calls.some(

@@ -1,0 +1,108 @@
+name: smart-recruitment
+
+services:
+  mysql:
+    image: mysql:8.4.11
+    restart: unless-stopped
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+      - --default-time-zone=+00:00
+      - --innodb-buffer-pool-size=512M
+      - --max-connections=40
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 25s
+    networks:
+      - app-network
+
+  app:
+    build:
+      context: ../..
+      dockerfile: infra/docker/backend.Dockerfile
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE}?useSSL=false&allowPublicKeyRetrieval=true&connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_USER}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: validate
+      SERVER_FORWARD_HEADERS_STRATEGY: ${SERVER_FORWARD_HEADERS_STRATEGY}
+      APP_SECURITY_JWT_ISSUER: ${APP_SECURITY_JWT_ISSUER}
+      APP_SECURITY_JWT_AUDIENCE: ${APP_SECURITY_JWT_AUDIENCE}
+      APP_SECURITY_JWT_KEY_ID: ${APP_SECURITY_JWT_KEY_ID}
+      APP_SECURITY_JWT_PRIVATE_KEY_LOCATION: file:/run/secrets/app-jwt-private.pem
+      APP_SECURITY_JWT_PUBLIC_KEY_LOCATION: file:/run/secrets/app-jwt-public.pem
+      APP_SECURITY_JWT_ACCESS_TOKEN_TTL: ${APP_SECURITY_JWT_ACCESS_TOKEN_TTL}
+      APP_SECURITY_JWT_REFRESH_TOKEN_TTL: ${APP_SECURITY_JWT_REFRESH_TOKEN_TTL}
+      APP_SECURITY_JWT_CLOCK_SKEW: ${APP_SECURITY_JWT_CLOCK_SKEW}
+      APP_TEST_MAILBOX_ENABLED: ${APP_TEST_MAILBOX_ENABLED}
+      # Google Gemini AI configuration
+      GEMINI_ENABLED: ${GEMINI_ENABLED:-false}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash}
+      # DeepSeek AI configuration (Fallback / Alternative provider)
+      DEEPSEEK_ENABLED: ${DEEPSEEK_ENABLED:-false}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      DEEPSEEK_MODEL: ${DEEPSEEK_MODEL:-deepseek-flash}
+      DEEPSEEK_API_BASE_URL: ${DEEPSEEK_API_BASE_URL:-https://api.deepseek.com}
+      DEEPSEEK_CONNECT_TIMEOUT: ${DEEPSEEK_CONNECT_TIMEOUT:-PT3S}
+      DEEPSEEK_READ_TIMEOUT: ${DEEPSEEK_READ_TIMEOUT:-PT45S}
+      DEEPSEEK_MAX_OUTPUT_TOKENS: ${DEEPSEEK_MAX_OUTPUT_TOKENS:-2048}
+      DEEPSEEK_ALLOW_INSECURE_ENDPOINT: ${DEEPSEEK_ALLOW_INSECURE_ENDPOINT:-false}
+      # JVM Sizing Tuning
+      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=45.0 -XX:+UseG1GC -Djava.security.egd=file:/dev/./urandom"
+    volumes:
+      - resume-data:/app/uploads
+    secrets:
+      - source: app-jwt-private-key
+        target: app-jwt-private.pem
+      - source: app-jwt-public-key
+        target: app-jwt-public.pem
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--spider", "http://localhost:8080/actuator/health/readiness"]
+      interval: 15s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: ../..
+      dockerfile: infra/docker/frontend.Dockerfile
+    restart: unless-stopped
+    depends_on:
+      app:
+        condition: service_healthy
+    ports:
+      - "80:80"
+    networks:
+      - app-network
+
+volumes:
+  mysql-data:
+  resume-data:
+
+networks:
+  app-network:
+
+secrets:
+  app-jwt-private-key:
+    file: ${JWT_PRIVATE_KEY_FILE}
+  app-jwt-public-key:
+    file: ${JWT_PUBLIC_KEY_FILE}

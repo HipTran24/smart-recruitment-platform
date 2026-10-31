@@ -23,6 +23,10 @@ spring:
   jackson:
     deserialization:
       fail-on-unknown-properties: true
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 11MB
 
 server:
   shutdown: graceful
@@ -104,14 +108,25 @@ app:
         success-redirect-uri: ${GOOGLE_OAUTH_SUCCESS_REDIRECT_URI:}
         authorization-code-ttl: ${GOOGLE_OAUTH_AUTHORIZATION_CODE_TTL:PT1M}
   ai:
+    deepseek:
+      enabled: ${DEEPSEEK_ENABLED:false}
+      api-key: ${DEEPSEEK_API_KEY:}
+      model: ${DEEPSEEK_MODEL:deepseek-flash}
+      api-base-url: ${DEEPSEEK_API_BASE_URL:https://api.deepseek.com}
+      connect-timeout: ${DEEPSEEK_CONNECT_TIMEOUT:PT3S}
+      read-timeout: ${DEEPSEEK_READ_TIMEOUT:PT45S}
+      max-output-tokens: ${DEEPSEEK_MAX_OUTPUT_TOKENS:2048}
+      allow-insecure-endpoint: ${DEEPSEEK_ALLOW_INSECURE_ENDPOINT:false}
     gemini:
       enabled: ${GEMINI_ENABLED:false}
       api-key: ${GEMINI_API_KEY:}
       model: ${GEMINI_MODEL:}
+      fallback-models: ${GEMINI_FALLBACK_MODELS:}
       api-base-url: ${GEMINI_API_BASE_URL:https://generativelanguage.googleapis.com}
       api-version: ${GEMINI_API_VERSION:v1beta}
       connect-timeout: ${GEMINI_CONNECT_TIMEOUT:PT3S}
       read-timeout: ${GEMINI_READ_TIMEOUT:PT30S}
+      min-request-interval: ${GEMINI_MIN_REQUEST_INTERVAL:PT0S}
       max-resume-characters: ${GEMINI_MAX_RESUME_CHARACTERS:60000}
       max-job-description-characters: ${GEMINI_MAX_JOB_DESCRIPTION_CHARACTERS:24000}
       max-required-criteria: ${GEMINI_MAX_REQUIRED_CRITERIA:40}

@@ -28,6 +28,7 @@ public class JpaApplicationStore implements ApplicationStore {
     private final ApplicationEvaluationRepository evaluationRepository;
     private final FeedbackDraftRepository feedbackRepository;
     private final JdbcTemplate jdbcTemplate;
+    private final ApplicationListReader lists;
 
     public JpaApplicationStore(
             JobApplicationRepository applicationRepository,
@@ -36,7 +37,7 @@ public class JpaApplicationStore implements ApplicationStore {
             JobOfferRepository offerRepository,
             ApplicationEvaluationRepository evaluationRepository,
             FeedbackDraftRepository feedbackRepository,
-            JdbcTemplate jdbcTemplate
+            JdbcTemplate jdbcTemplate, ApplicationListReader lists
     ) {
         this.applicationRepository = applicationRepository;
         this.screeningRepository = screeningRepository;
@@ -45,6 +46,7 @@ public class JpaApplicationStore implements ApplicationStore {
         this.evaluationRepository = evaluationRepository;
         this.feedbackRepository = feedbackRepository;
         this.jdbcTemplate = jdbcTemplate;
+        this.lists = lists;
     }
 
     @Override
@@ -74,23 +76,21 @@ public class JpaApplicationStore implements ApplicationStore {
     @Override
     @Transactional(readOnly = true)
     public List<ApplicationSnapshot> findByCandidateProfileId(Long candidateProfileId) {
-        return applicationRepository.findByCandidateProfileIdOrderByCreatedAtDesc(candidateProfileId)
-                .stream().map(this::toSnapshot).toList();
+        return lists.candidate(candidateProfileId);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<ApplicationSnapshot> findRecruiterApplications(Long jobId, String status, int page, int size) {
+    public List<ApplicationSnapshot> findRecruiterApplications(Long recruiterUserId, Long jobId, String status, int page, int size) {
         ApplicationStatus appStatus = parseStatus(status);
-        return applicationRepository.findRecruiterApplications(jobId, appStatus, PageRequest.of(page, size))
-                .stream().map(this::toSnapshot).toList();
+        return lists.recruiter(recruiterUserId, jobId, appStatus == null ? null : appStatus.name(), page, size);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public long countRecruiterApplications(Long jobId, String status) {
+    public long countRecruiterApplications(Long recruiterUserId, Long jobId, String status) {
         ApplicationStatus appStatus = parseStatus(status);
-        return applicationRepository.countRecruiterApplications(jobId, appStatus);
+        return lists.count(recruiterUserId, jobId, appStatus == null ? null : appStatus.name());
     }
 
     @Override

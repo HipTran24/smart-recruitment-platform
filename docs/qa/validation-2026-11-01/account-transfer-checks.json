@@ -1,0 +1,19 @@
+{
+  "users": 29,
+  "successfulLogins": 29,
+  "roles": {
+    "ROLE_PLATFORM_ADMIN": 1,
+    "ROLE_RECRUITER": 1,
+    "ROLE_CANDIDATE": 27
+  },
+  "passwordHashesPreserved": true,
+  "accountIdsAndFlagsPreserved": true,
+  "cvFilesSha256Verified": 30,
+  "appUidCanReadCvs": true,
+  "applications": 27,
+  "completedScreenings": 26,
+  "repeatedRestoreRefused": true,
+  "newJwtKeysWorkWithExistingAccounts": true,
+  "sourceDatabaseUnchanged": true,
+  "dataTransferTestsPassed": 12
+}

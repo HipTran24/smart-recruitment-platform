@@ -35,7 +35,9 @@ public class RecruiterJobController {
         Long userId = getUserId(auth);
         List<JobSnapshot> jobs = jobService.getRecruiterJobs(userId, status, search, page, size);
         long total = jobService.countRecruiterJobs(userId, status, search);
-        int totalPages = (int) Math.ceil((double) total / Math.max(1, size));
+        page = Math.max(0, page);
+        size = Math.min(100, Math.max(1, size));
+        int totalPages = (int) Math.ceil((double) total / size);
 
         List<JobDetailResponse> items = jobs.stream().map(this::toDetailResponse).toList();
         return new PageDto<>(items, page, size, total, totalPages);

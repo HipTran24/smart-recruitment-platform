@@ -31,6 +31,8 @@ public class ApplicationService {
 
     public ApplicationSnapshot apply(Long userId, Long jobId, Long resumeId, String coverLetter, String source) {
         String attribution = ApplicationSource.normalize(source);
+        Long open = queryScalarLong("SELECT id FROM jobs WHERE id=? AND status='OPEN' AND (expires_at IS NULL OR expires_at>NOW())", jobId);
+        if (open == null) throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT, "Job is not accepting applications");
         Long profileId = getCandidateProfileId(userId);
         Optional<ApplicationSnapshot> existing = applicationStore.findByJobAndCandidate(jobId, profileId);
         if (existing.isPresent()) {
@@ -45,6 +47,10 @@ public class ApplicationService {
             );
         }
 
+        if (effectiveResumeId != null) {
+            Integer owned = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM candidate_resumes WHERE id=? AND candidate_profile_id=?", Integer.class, effectiveResumeId, profileId);
+            if (owned == null || owned == 0) throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.NOT_FOUND);
+        }
         ApplicationSnapshot app = applicationStore.createApplication(jobId, profileId, effectiveResumeId, coverLetter, attribution);
 
         // Screening is asynchronous and requires explicit consent and actual provider output.
@@ -69,13 +75,13 @@ public class ApplicationService {
     }
 
     @Transactional(readOnly = true)
-    public List<ApplicationSnapshot> getRecruiterApplications(Long jobId, String status, int page, int size) {
-        return applicationStore.findRecruiterApplications(jobId, status, Math.max(0, page), Math.min(100, Math.max(1, size)));
+    public List<ApplicationSnapshot> getRecruiterApplications(Long recruiterUserId, Long jobId, String status, int page, int size) {
+        return applicationStore.findRecruiterApplications(recruiterUserId, jobId, status, Math.max(0, page), Math.min(100, Math.max(1, size)));
     }
 
     @Transactional(readOnly = true)
-    public long countRecruiterApplications(Long jobId, String status) {
-        return applicationStore.countRecruiterApplications(jobId, status);
+    public long countRecruiterApplications(Long recruiterUserId, Long jobId, String status) {
+        return applicationStore.countRecruiterApplications(recruiterUserId, jobId, status);
     }
 
     public ApplicationSnapshot transitionStage(Long applicationId, String stage, Long recruiterUserId, String note) {
@@ -88,13 +94,14 @@ public class ApplicationService {
             String locationOrUrl, String timezone, String notes
     ) {
         Long targetCandidateUserId = candidateUserId;
-        if (targetCandidateUserId == null && applicationId != null) {
+        if (applicationId != null) {
             targetCandidateUserId = queryScalarLong(
                     "SELECT cp.user_id FROM candidate_profiles cp JOIN job_applications ja ON ja.candidate_profile_id = cp.id WHERE ja.id = ?",
                     applicationId
             );
         }
         Instant effectiveTime = scheduledAt != null ? scheduledAt : Instant.now().plusSeconds(86400 * 2);
+        if (!effectiveTime.isAfter(Instant.now())) throw new IllegalArgumentException("Interview must be in the future");
         int effectiveDuration = durationMinutes != null && durationMinutes > 0 ? durationMinutes : 45;
         String effectiveTitle = title != null && !title.isBlank() ? title : "Technical Interview";
         return applicationStore.scheduleInterview(applicationId, targetCandidateUserId, recruiterUserId, effectiveTitle, effectiveTime, effectiveDuration, locationOrUrl, timezone, notes);
@@ -129,7 +136,7 @@ public class ApplicationService {
             Instant deadline, String notes
     ) {
         Long targetCandidateUserId = candidateUserId;
-        if (targetCandidateUserId == null && applicationId != null) {
+        if (applicationId != null) {
             targetCandidateUserId = queryScalarLong(
                     "SELECT cp.user_id FROM candidate_profiles cp JOIN job_applications ja ON ja.candidate_profile_id = cp.id WHERE ja.id = ?",
                     applicationId
@@ -225,34 +232,31 @@ public class ApplicationService {
     }
 
     @Transactional(readOnly = true)
-    public Map<String, Object> getRecruiterOverview() {
-        long totalJobs = queryCount("SELECT COUNT(*) FROM jobs");
-        long openJobs = queryCount("SELECT COUNT(*) FROM jobs WHERE status = 'OPEN'");
-        long totalApplications = queryCount("SELECT COUNT(*) FROM job_applications");
-        long pendingReviews = queryCount("SELECT COUNT(*) FROM job_applications WHERE status IN ('SUBMITTED', 'IN_REVIEW')");
-        long scheduledInterviews = queryCount("SELECT COUNT(*) FROM interviews WHERE status = 'SCHEDULED'");
-        long activeOffers = queryCount("SELECT COUNT(*) FROM job_offers WHERE status = 'SENT'");
-
-        return Map.of(
-                "totalJobs", totalJobs,
-                "openJobs", openJobs,
-                "totalApplications", totalApplications,
-                "pendingReviews", pendingReviews,
-                "scheduledInterviews", scheduledInterviews,
-                "activeOffers", activeOffers
-        );
+    public Map<String, Object> getRecruiterOverview(Long user) {
+        String members = "SELECT company_id FROM company_members WHERE user_id=? AND is_active=1";
+        String jobs = "SELECT id FROM jobs WHERE company_id IN (" + members + ")";
+        String applications = "SELECT id FROM job_applications WHERE job_id IN (" + jobs + ")";
+        return Map.of("totalJobs", countFor("SELECT COUNT(*) FROM jobs WHERE id IN (" + jobs + ")", user),
+                "openJobs", countFor("SELECT COUNT(*) FROM jobs WHERE status='OPEN' AND id IN (" + jobs + ")", user),
+                "totalApplications", countFor("SELECT COUNT(*) FROM job_applications WHERE id IN (" + applications + ")", user),
+                "pendingReviews", countFor("SELECT COUNT(*) FROM job_applications WHERE status IN ('SUBMITTED','IN_REVIEW') AND id IN (" + applications + ")", user),
+                "scheduledInterviews", countFor("SELECT COUNT(*) FROM interviews WHERE status='SCHEDULED' AND job_application_id IN (" + applications + ")", user),
+                "activeOffers", countFor("SELECT COUNT(*) FROM job_offers WHERE status='SENT' AND job_application_id IN (" + applications + ")", user));
     }
 
     @Transactional(readOnly = true)
-    public Map<String, Long> getRecruiterFunnel() {
-        return Map.of(
-                "SUBMITTED", queryCount("SELECT COUNT(*) FROM job_applications WHERE status = 'SUBMITTED'"),
-                "IN_REVIEW", queryCount("SELECT COUNT(*) FROM job_applications WHERE status = 'IN_REVIEW'"),
-                "SHORTLISTED", queryCount("SELECT COUNT(*) FROM job_applications WHERE status = 'SHORTLISTED'"),
-                "INTERVIEW", queryCount("SELECT COUNT(*) FROM job_applications WHERE status = 'INTERVIEW'"),
-                "OFFERED", queryCount("SELECT COUNT(*) FROM job_applications WHERE status = 'OFFERED'"),
-                "REJECTED", queryCount("SELECT COUNT(*) FROM job_applications WHERE status = 'REJECTED'")
-        );
+    public Map<String, Long> getRecruiterFunnel(Long user) {
+        var result = new java.util.LinkedHashMap<String, Long>();
+        jdbcTemplate.query("""
+                SELECT a.status,COUNT(*) AS total FROM job_applications a JOIN jobs j ON j.id=a.job_id
+                WHERE EXISTS(SELECT 1 FROM company_members m WHERE m.company_id=j.company_id AND m.user_id=? AND m.is_active=1)
+                GROUP BY a.status
+                """, rs -> { result.put(rs.getString("status"), rs.getLong("total")); }, user);
+        return result;
+    }
+
+    private long countFor(String sql, Long user) {
+        return java.util.Objects.requireNonNull(jdbcTemplate.queryForObject(sql, Long.class, user));
     }
 
     private Long getCandidateProfileId(Long userId) {

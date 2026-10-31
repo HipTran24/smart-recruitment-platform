@@ -15,6 +15,11 @@ This directory contains the reproducible local runtime for the Spring Boot appli
 
 The database data is stored in the Compose-managed `mysql-data` volume; it is not bind-mounted into the repository and is never committed to Git.
 
+Existing accounts and CV files can be moved to a fresh VPS with the
+[data-transfer procedure](../../docs/deployment/existing-accounts.md). Import the
+private data bundle before starting the app; subsequent builds reuse the MySQL
+and resume volumes. Runtime upload ownership is fixed at UID/GID `10001:10001`.
+
 Ports bind to `127.0.0.1` only. The application readiness endpoint is `http://localhost:${APP_PORT:-8080}/actuator/health/readiness`.
 
 `compose.local.yml` is for local development only. Production deployment must supply secrets through a secret manager and use a production-specific configuration.

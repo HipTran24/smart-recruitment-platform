@@ -1,0 +1,31 @@
+{
+  "counts": {
+    "accounts": 26,
+    "resumes": 26,
+    "applications": 26
+  },
+  "ui": {
+    "candidateAccounts": 26,
+    "visibleApplications": 27,
+    "allExpectedCandidatesVisible": true,
+    "vietnameseSummary": true,
+    "vietnameseStatus": true,
+    "vietnameseRecommendation": true,
+    "selectAll": true,
+    "mobileOverflow": false,
+    "axeViolations": [],
+    "pageErrors": []
+  },
+  "screeningSamples": [
+    {
+      "applicationId": 1038,
+      "status": "COMPLETED",
+      "score": 60
+    },
+    {
+      "applicationId": 1064,
+      "status": "COMPLETED",
+      "score": 40
+    }
+  ]
+}

@@ -8,6 +8,38 @@
 !.env.example
 src/main/resources/application-local.yml
 
+# Runtime signing keys, certificates, SSH keys, and service credentials.
+# Keep real values in the local environment or a deployment secret store.
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.pub
+.envrc
+.direnv/
+secrets/
+.secrets/
+credentials/
+.credentials/
+/keys/
+credentials.json
+credentials-*.json
+service-account*.json
+*-service-account*.json
+client_secret*.json
+api-keys.*
+api_keys.*
+id_rsa
+id_dsa
+id_ecdsa
+id_ed25519
+
+# Deliberately public, fixed test fixtures; never use these keys at runtime.
+!src/test/resources/keys/test-jwt-private.pem
+!src/test/resources/keys/test-jwt-public.pem
+
 # IDE and operating-system files
 .idea/
 *.iml
@@ -44,3 +76,7 @@ __pycache__/
 # CI candidate artifacts and reports are retained in Actions, never source control.
 quality-reports/
 release-output/
+
+# Database snapshots contain account hashes and private CVs; transfer them separately.
+/backups/
+smartrecruit-data-*.tar.gz

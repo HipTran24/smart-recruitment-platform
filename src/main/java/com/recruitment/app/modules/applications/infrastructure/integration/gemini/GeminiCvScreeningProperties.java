@@ -24,8 +24,10 @@ public class GeminiCvScreeningProperties {
     private String apiVersion = "v1beta";
     private String apiKey;
     private String model;
+    private String fallbackModels;
     private Duration connectTimeout = Duration.ofSeconds(3);
     private Duration readTimeout = Duration.ofSeconds(30);
+    private Duration minRequestInterval = Duration.ZERO;
     private int maxResumeCharacters = 60_000;
     private int maxJobDescriptionCharacters = 24_000;
     private int maxRequiredCriteria = 40;
@@ -58,6 +60,8 @@ public class GeminiCvScreeningProperties {
         }
         validateDuration(connectTimeout, "Gemini connect timeout");
         validateDuration(readTimeout, "Gemini read timeout");
+        if (minRequestInterval == null || minRequestInterval.isNegative() || minRequestInterval.compareTo(Duration.ofMinutes(1)) > 0)
+            throw configurationError("Gemini minimum request interval must be between zero and one minute");
         validateRange(maxResumeCharacters, 1_000, 120_000, "Gemini max resume characters");
         validateRange(maxJobDescriptionCharacters, 1_000, 120_000, "Gemini max job description characters");
         validateRange(maxRequiredCriteria, 1, 100, "Gemini max required criteria");
@@ -126,6 +130,14 @@ public class GeminiCvScreeningProperties {
         this.model = model;
     }
 
+    public String getFallbackModels() {
+        return fallbackModels;
+    }
+
+    public void setFallbackModels(String fallbackModels) {
+        this.fallbackModels = fallbackModels;
+    }
+
     public Duration getConnectTimeout() {
         return connectTimeout;
     }
@@ -133,6 +145,9 @@ public class GeminiCvScreeningProperties {
     public void setConnectTimeout(Duration connectTimeout) {
         this.connectTimeout = connectTimeout;
     }
+
+    public Duration getMinRequestInterval() { return minRequestInterval; }
+    public void setMinRequestInterval(Duration value) { minRequestInterval = value; }
 
     public Duration getReadTimeout() {
         return readTimeout;

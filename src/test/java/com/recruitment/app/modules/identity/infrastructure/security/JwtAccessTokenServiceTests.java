@@ -60,6 +60,15 @@ class JwtAccessTokenServiceTests {
     }
 
     @Test
+    void acceptsAnOlderAccessTokenUntilItsActualExpiry() throws Exception {
+        JwtFixture fixture = JwtFixture.create();
+        String token = fixture.mint(fixture.properties.audience(), "access", NOW.minus(Duration.ofMinutes(5)), NOW.plus(Duration.ofMinutes(10)));
+        assertEquals(42L, fixture.service.authenticate(token).userId());
+        assertThrows(InvalidAccessTokenException.class, () -> fixture.service.authenticate(
+                fixture.mint(fixture.properties.audience(), "access", NOW.plusSeconds(1), NOW.plusSeconds(900))));
+    }
+
+    @Test
     void rejectsWrongAudienceWrongTokenUseAndExpiredTokens() throws Exception {
         JwtFixture fixture = JwtFixture.create();
 

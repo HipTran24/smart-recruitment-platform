@@ -19,6 +19,20 @@ test("candidate CV page provides a file selection control", async ({
       })
     }
 
+    if (path === "/api/v1/candidates/me")
+      return route.fulfill({
+        status: 200,
+        json: {
+          id: 1,
+          userId: 84,
+          aiProcessingConsented: false,
+          educations: [],
+          experiences: [],
+          skills: [],
+          resumes: [],
+        },
+      })
+
     return route.fulfill({
       status: 404,
       json: {

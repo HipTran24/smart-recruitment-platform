@@ -1,0 +1,484 @@
+{
+  "productionWorkflows": {
+    "results": [
+      {
+        "name": "Candidate profile saves and persists after reload",
+        "pass": true,
+        "ms": 2213
+      },
+      {
+        "name": "Candidate uploads a real PDF through browser and reloads saved CV",
+        "pass": true,
+        "ms": 892
+      },
+      {
+        "name": "Public search opens real job and candidate submits application",
+        "pass": true,
+        "ms": 963
+      },
+      {
+        "name": "Recruiter loads application and persists evaluation",
+        "pass": true,
+        "ms": 2105
+      },
+      {
+        "name": "Recruiter schedules interview visible in candidate account",
+        "pass": true,
+        "ms": 928
+      },
+      {
+        "name": "Recruiter sends offer; candidate accepts; response persists",
+        "pass": true,
+        "ms": 1964
+      },
+      {
+        "name": "Responsive navigation closes using Escape and preserves page width",
+        "pass": true,
+        "ms": 903
+      },
+      {
+        "name": "Admin overview and user directory use real API",
+        "pass": true,
+        "ms": 2046
+      }
+    ],
+    "errors": []
+  },
+  "routeAudit": {
+    "results": [
+      {
+        "role": "candidate",
+        "path": "/explore-jobs",
+        "width": 390,
+        "overflow": false,
+        "errors": [],
+        "violations": []
+      },
+      {
+        "role": "candidate",
+        "path": "/jobs/2",
+        "width": 390,
+        "overflow": false,
+        "errors": [],
+        "violations": []
+      },
+      {
+        "role": "candidate",
+        "path": "/my-applications",
+        "width": 390,
+        "overflow": false,
+        "errors": [],
+        "violations": []
+      },
+      {
+        "role": "candidate",
+        "path": "/profile-resume",
+        "width": 390,
+        "overflow": false,
+        "errors": [],
+        "violations": []
+      },
+      {
+        "role": "candidate",
+        "path": "/interviews-offers",
+        "width": 390,
+        "overflow": false,
+        "errors": [],
+        "violations": []
+      },
+      {
+        "role": "candidate",
+        "path": "/settings_candidate",
+        "width": 390,
+        "overflow": false,
+        "errors": [],
+        "violations": []
+      },
+      {
+        "role": "candidate",
+        "path": "/explore-jobs",
+        "width": 1440,
+        "overflow": false,
+        "errors": [],
+        "violations": []
+      },
+      {
+        "role": "candidate",
+        "path": "/jobs/2",
+        "width": 1440,
+        "overflow": false,
+        "errors": [],
+        "violations": []
+      },
+      {
+        "role": "candidate",
+        "path": "/my-applications",
+        "width": 1440,
+        "overflow": false,
+        "errors": [],
+        "violations": []
+      },
+      {
+        "role": "candidate",
+        "path": "/profile-resume",
+        "width": 1440,
+        "overflow": false,
+        "errors": [],
+        "violations": []
+      },
+      {
+        "role": "candidate",
+        "path": "/interviews-offers",
+        "width": 1440,
+        "overflow": false,
+        "errors": [],
+        "violations": []
+      },
+      {
+        "role": "candidate",
+        "path": "/settings_candidate",
+        "width": 1440,
+        "overflow": false,
+        "errors": [],
+        "violations": []
+      },
+      {
+        "role": "recruiter",
+        "path": "/recruiter/console",
+        "width": 390,
+        "overflow": false,
+        "errors": [],
+        "violations": []
+      },
+      {
+        "role": "recruiter",
+        "path": "/recruiter/jobs",
+        "width": 390,
+        "overflow": false,
+        "errors": [],
+        "violations": []
+      },
+      {
+        "role": "recruiter",
+        "path": "/recruiter/jobs/create",
+        "width": 390,
+        "overflow": false,
+        "errors": [],
+        "violations": []
+      },
+      {
+        "role": "recruiter",
+        "path": "/recruiter/candidates",
+        "width": 390,
+        "overflow": false,
+        "errors": [],
+        "violations": []
+      },
+      {
+        "role": "recruiter",
+        "path": "/recruiter/candidates/screening",
+        "width": 390,
+        "overflow": false,
+        "errors": [],
+        "violations": []
+      },
+      {
+        "role": "recruiter",
+        "path": "/recruiter/candidates/1",
+        "width": 390,
+        "overflow": false,
+        "errors": [],
+        "violations": []
+      },
+      {
+        "role": "recruiter",
+        "path": "/recruiter/evaluations",
+        "width": 390,
+        "overflow": false,
+        "errors": [],
+        "violations": []
+      },
+      {
+        "role": "recruiter",
+        "path": "/recruiter/ai-feedback",
+        "width": 390,
+        "overflow": false,
+        "errors": [],
+        "violations": []
+      },
+      {
+        "role": "recruiter",
+        "path": "/recruiter/calendar",
+        "width": 390,
+        "overflow": false,
+        "errors": [],
+        "violations": []
+      },
+      {
+        "role": "recruiter",
+        "path": "/recruiter/analytics",
+        "width": 390,
+        "overflow": false,
+        "errors": [],
+        "violations": []
+      },
+      {
+        "role": "recruiter",
+        "path": "/recruiter/notifications",
+        "width": 390,
+        "overflow": false,
+        "errors": [],
+        "violations": []
+      },
+      {
+        "role": "recruiter",
+        "path": "/recruiter/console",
+        "width": 1440,
+        "overflow": false,
+        "errors": [],
+        "violations": []
+      },
+      {
+        "role": "recruiter",
+        "path": "/recruiter/jobs",
+        "width": 1440,
+        "overflow": false,
+        "errors": [],
+        "violations": []
+      },
+      {
+        "role": "recruiter",
+        "path": "/recruiter/jobs/create",
+        "width": 1440,
+        "overflow": false,
+        "errors": [],
+        "violations": []
+      },
+      {
+        "role": "recruiter",
+        "path": "/recruiter/candidates",
+        "width": 1440,
+        "overflow": false,
+        "errors": [],
+        "violations": []
+      },
+      {
+        "role": "recruiter",
+        "path": "/recruiter/candidates/screening",
+        "width": 1440,
+        "overflow": false,
+        "errors": [],
+        "violations": []
+      },
+      {
+        "role": "recruiter",
+        "path": "/recruiter/candidates/1",
+        "width": 1440,
+        "overflow": false,
+        "errors": [],
+        "violations": []
+      },
+      {
+        "role": "recruiter",
+        "path": "/recruiter/evaluations",
+        "width": 1440,
+        "overflow": false,
+        "errors": [],
+        "violations": []
+      },
+      {
+        "role": "recruiter",
+        "path": "/recruiter/ai-feedback",
+        "width": 1440,
+        "overflow": false,
+        "errors": [],
+        "violations": []
+      },
+      {
+        "role": "recruiter",
+        "path": "/recruiter/calendar",
+        "width": 1440,
+        "overflow": false,
+        "errors": [],
+        "violations": []
+      },
+      {
+        "role": "recruiter",
+        "path": "/recruiter/analytics",
+        "width": 1440,
+        "overflow": false,
+        "errors": [],
+        "violations": []
+      },
+      {
+        "role": "recruiter",
+        "path": "/recruiter/notifications",
+        "width": 1440,
+        "overflow": false,
+        "errors": [],
+        "violations": []
+      },
+      {
+        "role": "admin",
+        "path": "/admin-console",
+        "width": 390,
+        "overflow": false,
+        "errors": [],
+        "violations": []
+      },
+      {
+        "role": "admin",
+        "path": "/jobs",
+        "width": 390,
+        "overflow": false,
+        "errors": [],
+        "violations": []
+      },
+      {
+        "role": "admin",
+        "path": "/applications",
+        "width": 390,
+        "overflow": false,
+        "errors": [],
+        "violations": []
+      },
+      {
+        "role": "admin",
+        "path": "/candidates",
+        "width": 390,
+        "overflow": false,
+        "errors": [],
+        "violations": []
+      },
+      {
+        "role": "admin",
+        "path": "/user-directory",
+        "width": 390,
+        "overflow": false,
+        "errors": [],
+        "violations": []
+      },
+      {
+        "role": "admin",
+        "path": "/users-roles",
+        "width": 390,
+        "overflow": false,
+        "errors": [],
+        "violations": []
+      },
+      {
+        "role": "admin",
+        "path": "/skill-taxonomy",
+        "width": 390,
+        "overflow": false,
+        "errors": [],
+        "violations": []
+      },
+      {
+        "role": "admin",
+        "path": "/audit",
+        "width": 390,
+        "overflow": false,
+        "errors": [],
+        "violations": []
+      },
+      {
+        "role": "admin",
+        "path": "/settings",
+        "width": 390,
+        "overflow": false,
+        "errors": [],
+        "violations": []
+      },
+      {
+        "role": "admin",
+        "path": "/operations",
+        "width": 390,
+        "overflow": false,
+        "errors": [],
+        "violations": []
+      },
+      {
+        "role": "admin",
+        "path": "/admin-console",
+        "width": 1440,
+        "overflow": false,
+        "errors": [],
+        "violations": []
+      },
+      {
+        "role": "admin",
+        "path": "/jobs",
+        "width": 1440,
+        "overflow": false,
+        "errors": [],
+        "violations": []
+      },
+      {
+        "role": "admin",
+        "path": "/applications",
+        "width": 1440,
+        "overflow": false,
+        "errors": [],
+        "violations": []
+      },
+      {
+        "role": "admin",
+        "path": "/candidates",
+        "width": 1440,
+        "overflow": false,
+        "errors": [],
+        "violations": []
+      },
+      {
+        "role": "admin",
+        "path": "/user-directory",
+        "width": 1440,
+        "overflow": false,
+        "errors": [],
+        "violations": []
+      },
+      {
+        "role": "admin",
+        "path": "/users-roles",
+        "width": 1440,
+        "overflow": false,
+        "errors": [],
+        "violations": []
+      },
+      {
+        "role": "admin",
+        "path": "/skill-taxonomy",
+        "width": 1440,
+        "overflow": false,
+        "errors": [],
+        "violations": []
+      },
+      {
+        "role": "admin",
+        "path": "/audit",
+        "width": 1440,
+        "overflow": false,
+        "errors": [],
+        "violations": []
+      },
+      {
+        "role": "admin",
+        "path": "/settings",
+        "width": 1440,
+        "overflow": false,
+        "errors": [],
+        "violations": []
+      },
+      {
+        "role": "admin",
+        "path": "/operations",
+        "width": 1440,
+        "overflow": false,
+        "errors": [],
+        "violations": []
+      }
+    ],
+    "consoleErrors": []
+  }
+}

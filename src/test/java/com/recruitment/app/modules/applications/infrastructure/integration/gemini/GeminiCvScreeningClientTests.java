@@ -77,8 +77,12 @@ class GeminiCvScreeningClientTests {
         assertEquals("gemini", result.provider());
         assertEquals("gemini-2.5-flash", result.model());
         assertEquals("test-api-key", apiKey.get());
+        assertEquals("gemini-cv-screening-v2-vi", result.promptVersion());
 
         JsonNode payload = objectMapper.readTree(requestBody.get());
+        assertTrue(payload.path("systemInstruction").path("parts").get(0).path("text").asText().contains("in Vietnamese"));
+        assertFalse(payload.path("generationConfig").path("responseSchema").has("additionalProperties"));
+        assertEquals(0, payload.path("generationConfig").path("thinkingConfig").path("thinkingBudget").asInt(-1));
         String prompt = payload.path("contents").get(0).path("parts").get(0).path("text").asText();
         assertTrue(prompt.contains("[redacted-email]"));
         assertTrue(prompt.contains("[redacted-phone]"));
@@ -136,9 +140,25 @@ class GeminiCvScreeningClientTests {
                 () -> client().screen(validRequest())
         );
 
-        assertEquals(CvScreeningException.Reason.PROVIDER_UNAVAILABLE, exception.getReason());
+        assertEquals(CvScreeningException.Reason.QUOTA_EXHAUSTED, exception.getReason());
         assertTrue(exception.isRetryable());
+        assertTrue(exception.getRetryAfter().toSeconds() >= 60);
         assertFalse(exception.getMessage().contains("do not expose this provider detail"));
+    }
+
+    @Test
+    void honorsDailyQuotaRetryAdviceWithoutImmediateRetry() {
+        responseStatus = 429;
+        responseBody = """
+                {"error":{"message":"private provider detail","details":[
+                  {"@type":"type.googleapis.com/google.rpc.RetryInfo","retryDelay":"49939s"},
+                  {"@type":"type.googleapis.com/google.rpc.QuotaFailure","violations":[{"quotaId":"GenerateRequestsPerDayPerProjectPerModel-FreeTier"}]}
+                ]}}
+                """;
+        var failure = assertThrows(CvScreeningException.class, () -> client().screen(validRequest()));
+        assertEquals(CvScreeningException.Reason.QUOTA_EXHAUSTED, failure.getReason());
+        assertEquals(java.time.Duration.ofSeconds(49944), failure.getRetryAfter());
+        assertFalse(failure.getMessage().contains("private provider detail"));
     }
 
     @Test

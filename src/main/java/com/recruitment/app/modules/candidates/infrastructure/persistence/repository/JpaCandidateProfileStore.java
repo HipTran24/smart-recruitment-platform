@@ -138,8 +138,9 @@ public class JpaCandidateProfileStore implements CandidateProfileStore {
     public ResumeSnapshot saveResume(Long userId, String originalFileName, String storageKey, String contentType, Long fileSizeBytes, String parsedText) {
         CandidateProfile profile = profileRepository.findByUserId(userId)
                 .orElseGet(() -> profileRepository.save(new CandidateProfile(userId)));
+        boolean firstResume = profile.getResumes().isEmpty();
         CandidateResume resume = new CandidateResume(profile, originalFileName, storageKey, contentType, fileSizeBytes, parsedText);
-        if (profile.getResumes().isEmpty()) {
+        if (firstResume) {
             profile.setPrimaryResume(resume);
         }
         CandidateResume saved = resumeRepository.save(resume);

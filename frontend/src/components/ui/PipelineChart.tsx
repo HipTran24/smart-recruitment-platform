@@ -1,9 +1,13 @@
+import { applicationStatusLabel } from "../../lib/recruitment-labels"
 import { useEffect, useRef } from "react"
 
 export function PipelineChart({
   counts,
 }: {
-  counts: { status: string; count: number }[]
+  counts: {
+    status: string
+    count: number
+  }[]
 }) {
   const canvas = useRef<HTMLCanvasElement>(null)
   useEffect(() => {
@@ -15,7 +19,7 @@ export function PipelineChart({
         chart = new Chart(canvas.current, {
           type: "bar",
           data: {
-            labels: counts.map((item) => item.status),
+            labels: counts.map((item) => applicationStatusLabel(item.status)),
             datasets: [
               {
                 label: "Số hồ sơ",

@@ -8,7 +8,11 @@ import java.util.regex.Pattern;
  * exception messages are intentionally not copied because they can contain raw resume content,
  * credentials, or other operational detail.
  */
-public record CvScreeningFailure(String code, boolean retryable, String message) {
+public record CvScreeningFailure(String code, boolean retryable, String message, java.time.Duration retryAfter) {
+
+    public CvScreeningFailure(String code, boolean retryable, String message) {
+        this(code, retryable, message, null);
+    }
 
     private static final int MAX_MESSAGE_LENGTH = 1_000;
     private static final Pattern CODE_PATTERN = Pattern.compile("^[A-Z][A-Z0-9_]{1,63}$");
@@ -61,13 +65,20 @@ public record CvScreeningFailure(String code, boolean retryable, String message)
             case PROVIDER_UNAVAILABLE -> new CvScreeningFailure(
                     "PROVIDER_UNAVAILABLE",
                     exception.isRetryable(),
-                    "The CV screening provider is temporarily unavailable."
+                    "The CV screening provider is temporarily unavailable.",
+                    exception.getRetryAfter()
+            );
+            case QUOTA_EXHAUSTED -> new CvScreeningFailure(
+                    "PROVIDER_QUOTA_EXHAUSTED", true,
+                    "The AI provider quota is exhausted. Screening will resume after the provider cooldown.",
+                    exception.getRetryAfter()
             );
             case INVALID_PROVIDER_RESPONSE -> new CvScreeningFailure(
                     "INVALID_PROVIDER_RESPONSE",
-                    false,
+                    exception.isRetryable(),
                     "The CV screening provider returned an invalid response."
             );
+            case PAYMENT_REQUIRED -> new CvScreeningFailure("PROVIDER_BALANCE_EXHAUSTED", false, "The AI provider account has insufficient balance.");
         };
     }
 

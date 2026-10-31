@@ -80,7 +80,7 @@ public class CvScreeningWorkflow {
                 result = gateway.screen(request);
                 break;
             } catch (CvScreeningException exception) {
-                if (!exception.isRetryable() || attempt == MAX_PROVIDER_ATTEMPTS) {
+                if (!exception.isRetryable() || exception.getRetryAfter() != null || attempt == MAX_PROVIDER_ATTEMPTS) {
                     return persistFailure(lease, CvScreeningFailure.from(exception));
                 }
             } catch (RuntimeException exception) {

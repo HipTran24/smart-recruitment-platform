@@ -40,14 +40,17 @@ class SchemaMigrationUpgradeTests {
                 .load();
 
         var result = flyway.migrate();
-        assertTrue(result.migrationsExecuted >= 11, "All migrations through V011 must execute on an empty database");
-        assertEquals("011", flyway.info().current().getVersion().getVersion());
+        assertTrue(result.migrationsExecuted >= 12, "All migrations through V012 must execute on an empty database");
+        assertEquals("012", flyway.info().current().getVersion().getVersion());
 
         try (Connection conn = DriverManager.getConnection(jdbcUrl, "root", ApplicationTests.MYSQL.getPassword());
              Statement stmt = conn.createStatement()) {
             try (ResultSet rs = stmt.executeQuery("SELECT count(*) FROM roles WHERE code IN ('ROLE_RECRUITER', 'ROLE_PLATFORM_ADMIN')")) {
                 assertTrue(rs.next());
                 assertEquals(2, rs.getInt(1));
+            }
+            try (ResultSet rs = stmt.executeQuery("SELECT next_attempt_at FROM application_screenings LIMIT 1")) {
+                assertTrue(!rs.next());
             }
         }
     }

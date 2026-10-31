@@ -28,26 +28,31 @@ public class RecruiterApplicationController {
 
     @GetMapping("/api/v1/recruiter/applications")
     public PageDto<ApplicationResponse> getApplications(
+            Authentication auth,
             @RequestParam(name = "jobId", required = false) Long jobId,
             @RequestParam(name = "status", required = false) String status,
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "size", defaultValue = "20") int size
     ) {
-        List<ApplicationSnapshot> apps = applicationService.getRecruiterApplications(jobId, status, page, size);
-        long total = applicationService.countRecruiterApplications(jobId, status);
-        int totalPages = (int) Math.ceil((double) total / Math.max(1, size));
+        List<ApplicationSnapshot> apps = applicationService.getRecruiterApplications(getUserId(auth), jobId, status, Math.max(0, page), Math.min(100, Math.max(1, size)));
+        long total = applicationService.countRecruiterApplications(getUserId(auth), jobId, status);
+        page = Math.max(0, page);
+        size = Math.min(100, Math.max(1, size));
+        int totalPages = (int) Math.ceil((double) total / size);
 
         List<ApplicationResponse> items = apps.stream().map(this::toResponse).toList();
         return new PageDto<>(items, page, size, total, totalPages);
     }
 
     @GetMapping("/api/v1/recruiter/applications/{id}")
+    @PreAuthorize("hasAuthority('ROLE_RECRUITER') and @recruiterAccess.application(authentication.name, #id)")
     public ApplicationResponse getApplicationDossier(@PathVariable("id") Long id) {
         return applicationService.getApplicationById(id).map(this::toResponse)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Application not found"));
     }
 
     @PostMapping("/api/v1/recruiter/applications/{id}/transitions")
+    @PreAuthorize("hasAuthority('ROLE_RECRUITER') and @recruiterAccess.application(authentication.name, #id)")
     public ApplicationResponse transitionStage(
             Authentication auth,
             @PathVariable("id") Long id,
@@ -59,11 +64,13 @@ public class RecruiterApplicationController {
     }
 
     @GetMapping("/api/v1/recruiter/applications/{id}/evaluations")
+    @PreAuthorize("hasAuthority('ROLE_RECRUITER') and @recruiterAccess.application(authentication.name, #id)")
     public List<EvaluationResponse> getEvaluations(@PathVariable("id") Long id) {
         return applicationService.getEvaluations(id).stream().map(this::toEvaluationResponse).toList();
     }
 
     @PostMapping("/api/v1/recruiter/applications/{id}/evaluations")
+    @PreAuthorize("hasAuthority('ROLE_RECRUITER') and @recruiterAccess.application(authentication.name, #id)")
     public ResponseEntity<EvaluationResponse> submitEvaluation(
             Authentication auth,
             @PathVariable("id") Long id,
@@ -78,13 +85,13 @@ public class RecruiterApplicationController {
     }
 
     @GetMapping("/api/v1/recruiter/reports/overview")
-    public Map<String, Object> getOverview() {
-        return applicationService.getRecruiterOverview();
+    public Map<String, Object> getOverview(Authentication auth) {
+        return applicationService.getRecruiterOverview(getUserId(auth));
     }
 
     @GetMapping("/api/v1/recruiter/reports/funnel")
-    public Map<String, Long> getFunnel() {
-        return applicationService.getRecruiterFunnel();
+    public Map<String, Long> getFunnel(Authentication auth) {
+        return applicationService.getRecruiterFunnel(getUserId(auth));
     }
 
     private static Long getUserId(Authentication auth) {

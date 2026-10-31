@@ -51,7 +51,7 @@ public class CandidateResume extends BaseEntity {
     private boolean primaryResume;
 
     @Column(name = "scan_status", nullable = false, length = 20)
-    private String scanStatus = "CLEAN";
+    private String scanStatus = "PENDING";
 
     @Column(name = "parsed_text", columnDefinition = "MEDIUMTEXT")
     private String parsedText;
@@ -84,6 +84,8 @@ public class CandidateResume extends BaseEntity {
         this.storageKey = requireText(storageKey, "storage key");
         this.contentType = requireText(contentType, "content type");
         this.fileSizeBytes = fileSizeBytes;
+        this.parsedText = parsedText;
+        this.scanStatus = "PENDING";
         candidateProfile.addResume(this);
     }
 

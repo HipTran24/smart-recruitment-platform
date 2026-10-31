@@ -24,7 +24,7 @@ const navItems: NavItem[] = [
   {
     path: "/recruiter/console",
 
-    label: "Overview",
+    label: "Tổng quan",
 
     icon: (
       <svg
@@ -46,7 +46,7 @@ const navItems: NavItem[] = [
   {
     path: "/recruiter/jobs",
 
-    label: "Jobs",
+    label: "Công việc",
 
     icon: (
       <svg
@@ -65,16 +65,16 @@ const navItems: NavItem[] = [
     ),
 
     children: [
-      { path: "/recruiter/jobs", label: "Requisitions" },
+      { path: "/recruiter/jobs", label: "Danh sách công việc" },
 
-      { path: "/recruiter/jobs/create", label: "Post New Job" },
+      { path: "/recruiter/jobs/create", label: "Đăng tin tuyển dụng" },
     ],
   },
 
   {
     path: "/recruiter/candidates",
 
-    label: "Candidates",
+    label: "Ứng viên",
 
     icon: (
       <svg
@@ -93,18 +93,18 @@ const navItems: NavItem[] = [
     ),
 
     children: [
-      { path: "/recruiter/candidates", label: "Candidate Pipeline" },
+      { path: "/recruiter/candidates", label: "Danh sách ứng viên" },
 
-      { path: "/recruiter/candidates/screening", label: "Screening Hub" },
+      { path: "/recruiter/candidates/screening", label: "Sàng lọc CV bằng AI" },
 
-      { path: "/recruiter/candidates/detail", label: "Candidate Dossier" },
+      { path: "/recruiter/candidates/detail", label: "Hồ sơ ứng viên" },
     ],
   },
 
   {
     path: "/recruiter/evaluations",
 
-    label: "Evaluations & Feedback",
+    label: "Đánh giá & phản hồi",
 
     icon: (
       <svg
@@ -123,11 +123,11 @@ const navItems: NavItem[] = [
     ),
 
     children: [
-      { path: "/recruiter/evaluations", label: "Evaluation Approvals" },
+      { path: "/recruiter/evaluations", label: "Đánh giá hồ sơ" },
 
       {
         path: "/recruiter/evaluations/ai-feedback",
-        label: "AI Feedback Drafts",
+        label: "Bản nháp phản hồi",
       },
     ],
   },
@@ -135,7 +135,7 @@ const navItems: NavItem[] = [
   {
     path: "/recruiter/calendar",
 
-    label: "Interview Calendar",
+    label: "Lịch phỏng vấn",
 
     icon: (
       <svg
@@ -157,7 +157,7 @@ const navItems: NavItem[] = [
   {
     path: "/recruiter/analytics",
 
-    label: "Hiring Analytics",
+    label: "Phân tích tuyển dụng",
 
     icon: (
       <svg
@@ -179,7 +179,7 @@ const navItems: NavItem[] = [
   {
     path: "/recruiter/notifications",
 
-    label: "Notifications & Audit",
+    label: "Thông báo & nhật ký",
 
     icon: (
       <svg
@@ -243,7 +243,7 @@ export function RecruiterSidebar({
               SmartRecruit
             </span>
             <span className="text-[10px] font-semibold text-blue-600 tracking-wide uppercase">
-              Recruiter Workspace
+              Không gian tuyển dụng
             </span>
           </div>
         </div>
@@ -275,7 +275,7 @@ export function RecruiterSidebar({
       {/* Navigation Links */}
       <nav className="flex-1 px-3 py-3 overflow-y-auto space-y-1">
         <div className="px-2 pb-1 text-[10px] font-bold text-slate-600 uppercase tracking-wider">
-          Recruitment Modules
+          Chức năng tuyển dụng
         </div>
 
         {navItems.map((item) => {

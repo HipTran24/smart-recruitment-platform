@@ -14,7 +14,8 @@ import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
-import org.springframework.security.oauth2.jwt.JwtIssuedAtValidator;
+import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
+import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.jwt.JwtIssuerValidator;
 import org.springframework.security.oauth2.jwt.JwtTimestampValidator;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
@@ -107,9 +108,13 @@ public class JwtSecurityConfiguration {
         timestamps.setAllowEmptyNotBeforeClaim(false);
         timestamps.setClock(clock);
 
-        JwtIssuedAtValidator issuedAt = new JwtIssuedAtValidator(true);
-        issuedAt.setClockSkew(properties.clockSkew());
-        issuedAt.setClock(clock);
+        // Access-token age is governed by exp. JwtIssuedAtValidator also rejects past
+        // iat values outside clockSkew, incorrectly expiring a 15-minute token in seconds.
+        OAuth2TokenValidator<Jwt> issuedAt = token -> {
+            if (token.getIssuedAt() == null || token.getIssuedAt().isAfter(clock.instant().plus(properties.clockSkew())))
+                return OAuth2TokenValidatorResult.failure(new OAuth2Error("invalid_token", "Access token issuance time is invalid", null));
+            return OAuth2TokenValidatorResult.success();
+        };
 
         return new DelegatingOAuth2TokenValidator<>(
                 timestamps,

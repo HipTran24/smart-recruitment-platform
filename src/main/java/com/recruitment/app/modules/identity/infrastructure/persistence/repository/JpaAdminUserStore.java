@@ -31,21 +31,22 @@ public class JpaAdminUserStore implements AdminUserStore {
 
     @Override
     public List<UserAdminSnapshot> searchUsers(String keyword, String role, Boolean active, int page, int size) {
-        StringBuilder jpql = new StringBuilder("select distinct u from User u left join fetch u.roles r where 1=1 ");
+        StringBuilder jpql = new StringBuilder("select u.id from User u where 1=1 ");
         appendFilterConditions(jpql, keyword, role, active);
-        jpql.append("order by u.createdAt desc");
-
-        TypedQuery<User> query = entityManager.createQuery(jpql.toString(), User.class);
+        jpql.append("order by u.createdAt desc, u.id desc");
+        TypedQuery<Long> query = entityManager.createQuery(jpql.toString(), Long.class);
         setFilterParameters(query, keyword, role, active);
-        query.setFirstResult(page * size);
-        query.setMaxResults(size);
-
-        return query.getResultList().stream().map(this::toSnapshot).toList();
+        query.setFirstResult(Math.max(0, page) * Math.min(100, Math.max(1, size)));
+        query.setMaxResults(Math.min(100, Math.max(1, size)));
+        List<Long> ids = query.getResultList();
+        if (ids.isEmpty()) return List.of();
+        return entityManager.createQuery("select distinct u from User u left join fetch u.roles where u.id in :ids order by u.createdAt desc, u.id desc", User.class)
+                .setParameter("ids", ids).getResultList().stream().map(this::toSnapshot).toList();
     }
 
     @Override
     public long countUsers(String keyword, String role, Boolean active) {
-        StringBuilder jpql = new StringBuilder("select count(distinct u) from User u left join u.roles r where 1=1 ");
+        StringBuilder jpql = new StringBuilder("select count(u) from User u where 1=1 ");
         appendFilterConditions(jpql, keyword, role, active);
 
         TypedQuery<Long> query = entityManager.createQuery(jpql.toString(), Long.class);
@@ -105,7 +106,7 @@ public class JpaAdminUserStore implements AdminUserStore {
             jpql.append("and (lower(u.email) like lower(:keyword) or lower(u.fullName) like lower(:keyword)) ");
         }
         if (role != null && !role.isBlank()) {
-            jpql.append("and r.code = :role ");
+            jpql.append("and exists (select x.id from User x join x.roles r where x.id=u.id and r.code=:role) ");
         }
         if (active != null) {
             jpql.append("and u.active = :active ");

@@ -1,3 +1,4 @@
+import { applicationStatusLabel } from "../../lib/recruitment-labels"
 import { useEffect, useMemo, useState } from "react"
 import { useSearchParams } from "react-router-dom"
 import { PageHeader } from "../../components/ui/PageHeader"
@@ -201,7 +202,10 @@ function DataTable({
   total,
   caption,
 }: {
-  counts: { status: string; count: number }[]
+  counts: {
+    status: string
+    count: number
+  }[]
   total: number
   caption: string
 }) {
@@ -224,9 +228,12 @@ function DataTable({
         </thead>
         <tbody>
           {counts.map((item) => (
-            <tr key={item.status} className="border-t border-slate-200">
+            <tr
+              key={applicationStatusLabel(item.status)}
+              className="border-t border-slate-200"
+            >
               <th scope="row" className="p-2">
-                {item.status}
+                {applicationStatusLabel(item.status)}
               </th>
               <td className="p-2">{item.count}</td>
               <td className="p-2">

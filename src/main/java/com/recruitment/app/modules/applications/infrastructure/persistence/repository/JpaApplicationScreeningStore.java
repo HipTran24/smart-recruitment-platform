@@ -125,6 +125,10 @@ public class JpaApplicationScreeningStore implements ApplicationScreeningStore {
             return false;
         }
         screening.fail(failure.code(), failure.retryable(), failure.message(), now);
+        if (failure.retryable()) {
+            Duration delay = failure.retryAfter() == null ? Duration.ofMinutes(1) : failure.retryAfter();
+            screening.scheduleRetry(now.plus(delay.compareTo(Duration.ofSeconds(1)) < 0 ? Duration.ofSeconds(1) : delay));
+        }
         return true;
     }
 

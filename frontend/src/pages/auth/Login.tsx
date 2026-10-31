@@ -185,36 +185,10 @@ export default function Login() {
           </Button>
         </form>
 
-        {/* Demo Accounts Reference Guide */}
-        <div className="p-3 rounded-lg bg-slate-800/40 border border-slate-700/50 text-[11px] text-slate-400 space-y-1">
-          <p className="font-semibold text-slate-300">
-            Tài khoản kiểm thử mẫu:
-          </p>
-          <div className="space-y-0.5 text-slate-400 font-mono text-[10px]">
-            <p>
-              • Admin:{" "}
-              <span className="text-indigo-300">admin@smartrecruit.local</span>
-            </p>
-            <p>
-              • Recruiter:{" "}
-              <span className="text-blue-300">
-                recruiter@smartrecruit.local
-              </span>
-            </p>
-            <p>
-              • Ứng viên:{" "}
-              <span className="text-emerald-300">
-                candidate@smartrecruit.local
-              </span>
-            </p>
-            <p className="text-slate-500 font-sans mt-0.5">
-              Mật khẩu chung:{" "}
-              <span className="text-slate-300 font-mono">
-                SecurePassword123!
-              </span>
-            </p>
-          </div>
-        </div>
+        <p className="text-center text-xs leading-5 text-slate-400">
+          Nhà tuyển dụng và quản trị viên sử dụng tài khoản được cấp.
+          Ứng viên mới có thể đăng ký bên dưới.
+        </p>
 
         <div className="pt-2 border-t border-slate-800 text-center text-xs text-slate-400">
           Chưa có tài khoản ứng viên?{" "}

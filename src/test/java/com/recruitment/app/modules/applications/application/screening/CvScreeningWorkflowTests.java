@@ -194,6 +194,27 @@ class CvScreeningWorkflowTests {
     }
 
     @Test
+    void persistsQuotaCooldownInsteadOfRetryingInsideTheWorker() throws Exception {
+        var clock = new MutableClock(NOW);
+        var request = validRequest();
+        var screening = pendingScreening(request);
+        var calls = new AtomicInteger();
+        var delay = Duration.ofHours(14);
+        CvScreeningGateway gateway = ignored -> {
+            calls.incrementAndGet();
+            throw new CvScreeningException(CvScreeningException.Reason.QUOTA_EXHAUSTED, delay);
+        };
+        var workflow = new CvScreeningWorkflow(stateService(repositoryReturning(screening), clock), gatewayProvider(gateway));
+        var outcome = workflow.execute(screening.getId(), request);
+        assertEquals("PROVIDER_QUOTA_EXHAUSTED", outcome.failureCode());
+        assertEquals(1, calls.get());
+        assertEquals(NOW.plus(delay), screening.getNextAttemptAt());
+        assertTrue(screening.getRetryable());
+        assertNull(screening.getScore());
+        assertNull(screening.getProcessingLeaseToken());
+    }
+
+    @Test
     void expiredLeaseCanBeReclaimedAndItsLateCompletionCannotOverwriteTheNewClaim() throws Exception {
         MutableClock clock = new MutableClock(NOW);
         CvScreeningRequest request = validRequest();

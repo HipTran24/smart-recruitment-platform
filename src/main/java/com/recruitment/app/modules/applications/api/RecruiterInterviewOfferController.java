@@ -33,6 +33,7 @@ public class RecruiterInterviewOfferController {
     }
 
     @PostMapping("/api/v1/recruiter/interviews")
+    @PreAuthorize("hasAuthority('ROLE_RECRUITER') and @recruiterAccess.application(authentication.name, #req.jobApplicationId())")
     public ResponseEntity<InterviewResponse> scheduleInterview(Authentication auth, @RequestBody ScheduleInterviewRequest req) {
         Long userId = getUserId(auth);
         InterviewSnapshot interview = applicationService.scheduleInterview(
@@ -43,6 +44,7 @@ public class RecruiterInterviewOfferController {
     }
 
     @PutMapping("/api/v1/recruiter/interviews/{id}")
+    @PreAuthorize("hasAuthority('ROLE_RECRUITER') and @recruiterAccess.interview(authentication.name, #id)")
     public InterviewResponse rescheduleInterview(@PathVariable("id") Long id, @RequestBody RescheduleInterviewRequest req) {
         InterviewSnapshot interview = applicationService.rescheduleInterview(
                 id, req.scheduledAt(), req.durationMinutes(), req.locationOrUrl(), req.notes()
@@ -51,6 +53,7 @@ public class RecruiterInterviewOfferController {
     }
 
     @PostMapping("/api/v1/recruiter/interviews/{id}/cancel")
+    @PreAuthorize("hasAuthority('ROLE_RECRUITER') and @recruiterAccess.interview(authentication.name, #id)")
     public InterviewResponse cancelInterview(@PathVariable("id") Long id, @RequestBody(required = false) CancelInterviewRequest req) {
         String reason = req != null ? req.reason() : "Cancelled by recruiter";
         InterviewSnapshot interview = applicationService.cancelInterview(id, reason);
@@ -64,6 +67,7 @@ public class RecruiterInterviewOfferController {
     }
 
     @PostMapping("/api/v1/recruiter/offers")
+    @PreAuthorize("hasAuthority('ROLE_RECRUITER') and @recruiterAccess.application(authentication.name, #req.jobApplicationId())")
     public ResponseEntity<OfferResponse> createOffer(Authentication auth, @RequestBody CreateOfferRequest req) {
         Long userId = getUserId(auth);
         OfferSnapshot offer = applicationService.createOffer(
@@ -76,17 +80,20 @@ public class RecruiterInterviewOfferController {
     }
 
     @PostMapping("/api/v1/recruiter/offers/{id}/withdraw")
+    @PreAuthorize("hasAuthority('ROLE_RECRUITER') and @recruiterAccess.offer(authentication.name, #id)")
     public OfferResponse withdrawOffer(@PathVariable("id") Long id) {
         OfferSnapshot offer = applicationService.withdrawOffer(id);
         return toOfferResponse(offer);
     }
 
     @GetMapping("/api/v1/recruiter/applications/{id}/offers")
+    @PreAuthorize("hasAuthority('ROLE_RECRUITER') and @recruiterAccess.application(authentication.name, #id)")
     public List<OfferResponse> getAppOffers(@PathVariable("id") Long id) {
         return applicationService.getApplicationOffers(id).stream().map(this::toOfferResponse).toList();
     }
 
     @PostMapping("/api/v1/recruiter/applications/{id}/offers")
+    @PreAuthorize("hasAuthority('ROLE_RECRUITER') and @recruiterAccess.application(authentication.name, #id)")
     public ResponseEntity<OfferResponse> createAppOffer(Authentication auth, @PathVariable("id") Long id, @RequestBody CreateOfferRequest req) {
         Long userId = getUserId(auth);
         OfferSnapshot offer = applicationService.createOffer(id, req.candidateUserId(), userId, req.salaryOffered(), req.salaryCurrency(), req.startDate(), req.deadline(), req.notes());
@@ -94,11 +101,13 @@ public class RecruiterInterviewOfferController {
     }
 
     @GetMapping("/api/v1/recruiter/applications/{id}/interviews")
+    @PreAuthorize("hasAuthority('ROLE_RECRUITER') and @recruiterAccess.application(authentication.name, #id)")
     public List<InterviewResponse> getAppInterviews(@PathVariable("id") Long id) {
         return applicationService.getApplicationInterviews(id).stream().map(this::toInterviewResponse).toList();
     }
 
     @PostMapping("/api/v1/recruiter/applications/{id}/interviews")
+    @PreAuthorize("hasAuthority('ROLE_RECRUITER') and @recruiterAccess.application(authentication.name, #id)")
     public ResponseEntity<InterviewResponse> scheduleAppInterview(Authentication auth, @PathVariable("id") Long id, @RequestBody ScheduleInterviewRequest req) {
         Long userId = getUserId(auth);
         InterviewSnapshot i = applicationService.scheduleInterview(id, req.candidateUserId(), userId, req.title(), req.scheduledAt(), req.durationMinutes(), req.locationOrUrl(), req.timezone(), req.notes());
@@ -106,12 +115,14 @@ public class RecruiterInterviewOfferController {
     }
 
     @GetMapping("/api/v1/recruiter/applications/{id}/feedback")
+    @PreAuthorize("hasAuthority('ROLE_RECRUITER') and @recruiterAccess.application(authentication.name, #id)")
     public FeedbackDraftResponse getAppFeedback(@PathVariable("id") Long id) {
         return applicationService.getApplicationFeedbackDraft(id).map(this::toFeedbackResponse)
                 .orElse(new FeedbackDraftResponse(0L, id, null, "", "DRAFT", "PENDING", null, null, null));
     }
 
     @PutMapping("/api/v1/recruiter/applications/{id}/feedback")
+    @PreAuthorize("hasAuthority('ROLE_RECRUITER') and @recruiterAccess.application(authentication.name, #id)")
     public FeedbackDraftResponse saveAppFeedback(Authentication auth, @PathVariable("id") Long id, @RequestBody UpdateFeedbackDraftRequest req) {
         return toFeedbackResponse(applicationService.saveFeedbackDraftForApplication(id, getUserId(auth), req.content()));
     }
@@ -123,6 +134,7 @@ public class RecruiterInterviewOfferController {
     }
 
     @PostMapping("/api/v1/recruiter/feedback-drafts")
+    @PreAuthorize("hasAuthority('ROLE_RECRUITER') and @recruiterAccess.application(authentication.name, #req.jobApplicationId())")
     public ResponseEntity<FeedbackDraftResponse> createFeedbackDraft(Authentication auth, @RequestBody CreateFeedbackDraftRequest req) {
         Long userId = getUserId(auth);
         FeedbackDraftSnapshot draft = applicationService.createFeedbackDraft(req.jobApplicationId(), userId, req.content());
@@ -130,12 +142,14 @@ public class RecruiterInterviewOfferController {
     }
 
     @PutMapping("/api/v1/recruiter/feedback-drafts/{id}")
+    @PreAuthorize("hasAuthority('ROLE_RECRUITER') and @recruiterAccess.feedback(authentication.name, #id)")
     public FeedbackDraftResponse updateFeedbackDraft(@PathVariable("id") Long id, @RequestBody UpdateFeedbackDraftRequest req) {
         FeedbackDraftSnapshot draft = applicationService.updateFeedbackDraft(id, req.content());
         return toFeedbackResponse(draft);
     }
 
     @PostMapping("/api/v1/recruiter/feedback-drafts/{id}/approve")
+    @PreAuthorize("hasAuthority('ROLE_RECRUITER') and @recruiterAccess.feedback(authentication.name, #id)")
     public FeedbackDraftResponse approveFeedbackDraft(Authentication auth, @PathVariable("id") Long id) {
         Long userId = getUserId(auth);
         FeedbackDraftSnapshot draft = applicationService.approveFeedbackDraft(id, userId);
@@ -143,6 +157,7 @@ public class RecruiterInterviewOfferController {
     }
 
     @PostMapping("/api/v1/recruiter/feedback-drafts/{id}/send")
+    @PreAuthorize("hasAuthority('ROLE_RECRUITER') and @recruiterAccess.feedback(authentication.name, #id)")
     public FeedbackDraftResponse sendFeedbackDraft(@PathVariable("id") Long id) {
         FeedbackDraftSnapshot draft = applicationService.sendFeedbackDraft(id);
         return toFeedbackResponse(draft);

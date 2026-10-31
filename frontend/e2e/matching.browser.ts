@@ -113,7 +113,7 @@ test("matching result belongs to the selected application", async ({
     "Synthetic analysis for Candidate Alpha.",
     { exact: true },
   )).toBeVisible()
-  await expect(dialog.getByText("Khuyến nghị: REVIEW", {
+  await expect(dialog.getByText("Khuyến nghị: Cần xem xét thêm", {
     exact: true,
   })).toBeVisible()
   await expect(dialog.getByText("Tiêu chí còn thiếu: SQL", {

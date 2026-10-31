@@ -23,6 +23,7 @@ public final class CvScreeningInputFingerprint {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             appendBytes(digest, FORMAT_VERSION);
+            appendText(digest, "screeningPolicy", CvScreeningPolicy.PROMPT_VERSION);
             appendText(digest, "jobTitle", request.jobTitle());
             appendText(digest, "jobDescription", request.jobDescription());
             appendLength(digest, request.requiredCriteria().size());

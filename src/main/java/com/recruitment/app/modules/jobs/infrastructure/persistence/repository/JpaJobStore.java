@@ -47,7 +47,7 @@ public class JpaJobStore implements JobStore {
     @Transactional(readOnly = true)
     public List<JobSnapshot> findPublishedJobs(String query, String workplaceType, String employmentType, int page, int size) {
         String trimmedQuery = (query != null && !query.isBlank()) ? query.trim() : null;
-        return jobRepository.findPublishedJobs(Job.JobStatus.OPEN, Instant.now(), trimmedQuery, PageRequest.of(page, size))
+        return jobRepository.findPublishedJobs(Job.JobStatus.OPEN, Instant.now(), trimmedQuery, filter(WorkplaceType.class, workplaceType), filter(EmploymentType.class, employmentType), PageRequest.of(page, size))
                 .stream().map(this::toSnapshot).toList();
     }
 
@@ -55,14 +55,14 @@ public class JpaJobStore implements JobStore {
     @Transactional(readOnly = true)
     public long countPublishedJobs(String query, String workplaceType, String employmentType) {
         String trimmedQuery = (query != null && !query.isBlank()) ? query.trim() : null;
-        return jobRepository.countPublishedJobs(Job.JobStatus.OPEN, Instant.now(), trimmedQuery);
+        return jobRepository.countPublishedJobs(Job.JobStatus.OPEN, Instant.now(), trimmedQuery, filter(WorkplaceType.class, workplaceType), filter(EmploymentType.class, employmentType));
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<JobSnapshot> findRecruiterJobs(Long recruiterUserId, String status, String search, int page, int size) {
         String trimmedSearch = (search != null && !search.isBlank()) ? search.trim() : null;
-        return jobRepository.findAllRecruiterJobs(trimmedSearch, PageRequest.of(page, size))
+        return jobRepository.findAllRecruiterJobs(recruiterUserId, filter(Job.JobStatus.class, status), trimmedSearch, PageRequest.of(page, size))
                 .stream().map(this::toSnapshot).toList();
     }
 
@@ -70,7 +70,7 @@ public class JpaJobStore implements JobStore {
     @Transactional(readOnly = true)
     public long countRecruiterJobs(Long recruiterUserId, String status, String search) {
         String trimmedSearch = (search != null && !search.isBlank()) ? search.trim() : null;
-        return jobRepository.countAllRecruiterJobs(trimmedSearch);
+        return jobRepository.countAllRecruiterJobs(recruiterUserId, filter(Job.JobStatus.class, status), trimmedSearch);
     }
 
     @Override
@@ -81,8 +81,7 @@ public class JpaJobStore implements JobStore {
             BigDecimal salaryMax, String salaryCurrency, Integer headcount,
             Instant expiresAt
     ) {
-        Long targetCompanyId = (companyId != null && companyId > 0) ? companyId : 1L;
-        ensureCompanyAndMembership(targetCompanyId, recruiterUserId);
+        Long targetCompanyId = resolveCompany(companyId, recruiterUserId);
 
         EmploymentType empType = parseEmploymentType(employmentTypeStr);
         WorkplaceType workType = parseWorkplaceType(workplaceTypeStr);
@@ -104,6 +103,7 @@ public class JpaJobStore implements JobStore {
             String salaryCurrency, Integer headcount, Instant expiresAt
     ) {
         Job job = jobRepository.findById(id).orElseThrow();
+        requireMembership(job.getCompanyId(), recruiterUserId);
         EmploymentType empType = parseEmploymentType(employmentTypeStr);
         WorkplaceType workType = parseWorkplaceType(workplaceTypeStr);
 
@@ -117,6 +117,7 @@ public class JpaJobStore implements JobStore {
     @Override
     public JobSnapshot publishJob(Long id, Long recruiterUserId) {
         Job job = jobRepository.findById(id).orElseThrow();
+        requireMembership(job.getCompanyId(), recruiterUserId);
         job.publish(Instant.now());
         return toSnapshot(jobRepository.save(job));
     }
@@ -124,6 +125,7 @@ public class JpaJobStore implements JobStore {
     @Override
     public JobSnapshot closeJob(Long id, Long recruiterUserId) {
         Job job = jobRepository.findById(id).orElseThrow();
+        requireMembership(job.getCompanyId(), recruiterUserId);
         job.close(Instant.now());
         return toSnapshot(jobRepository.save(job));
     }
@@ -147,24 +149,28 @@ public class JpaJobStore implements JobStore {
         skillRepository.deleteById(id);
     }
 
-    private void ensureCompanyAndMembership(Long companyId, Long userId) {
-        jdbcTemplate.update(
-                "INSERT INTO companies (id, version, created_at, updated_at, name, slug, is_verified) " +
-                "VALUES (?, 0, NOW(), NOW(), 'SmartRecruit Team', CONCAT('company-', ?), 1) " +
-                "ON DUPLICATE KEY UPDATE updated_at = NOW()",
-                companyId, companyId
-        );
-        jdbcTemplate.update(
-                "INSERT INTO company_members (version, created_at, updated_at, company_id, user_id, role, is_active) " +
-                "VALUES (0, NOW(), NOW(), ?, ?, 'RECRUITER', 1) " +
-                "ON DUPLICATE KEY UPDATE is_active = 1",
-                companyId, userId
-        );
+    private Long resolveCompany(Long requested, Long user) {
+        if (requested != null && requested > 0) { requireMembership(requested, user); return requested; }
+        var companies = jdbcTemplate.queryForList("SELECT company_id FROM company_members WHERE user_id=? AND is_active=1 ORDER BY id LIMIT 1", Long.class, user);
+        if (!companies.isEmpty()) return companies.getFirst();
+        jdbcTemplate.update("INSERT INTO companies(version,created_at,updated_at,name,slug,is_verified) VALUES(0,NOW(),NOW(),'Recruitment workspace',?,0)", java.util.UUID.randomUUID().toString());
+        Long company = jdbcTemplate.queryForObject("SELECT LAST_INSERT_ID()", Long.class);
+        jdbcTemplate.update("INSERT INTO company_members(version,created_at,updated_at,company_id,user_id,role,is_active) VALUES(0,NOW(),NOW(),?,?,'OWNER',1)", company, user);
+        return company;
+    }
+
+    private void requireMembership(Long company, Long user) {
+        Integer count = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM company_members WHERE company_id=? AND user_id=? AND is_active=1", Integer.class, company, user);
+        if (count == null || count == 0) throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.NOT_FOUND);
+    }
+
+    private static <E extends Enum<E>> E filter(Class<E> type, String value) {
+        return value == null || value.isBlank() ? null : Enum.valueOf(type, value.toUpperCase(java.util.Locale.ROOT));
     }
 
     private JobSnapshot toSnapshot(Job j) {
         return new JobSnapshot(
-                j.getId(), j.getCompanyId(), "SmartRecruit Hiring Team", j.getCreatedByUserId(),
+                j.getId(), j.getCompanyId(), jdbcTemplate.queryForObject("SELECT name FROM companies WHERE id=?", String.class, j.getCompanyId()), j.getCreatedByUserId(),
                 j.getTitle(), j.getSlug(), j.getDescription(), j.getRequirements(),
                 j.getEmploymentType() != null ? j.getEmploymentType().name() : "FULL_TIME",
                 j.getWorkplaceType() != null ? j.getWorkplaceType().name() : "HYBRID",

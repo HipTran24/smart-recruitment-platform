@@ -96,6 +96,15 @@ public class ApplicationScreening extends BaseEntity {
     @Column(name = "retryable")
     private Boolean retryable;
 
+    @Column(name = "next_attempt_at")
+    private Instant nextAttemptAt;
+
+    public void scheduleRetry(Instant nextAttemptAt) {
+        if (status != ScreeningStatus.FAILED || !Boolean.TRUE.equals(retryable))
+            throw new IllegalStateException("only retryable failures can be scheduled");
+        this.nextAttemptAt = Objects.requireNonNull(nextAttemptAt);
+    }
+
     /**
      * An opaque, short-lived lease. It prevents a worker that timed out or was superseded from
      * applying a stale provider response after another worker has reclaimed the screening.

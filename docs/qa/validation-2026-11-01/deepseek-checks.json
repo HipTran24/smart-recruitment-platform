@@ -1,0 +1,74 @@
+{
+  "request": {
+    "http": 200,
+    "seconds": 0.96,
+    "model": "deepseek-flash",
+    "finishReason": "stop",
+    "content": "{\"message\": \"Kết nối DeepSeek thành công.\"}",
+    "usage": {
+      "prompt_tokens": 59,
+      "completion_tokens": 15,
+      "total_tokens": 74,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "prompt_cache_hit_tokens": 0,
+      "prompt_cache_miss_tokens": 59
+    }
+  },
+  "database": {
+    "model": "deepseek-flash",
+    "maxScore": 55,
+    "minScore": 15,
+    "provider": "deepseek",
+    "completed": 26,
+    "nullScores": 0,
+    "promptVersion": "deepseek-cv-screening-v1-vi",
+    "batchWallSeconds": 66.51
+  },
+  "screening": {
+    "applications": 26,
+    "completed": 26,
+    "withdrawnExcluded": 1,
+    "failed": 0,
+    "notStarted": 0,
+    "completionRate": 100,
+    "provider": "deepseek",
+    "model": "deepseek-flash",
+    "summariesVietnamese": true,
+    "cacheReused": true,
+    "statusBatchLatencyMs": {
+      "requests": 25,
+      "p50": 7.83,
+      "p95": 10.83
+    }
+  },
+  "ui": {
+    "applications": 27,
+    "eligible": 26,
+    "completed": 26,
+    "withdrawnExcluded": 1,
+    "titleCorrect": true,
+    "geminiBrandingRemoved": true,
+    "reloadPreservesProgress": true,
+    "selectAll": true,
+    "mobileOverflow": false,
+    "axeViolations": [],
+    "pageErrors": []
+  },
+  "restart": {
+    "restartPreservedAll26Results": true,
+    "scoresAndScreeningIdsUnchanged": true,
+    "completed": 26
+  },
+  "backendTests": {
+    "tests": 160,
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0
+  },
+  "frontendUnitTests": 44,
+  "browserTests": 43,
+  "mavenVerifyExit": 0,
+  "browserTestsPassed": 43
+}

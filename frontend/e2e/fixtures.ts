@@ -14,7 +14,11 @@ export async function signedIn(page: Page) {
 }
 export async function fixtureApi(
   page: Page,
-  options: { empty?: boolean; failList?: boolean; failMutation?: boolean } = {},
+  options: {
+    empty?: boolean
+    failList?: boolean
+    failMutation?: boolean
+  } = {},
 ) {
   const applications = options.empty
     ? []
@@ -63,7 +67,11 @@ export async function fixtureApi(
         },
       ]
   let read = false
-  const calls: { url: string; method: string; body: unknown }[] = []
+  const calls: {
+    url: string
+    method: string
+    body: unknown
+  }[] = []
   await page.route("**/api/v1/**", async (route) => {
     const request = route.request()
     const url = new URL(request.url())
@@ -83,6 +91,26 @@ export async function fixtureApi(
         email: "recruiter@example.test",
         roles: ["ROLE_RECRUITER"],
       })
+    if (path === "/api/v1/recruiter/screening-statuses") {
+      const ids = (url.searchParams.get("ids") ?? "").split(",").map(Number)
+      return json(
+        Object.fromEntries(
+          applications
+            .filter((app) => ids.includes(app.id))
+            .map((app) => [
+              app.id,
+              {
+                id: app.screeningScore === null ? null : app.id,
+                status:
+                  app.screeningScore === null ? "NOT_STARTED" : "COMPLETED",
+                score: app.screeningScore,
+                summary: app.screeningSummary,
+                failureCode: null,
+              },
+            ]),
+        ),
+      )
+    }
     if (path === "/api/v1/recruiter/applications") {
       if (options.failList)
         return json(

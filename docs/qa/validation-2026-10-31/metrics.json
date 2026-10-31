@@ -1,0 +1,120 @@
+{
+  "date": "2026-10-31",
+  "timezone": "Asia/Ho_Chi_Minh",
+  "environment": {
+    "cpu": "Apple M2",
+    "ramGiB": 8,
+    "backend": "Java 25 / Spring Boot 4.1.2",
+    "database": "MySQL 8.4.11 in isolated QA container",
+    "frontend": "React 19 / Vite production build"
+  },
+  "tests": {
+    "backend": 144,
+    "frontend": 44,
+    "playwright": 37,
+    "liveProductionWorkflows": 8,
+    "liveProductionPassed": 8,
+    "routeViewportChecks": 54,
+    "routeErrors": 0,
+    "horizontalOverflows": 0,
+    "axeViolations": 0,
+    "browserPageErrors": 0
+  },
+  "coveragePercent": {
+    "BRANCH": 47.17,
+    "LINE": 63.87
+  },
+  "bundle": {
+    "entryBeforeKB": 742.14,
+    "entryAfterKB": 302.18,
+    "entryReductionPercent": 59.28,
+    "gzipBeforeKB": 177.42,
+    "gzipAfterKB": 90.85
+  },
+  "api": {
+    "benchmarks": [
+      {
+        "name": "publicJobs",
+        "requests": 100,
+        "concurrency": 10,
+        "errors": 0,
+        "p50Ms": 18.98,
+        "p95Ms": 23.8,
+        "maxMs": 25.82,
+        "rps": 494.77
+      },
+      {
+        "name": "recruiterApplications100",
+        "requests": 100,
+        "concurrency": 10,
+        "errors": 0,
+        "p50Ms": 40.94,
+        "p95Ms": 61.45,
+        "maxMs": 72.0,
+        "rps": 234.68
+      },
+      {
+        "name": "recruiterOverview",
+        "requests": 100,
+        "concurrency": 10,
+        "errors": 0,
+        "p50Ms": 23.88,
+        "p95Ms": 32.43,
+        "maxMs": 38.65,
+        "rps": 391.84
+      },
+      {
+        "name": "candidateApplications",
+        "requests": 100,
+        "concurrency": 10,
+        "errors": 0,
+        "p50Ms": 14.79,
+        "p95Ms": 21.87,
+        "maxMs": 23.74,
+        "rps": 646.31
+      }
+    ],
+    "checks": [
+      {
+        "name": "candidateCannotReadRecruiter",
+        "http": 403,
+        "pass": true
+      },
+      {
+        "name": "recruiterCannotReadAdmin",
+        "http": 403,
+        "pass": true
+      },
+      {
+        "name": "candidateCannotDownloadAnotherResume",
+        "http": 404,
+        "pass": true
+      },
+      {
+        "name": "anonymousCannotReadPrivate",
+        "http": 401,
+        "pass": true
+      }
+    ],
+    "applicationCount": 1014
+  },
+  "cv": {
+    "files": 14,
+    "extracted": 14,
+    "screened": 14,
+    "uploadMedianMs": 52.66,
+    "uploadMaxMs": 222.5,
+    "cachedMedianMs": 17.6,
+    "provider": "gemini-2.5-flash",
+    "observedFreeTierRequestsPerMinute": 5,
+    "configuredMinimumRequestIntervalSeconds": 13
+  },
+  "nginx": {
+    "authHttp": 200,
+    "uploadHttp": 201,
+    "uploadMs": 327.67,
+    "bytes": 2094082,
+    "downloadHttp": 200,
+    "byteIdentical": true
+  }
+}
