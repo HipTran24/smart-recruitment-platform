@@ -14,7 +14,7 @@ if env_file.exists():
                 values.append(value.strip().strip('\"\''))
 
 compose = ['docker', 'compose', '--env-file', '.env', '-f', 'infra/docker/compose.prod.yml']
-for args in [['ps', '-a'], ['logs', '--no-color', '--tail', '100', 'app']]:
+for args in [['ps', '-a'], ['logs', '--no-color', '--tail', '100', 'app', 'frontend']]:
     result = subprocess.run(compose + args, text=True, capture_output=True)
     output = result.stdout + result.stderr
     for value in sorted(values, key=len, reverse=True):

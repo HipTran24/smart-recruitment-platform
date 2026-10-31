@@ -77,5 +77,21 @@ next_file.replace(p)
 print('VPS configuration saved; secret values are not displayed.')
 PY
 
-docker compose --env-file .env -f infra/docker/compose.prod.yml up --build -d --remove-orphans --wait --wait-timeout 300
+python3 scripts/deployment/prepare-vps.py certificates
+compose=(docker compose --env-file .env -f infra/docker/compose.prod.yml)
+"${compose[@]}" build app frontend
+"${compose[@]}" stop app frontend
+"${compose[@]}" up -d --wait --wait-timeout 180 mysql
+python3 scripts/deployment/prepare-vps.py database
+"${compose[@]}" run --rm --no-deps --entrypoint java app \
+  -Dloader.main=com.recruitment.app.common.infrastructure.config.DatabaseMigrationMain \
+  -cp /app/application.jar org.springframework.boot.loader.launch.PropertiesLauncher
+"${compose[@]}" run --rm --no-deps --user 0:0 --entrypoint sh app -c 'chown -R 10001:10001 /app/uploads'
+"${compose[@]}" up -d --remove-orphans --wait --wait-timeout 300
 docker compose --env-file .env -f infra/docker/compose.prod.yml ps
+site=smartrecruit.synaplearn.online
+curl --fail --silent --show-error --retry 5 --retry-delay 2 --resolve "$site:443:127.0.0.1" "https://$site/" >/dev/null
+curl --fail --silent --show-error --resolve "$site:443:127.0.0.1" "https://$site/actuator/health/readiness" \
+  | python3 -c 'import json,sys; data=json.load(sys.stdin); assert data["status"]=="UP"; print("HTTPS frontend and backend readiness: UP")'
+
+python3 scripts/deployment/verify-deepseek.py

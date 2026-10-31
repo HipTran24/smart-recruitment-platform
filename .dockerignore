@@ -8,6 +8,9 @@ scripts
 .env
 .env.*
 /.local/
+/secrets/
+/.secrets/
+/keys/
 /src/main/resources/application-local.yml
 *.iml
 *.md

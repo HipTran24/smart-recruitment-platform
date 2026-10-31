@@ -48,7 +48,9 @@ public final class ProductionEnvironmentGuard implements EnvironmentPostProcesso
         }
         require(!bool(env,"app.test-mailbox.enabled"),"app.test-mailbox.enabled",invalid);
         require(!bool(env,"app.identity.bootstrap-admin.enabled"),"app.identity.bootstrap-admin.enabled",invalid);
-        require(Set.of("ses","smtp").contains(value(env,"app.notification.provider")),"app.notification.provider",invalid);
+        String provider = value(env,"app.notification.provider");
+        boolean explicitlyDisabled = provider.equals("disabled") && value(env,"app.notification.enabled").equals("false");
+        require(explicitlyDisabled || Set.of("ses","smtp").contains(provider),"app.notification.provider",invalid);
         if (bool(env,"app.security.oauth2.google.enabled")) https(env,"app.security.oauth2.google.success-redirect-uri",invalid);
         require(!bool(env,"app.ai.gemini.allow-insecure-endpoint"),"app.ai.gemini.allow-insecure-endpoint",invalid);
         if (bool(env,"app.ai.gemini.enabled")) https(env,"app.ai.gemini.api-base-url",invalid);

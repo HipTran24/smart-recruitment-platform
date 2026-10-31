@@ -39,7 +39,8 @@ app:
   test-mailbox:
     enabled: false
   notification:
-    provider: ${APP_NOTIFICATION_PROVIDER:}
+    enabled: ${APP_NOTIFICATION_ENABLED:false}
+    provider: ${APP_NOTIFICATION_PROVIDER:disabled}
   identity:
     bootstrap-admin:
       enabled: false

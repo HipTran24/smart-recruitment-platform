@@ -53,6 +53,16 @@ class ProductionEnvironmentGuardTests {
     }
 
     @Test
+    void acceptsExplicitlyDisabledEmailButNeverTreatsLoggingAsADeliveryProvider() {
+        var env=valid();env.setProperty("app.notification.provider","disabled");
+        assertThrows(IllegalStateException.class,()->guard.postProcessEnvironment(env,null));
+        env.setProperty("app.notification.enabled","false");
+        assertDoesNotThrow(()->guard.postProcessEnvironment(env,null));
+        env.setProperty("app.notification.provider","logging");
+        assertThrows(IllegalStateException.class,()->guard.postProcessEnvironment(env,null));
+    }
+
+    @Test
     void rejectsMixedTestProductionProfilesButLeavesIsolatedLocalTestsAlone() {
         var env=valid();env.setActiveProfiles("prod","test");
         assertThrows(IllegalStateException.class,()->guard.postProcessEnvironment(env,null));
